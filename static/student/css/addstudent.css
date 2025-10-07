@@ -1,0 +1,50 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #a2c2e2, #cbb4d4);
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.signup-form {
+  width: 500px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.signup-form h2 {
+  margin-bottom: 25px;
+  color: #4b4b4b;
+  font-weight: 700;
+}
+
+.form-control {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-height: 40px;
+  box-shadow: none;
+}
+
+.btn-success {
+  background-color: #5b5fc7;
+  border: none;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.btn-success:hover {
+  background-color: #4b7bec;
+  transform: translateY(-2px);
+}
+
+.text-center a {
+  color: #5b5fc7;
+  text-decoration: none;
+}
+
+.text-center a:hover {
+  text-decoration: underline;
+}

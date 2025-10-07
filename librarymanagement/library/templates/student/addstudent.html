@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Student | SLMS</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'student/css/addstudent.css' %}">
+</head>
+
+<body>
+  {% include "library/navbaradmin.html" %}
+
+  <div class="signup-form">
+    <form method="POST" class="form-horizontal">
+      {% csrf_token %}
+      <center><h2>Add Student</h2></center>
+
+      <!-- User Form Fields -->
+      {% for field in form1 %}
+      <div class="form-group text-center">
+        <label class="control-label">{{ field.label_tag }}</label>
+        <div>
+          {{ field }}
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Student Extra Fields -->
+      {% for field in form2 %}
+      <div class="form-group text-center">
+        <label class="control-label">{{ field.label_tag }}</label>
+        <div>
+          {{ field }}
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="form-group text-center">
+        <button type="submit" class="btn btn-success btn-lg">Add Student</button>
+      </div>
+    </form>
+
+    <div class="text-center">
+      View All Students? <a href="{% url 'viewstudent' %}">Click here</a>
+    </div>
+  </div>
+
+  {% include "library/footer.html" %}
+</body>
+</html>
