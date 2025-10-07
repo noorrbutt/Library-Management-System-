@@ -1,0 +1,113 @@
+/* ---------- General Page Styling ---------- */
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #a2c2e2, #cbb4d4);
+  color: #2c2c2c;
+  margin: 0;
+  padding: 0;
+}
+
+.jumbotron {
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffffb3;
+  border-radius: 16px;
+  margin: 40px auto;
+  width: 80%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.jumbotron h1 {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.jumbotron p.lead {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.options-heading {
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #444;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ---------- Buttons ---------- */
+.btn-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 500;
+  background: #5b5fc7;
+  padding: 14px 25px;
+  border-radius: 10px;
+  width: 60%;
+  transition: all 0.35s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(91, 95, 199, 0.25);
+}
+
+.btn-option:hover {
+  transform: translateY(-3px);
+}
+
+/* ---------- Hover Effects ---------- */
+.btn-option.book:hover {
+  background: #4b7bec;
+  box-shadow: 0 8px 20px rgba(75, 123, 236, 0.4);
+}
+
+.btn-option.student:hover {
+  background: #4b7bec;
+  box-shadow: 0 8px 20px rgba(75, 123, 236, 0.4);
+}
+
+/* ---------- Icon Animation ---------- */
+.btn-option i {
+  font-size: 22px;
+  transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1),
+              color 0.3s ease;
+  display: inline-block;
+  transform-origin: left center;
+}
+
+/* Book icons "open" like a book */
+.btn-option.book:hover i {
+  transform: perspective(400px) rotateY(-30deg);
+  color: #f8f8f8;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+}
+
+/* Student icon subtle lift */
+.btn-option.student:hover i {
+  transform: translateY(-3px) scale(1.05);
+  color: #f8f8f8;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .btn-option {
+    width: 90%;
+    font-size: 15px;
+  }
+
+  .jumbotron {
+    width: 90%;
+    padding: 40px 10px;
+  }
+}

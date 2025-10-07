@@ -1,0 +1,124 @@
+/* === GENERAL NAVBAR STYLING === */
+.custom-navbar {
+  background: linear-gradient(135deg, #5b5fc7, #4b7bec);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 30px;
+  font-family: "Poppins", sans-serif;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.custom-navbar .navbar-brand {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.custom-navbar .navbar-brand:hover {
+  color: #dbeafe;
+  text-decoration: none;
+}
+
+/* === NAV LINKS === */
+.nav-links .nav-link {
+  color: #f1f1f1;
+  font-weight: 500;
+  margin: 0 10px;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hover underline animation */
+.nav-links .nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  left: 0;
+  bottom: -4px;
+  background-color: #dbeafe;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Underline appears only on hover */
+.nav-links .nav-link:hover::after {
+  width: 100%;
+}
+
+/* Hover color */
+.nav-links .nav-link:hover {
+  color: #e0e7ff;
+}
+
+/* Active link style */
+.nav-links .nav-link.active {
+  color: #dbeafe !important;
+}
+
+/* === DROPDOWN MENU === */
+.dropdown-menu {
+  background: #ffffff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease-in-out;
+  padding: 8px 0;
+}
+
+.dropdown-menu .dropdown-item {
+  color: #333;
+  font-weight: 500;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background: #eef2ff;
+  color: #4b7bec;
+}
+
+/* Remove dropdown toggle arrows */
+.navbar-nav .dropdown-toggle::after {
+  display: none;
+}
+
+/* === LOGOUT BUTTON === */
+.nav-links .nav-link[href*="logout"] {
+  background: #ffffff;
+  color: #4b7bec;
+  padding: 6px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease-in-out;
+  font-weight: 600;
+}
+
+.nav-links .nav-link[href*="logout"]:hover {
+  background: #4b7bec;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(75, 123, 236, 0.6);
+}
+
+/* === TOGGLER BUTTON (Mobile Menu) === */
+.custom-toggler {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.custom-toggler .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .custom-navbar {
+    padding: 10px 20px;
+  }
+
+  .nav-links .nav-link {
+    margin: 8px 0;
+  }
+
+  .dropdown-menu {
+    background: #f9fafb;
+  }
+}
