@@ -21,14 +21,14 @@ class AdminSigupForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = models.Book
-        fields = ['name', 'isbn', 'author', 'category']
+        fields = ['name', 'quantity', 'author', 'category', 'language']
 
 class IssuedBookForm(forms.Form):
-    isbn2 = forms.ModelChoiceField(
+    quantity2 = forms.ModelChoiceField(
         queryset=models.Book.objects.all(),
-        empty_label="Name and ISBN",
-        to_field_name="isbn",
-        label='Name and ISBN'
+        empty_label="Name and quantity",
+        to_field_name="quantity",
+        label='Name and quantity'
     )
     enrollment2 = forms.ModelChoiceField(
         queryset=models.StudentExtra.objects.all(),

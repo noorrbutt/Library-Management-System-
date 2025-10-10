@@ -21,6 +21,11 @@ urlpatterns = [
     path('viewbook/', views.viewbook_view, name='viewbook'),
     path('issuebook/', views.issuebook_view, name='issuebook'),
     path('viewissuedbook/', views.viewissuedbook_view, name='viewissuedbook'),
+    path('deletebooks/', views.delete_books_view, name='deletebooks'),
+    path('updatebooks/', views.update_books_view, name='updatebooks'),
+
+
+
 
     # Admin: Student management
     path('addstudent/', views.addstudent_view, name='addstudent'),

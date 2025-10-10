@@ -16,7 +16,7 @@ A web application for librarians to create, track, and manage library data (book
 - Add, update, delete library members  
 - Issue and return books  
 - Track book availability  
-- Search books by title, author, ISBN  
+- Search books by title, author, quantity  
 - Simple user interface for librarians  
 - Static assets (images, CSS, etc.)  
 - Template-driven pages  
