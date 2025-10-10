@@ -67,6 +67,34 @@ def viewbook_view(request):
     books = models.Book.objects.all()
     return render(request, 'library/viewbook.html', {'books': books})
 
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def delete_books_view(request):
+    if request.method == "POST":
+        selected_books = request.POST.getlist("selected_books")  # get list of selected book IDs
+        if selected_books:
+            models.Book.objects.filter(id__in=selected_books).delete()
+        return redirect("viewbook")
+    return redirect("viewbook")
+
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def update_books_view(request):
+    if request.method == "POST":
+        import json
+        books_data = json.loads(request.POST.get("books_data", "[]"))
+
+        for book_data in books_data:
+            book = models.Book.objects.get(id=book_data["id"])
+            book.name = book_data["name"]
+            book.quantity = book_data["quantity"]
+            book.author = book_data["author"]
+            book.category = book_data["category"]
+            book.language = book_data["language"]
+            book.save()
+
+        return redirect("viewbook")
+    return redirect("viewbook")
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -77,7 +105,7 @@ def issuebook_view(request):
         if form.is_valid():
             obj = models.IssuedBook()
             obj.enrollment = request.POST.get('enrollment2')
-            obj.isbn = request.POST.get('isbn2')
+            obj.quantity = request.POST.get('quantity2')
             obj.save()
             return render(request, 'library/bookissued.html')
     return render(request, 'library/issuebook.html', {'form': form})
@@ -97,7 +125,7 @@ def viewissuedbook_view(request):
         days = (date.today() - ib.issuedate).days
         fine = max(0, (days - 15) * 10) if days > 15 else 0
 
-        books = models.Book.objects.filter(isbn=ib.isbn)
+        books = models.Book.objects.filter(quantity=ib.quantity)
         students = models.StudentExtra.objects.filter(enrollment=ib.enrollment)
 
         for student, book in zip(students, books):

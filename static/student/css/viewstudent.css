@@ -138,3 +138,42 @@ body{
     border: 1px solid rgba(0,0,0,0.02);
   }
 }
+/* ===== Book Selection Mode Styles ===== */
+
+.hidden-checkbox {
+  display: none;
+}
+
+.action-btn {
+  transition: all 0.3s ease;
+}
+
+/* Cancel button hidden by default */
+.cancel-btn {
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Shown when in select mode */
+.cancel-btn.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Optional: smooth fade for checkboxes */
+.checkbox-col {
+  transition: opacity 0.25s ease;
+}
+.hidden-checkbox {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-title {
+  font-weight: 700;
+  background: linear-gradient(90deg, #007bff, #5b5fc7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
