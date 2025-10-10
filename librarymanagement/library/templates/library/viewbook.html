@@ -17,6 +17,21 @@
 
     <main class="page-content">
       <div class="container">
+        <!-- Header / Buttons -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <h3 class="page-title mb-0">Available Books in Library</h3>
+
+          <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
+            <a href="{% url 'addbook' %}" class="btn btn-success action-btn">+ Add Book</a>
+
+            <!-- Filter Button -->
+            <button class="btn filter-btn action-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+              Filter Books
+            </button>
+
+            <button id="edit-btn" type="button" class="btn btn-primary action-btn">Edit</button>
+            <button id="toggle-btn" type="button" class="btn btn-danger action-btn">Select</button>
+            <button id="cancel-btn" type="button" class="btn btn-secondary action-btn d-none">Cancel</button>
         <div
           class="d-flex justify-content-between align-items-center mb-4 flex-wrap"
         >
@@ -48,6 +63,35 @@
               Cancel
             </button>
           </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-3">
+          <form method="GET" class="d-flex justify-content-start gap-2 flex-wrap">
+            <input type="text" name="q" class="search-input" placeholder="Search by Book Name" value="{{ query }}">
+            <button type="submit" class="btn btn-primary action-btn">Search</button>
+          </form>
+        </div>
+
+        <!-- Filter Dropdowns -->
+        <div class="collapse mb-3" id="filterCollapse">
+          <form method="GET" class="d-flex gap-2 flex-wrap align-items-center">
+            <select name="category" class="form-select filter-select" style="width:auto;">
+              <option value="">Categories</option>
+              {% for key, val in category_choices %}
+              <option value="{{ key }}" {% if filter.data.category == key %}selected{% endif %}>{{ val }}</option>
+              {% endfor %}
+            </select>
+
+            <select name="language" class="form-select filter-select" style="width:auto;">
+              <option value="">Languages</option>
+              {% for key, val in language_choices %}
+              <option value="{{ key }}" {% if filter.data.language == key %}selected{% endif %}>{{ val }}</option>
+              {% endfor %}
+            </select>
+
+            <button type="submit" class="btn filter-btn action-btn">Apply Filters</button>
+          </form>
         </div>
 
         {% if books %}
@@ -166,51 +210,13 @@
     <script src="{% static 'student/js/viewbook.js' %}"></script>
 
     <!-- Toast Container -->
-    <div
-      class="position-fixed bottom-0 start-50 translate-middle-x p-3"
-      style="z-index: 1080"
-    >
-      <div
-        id="actionToast"
-        class="toast align-items-center text-white bg-success border-0"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
+    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080">
+      <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
-          <div class="toast-body" id="toastMessage">
-            <!-- Message will be injected dynamically -->
-          </div>
-          <button
-            type="button"
-            class="btn-close btn-close-white me-2 m-auto"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
+          <div class="toast-body" id="toastMessage"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
       </div>
     </div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const toastEl = document.getElementById("actionToast");
-        const toastMessage = document.getElementById("toastMessage");
-
-        {% if messages %}
-          {% for message in messages %}
-            toastMessage.textContent = "{{ message }}";
-            // Set background for success or warning
-            toastEl.classList.remove("bg-success", "bg-danger");
-            {% if message.tags == "success" %}
-              toastEl.classList.add("bg-success");
-            {% elif message.tags == "warning" %}
-              toastEl.classList.add("bg-danger");
-            {% endif %}
-            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
-            toast.show();
-          {% endfor %}
-        {% endif %}
-      });
-    </script>
   </body>
 </html>
