@@ -67,6 +67,8 @@ def viewbook_view(request):
     books = models.Book.objects.all()
     return render(request, 'library/viewbook.html', {'books': books})
 
+from django.contrib import messages
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def delete_books_view(request):
@@ -74,8 +76,12 @@ def delete_books_view(request):
         selected_books = request.POST.getlist("selected_books")  # get list of selected book IDs
         if selected_books:
             models.Book.objects.filter(id__in=selected_books).delete()
+            messages.success(request, f"{len(selected_books)} book(s) deleted successfully!")
+        else:
+            messages.warning(request, "No books selected for deletion.")
         return redirect("viewbook")
     return redirect("viewbook")
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -93,8 +99,10 @@ def update_books_view(request):
             book.language = book_data["language"]
             book.save()
 
+        messages.success(request, "Books updated successfully!")
         return redirect("viewbook")
     return redirect("viewbook")
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
