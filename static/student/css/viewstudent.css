@@ -1,14 +1,18 @@
 /* ---------- Variables ---------- */
-:root{
+:root {
   --navbar-height: 72px;
-  --accent-1: #5b5fc7;  /* primary purple */
-  --accent-2: #4b7bec;  /* hover purple */
-  --bg-1: #d9e6ff;      /* page gradient start */
-  --bg-2: #fff5fb;      /* page gradient end */
+  --accent-1: #5b5fc7;
+  /* primary purple */
+  --accent-2: #4b7bec;
+  /* hover purple */
+  --bg-1: #d9e6ff;
+  /* page gradient start */
+  --bg-2: #fff5fb;
+  /* page gradient end */
 }
 
 /* ---------- Page background & typography ---------- */
-body{
+body {
   margin: 0;
   font-family: "Poppins", sans-serif;
   color: #222;
@@ -17,17 +21,17 @@ body{
   -webkit-font-smoothing: antialiased;
 }
 
-.page-content{
+.page-content {
   padding-top: calc(var(--navbar-height) + 1rem);
   padding-bottom: 3rem;
 }
 
-.container{
+.container {
   max-width: 1100px;
 }
 
-/* ---------- Header / Page Title ---------- */
-.page-title{
+/* ---------- Header / Add button ---------- */
+.page-title {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -56,7 +60,7 @@ body{
 .btn-primary:hover {
   transform: translateY(-3px);
   background: var(--accent-2);
-  box-shadow: 0 18px 40px rgba(75,123,236,0.12);
+  box-shadow: 0 18px 40px rgba(75, 123, 236, 0.12);
 }
 
 .btn-danger {
@@ -97,23 +101,25 @@ body{
 }
 
 /* ---------- Pop-out table card ---------- */
-.student-card{
+.student-card {
   margin-top: 1rem;
   border-radius: 14px !important;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.99));
-  border: 1px solid rgba(91,95,199,0.06);
-  box-shadow: 0 26px 60px rgba(91,95,199,0.08), 0 6px 18px rgba(75,123,236,0.04);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.99));
+  border: 1px solid rgba(91, 95, 199, 0.06);
+  box-shadow: 0 26px 60px rgba(91, 95, 199, 0.08), 0 6px 18px rgba(75, 123, 236, 0.04);
 }
 
-/* ---------- Table styles ---------- */
-.table{
+/* Table spacing & style */
+.table {
   margin-bottom: 0;
   border-spacing: 0 10px;
+  /* space between rows */
   border-collapse: separate;
 }
 
-.table thead th{
+/* Table headers: gradient purple */
+.table thead th {
   padding: 18px 22px;
   font-weight: 700;
   font-size: 13px;
@@ -127,11 +133,12 @@ body{
   transition: background .3s ease;
 }
 
-.table thead th:hover{
+.table thead th:hover {
   background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
 }
 
-.table tbody td{
+/* Table body cells */
+.table tbody td {
   padding: 16px 22px;
   font-size: 15px;
   color: #222;
@@ -142,13 +149,13 @@ body{
 .table tbody tr{
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(91,95,199,0.05);
+  box-shadow: 0 4px 15px rgba(91, 95, 199, 0.05);
   transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.table tbody tr:hover{
+.table tbody tr:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(91,95,199,0.12);
+  box-shadow: 0 10px 30px rgba(91, 95, 199, 0.12);
 }
 
 .table tbody tr:nth-child(even){
@@ -209,26 +216,79 @@ body{
 }
 
 /* ---------- Small screens ---------- */
-@media (max-width: 768px){
-  .page-title{ font-size: 20px; }
-  .student-card{ box-shadow: 0 12px 28px rgba(91,95,199,0.06); }
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 20px;
+  }
 
-  .container{ padding-left: 1rem; padding-right: 1rem; }
+  .student-card {
+    box-shadow: 0 12px 28px rgba(91, 95, 199, 0.06);
+  }
 
-  .table thead { display: none; }
-  .table tbody td{
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody td {
     display: block;
     width: 100%;
     padding: 12px;
     text-align: left;
   }
-  .table tbody tr{
+
+  .table tbody tr {
     display: block;
     margin-bottom: 12px;
     background: #fff;
     border-radius: 10px;
     padding: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.03);
-    border: 1px solid rgba(0,0,0,0.02);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.02);
   }
+}
+
+/* ===== Book Selection Mode Styles ===== */
+
+.hidden-checkbox {
+  display: none;
+}
+
+.action-btn {
+  transition: all 0.3s ease;
+}
+
+/* Cancel button hidden by default */
+.cancel-btn {
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Shown when in select mode */
+.cancel-btn.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Optional: smooth fade for checkboxes */
+.checkbox-col {
+  transition: opacity 0.25s ease;
+}
+
+.hidden-checkbox {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-title {
+  font-weight: 700;
+  background: linear-gradient(90deg, #007bff, #5b5fc7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
 }

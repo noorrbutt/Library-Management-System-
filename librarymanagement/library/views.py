@@ -84,6 +84,11 @@ def viewbook_view(request):
         'category_choices': category_choices,
         'language_choices': language_choices,
     })
+    books = models.Book.objects.all()
+    return render(request, 'library/viewbook.html', {'books': books})
+
+from django.contrib import messages
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def delete_books_view(request):
@@ -92,6 +97,7 @@ def delete_books_view(request):
         if selected_books:
             models.Book.objects.filter(id__in=selected_books).delete()
     return redirect("viewbook")
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -107,6 +113,7 @@ def update_books_view(request):
             book.language = book_data["language"]
             book.save()
     return redirect("viewbook")
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
