@@ -104,3 +104,4 @@ cancelBtn.addEventListener("click", () => {
 document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
   deleteForm.submit();
 });
+

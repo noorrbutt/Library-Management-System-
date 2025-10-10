@@ -26,29 +26,74 @@ body{
   max-width: 1100px;
 }
 
-/* ---------- Header / Add button ---------- */
+/* ---------- Header / Page Title ---------- */
 .page-title{
   font-size: 28px;
   font-weight: 700;
-  color: #141414;
-  letter-spacing: .2px;
+  letter-spacing: 1px;
   text-align: center;
   margin-bottom: 2rem;
+  background: linear-gradient(90deg, #007bff, #5b5fc7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.btn-primary{
-  background: var(--accent-1);
-  border: none;
+/* ---------- Buttons (Add, Edit, Filter, Select, Cancel) ---------- */
+.action-btn {
   border-radius: 10px;
   padding: 10px 16px;
   font-weight: 600;
-  box-shadow: 0 8px 20px rgba(91,95,199,0.14);
-  transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
-.btn-primary:hover{
+
+.btn-primary {
+  background: var(--accent-1);
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(91,95,199,0.14);
+}
+
+.btn-primary:hover {
   transform: translateY(-3px);
   background: var(--accent-2);
   box-shadow: 0 18px 40px rgba(75,123,236,0.12);
+}
+
+.btn-danger {
+  background: #dc3545;
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(220,53,69,0.14);
+}
+
+.btn-danger:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(220,53,69,0.12);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(108,117,125,0.14);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(108,117,125,0.12);
+}
+
+.btn.filter-btn {
+  background: #7b5fc1;  /* lighter purple than primary */
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(123,95,193,0.14);
+}
+
+.btn.filter-btn:hover {
+  transform: translateY(-3px);
+  background: #6f4fb3;  /* slightly darker on hover */
+  box-shadow: 0 18px 40px rgba(111,79,179,0.12);
 }
 
 /* ---------- Pop-out table card ---------- */
@@ -61,14 +106,13 @@ body{
   box-shadow: 0 26px 60px rgba(91,95,199,0.08), 0 6px 18px rgba(75,123,236,0.04);
 }
 
-/* Table spacing & style */
+/* ---------- Table styles ---------- */
 .table{
   margin-bottom: 0;
-  border-spacing: 0 10px; /* space between rows */
+  border-spacing: 0 10px;
   border-collapse: separate;
 }
 
-/* Table headers: gradient purple */
 .table thead th{
   padding: 18px 22px;
   font-weight: 700;
@@ -87,7 +131,6 @@ body{
   background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
 }
 
-/* Table body cells */
 .table tbody td{
   padding: 16px 22px;
   font-size: 15px;
@@ -96,7 +139,6 @@ body{
   border-top: none;
 }
 
-/* Make each row like a card */
 .table tbody tr{
   background: #fff;
   border-radius: 12px;
@@ -109,9 +151,61 @@ body{
   box-shadow: 0 10px 30px rgba(91,95,199,0.12);
 }
 
-/* Alternate row color vibe (subtle) */
 .table tbody tr:nth-child(even){
   background: #f8f9ff;
+}
+
+/* ---------- Filter Dropdowns ---------- */
+.filter-select {
+  background-color: #f3f0ff;
+  border: 1px solid #6f42c1;
+  color: #3c096c;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-weight: 500;
+  min-width: 120px; /* prevents dropdown overlap */
+}
+
+/* ---------- Search Input ---------- */
+.search-input {
+  border: 2px solid #6f42c1;
+  border-radius: 30px;
+  padding: 8px 20px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 15px;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 8px #6f42c1;
+}
+
+/* ---------- Book Selection / Checkbox Styles ---------- */
+.hidden-checkbox {
+  display: none;
+}
+
+.checkbox-col {
+  transition: opacity 0.25s ease;
+}
+
+.hidden-checkbox {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Cancel button hidden by default */
+.cancel-btn {
+  transition: all 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cancel-btn.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ---------- Small screens ---------- */
@@ -137,43 +231,4 @@ body{
     box-shadow: 0 6px 18px rgba(0,0,0,0.03);
     border: 1px solid rgba(0,0,0,0.02);
   }
-}
-/* ===== Book Selection Mode Styles ===== */
-
-.hidden-checkbox {
-  display: none;
-}
-
-.action-btn {
-  transition: all 0.3s ease;
-}
-
-/* Cancel button hidden by default */
-.cancel-btn {
-  transition: all 0.3s ease;
-  opacity: 0;
-  visibility: hidden;
-}
-
-/* Shown when in select mode */
-.cancel-btn.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Optional: smooth fade for checkboxes */
-.checkbox-col {
-  transition: opacity 0.25s ease;
-}
-.hidden-checkbox {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.page-title {
-  font-weight: 700;
-  background: linear-gradient(90deg, #007bff, #5b5fc7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1px;
 }
