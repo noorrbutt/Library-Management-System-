@@ -1,39 +1,136 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
+<html lang="en">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Admin</title>
+
+    <!-- Bootstrap & Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-  <style media="screen">
-  .jumbotron{
-    margin-bottom: 0px;
-  }
-  .jumbotron h1{
-    text-align: center;
-  }
-  </style>
-  </head>
-  <body>
-  {% include "library/navbar.html" %}
-<br><br>
-  <div class="jumbotron">
-    <h1 class="display-4">Hello, Admin</h1>
-    <p class="lead">Welcome to Online Library Management System.</p>
-    <hr class="my-4">
-    <p>You can access various features after Login/SignUp.</p>
-    <p class="lead">
-      <a class="btn btn-primary btn-lg" style="border-radius:0px;" href="{% url 'adminsignup' %}" role="button">SignUp</a>
-      <a class="btn btn-primary btn-lg" style="border-radius:0px;" href="{% url 'adminlogin' %}" role="button">Login</a>
+    <style>
+        :root {
+            --text-color: #477ae3; /* Royal Blue */
+        }
 
-    </p>
-  </div>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* prevent scrolling */
+        }
 
-    {% include "library/footer.html" %}
-  </body>
+        /* Full-page admin image */
+        body {
+            background: url("{% static 'images/admin.jpg' %}") no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        /* Top bar */
+        .slms-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .slms-top h1 {
+            margin: 0;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .slms-buttons .btn {
+            background: #ffffff;
+            color: var(--text-color) !important;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .slms-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Centered content */
+        .admin-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: #ffffff; /* white background */
+            padding: 20px 20px; /* decreased vertical padding to reduce height */
+            border-radius: 15px;
+            width: 400px; /* keep width same */
+        }
+
+        .admin-content h1 {
+            font-size: 36px;
+            margin-bottom: 10px; /* smaller margin to reduce height */
+            color: var(--text-color);
+        }
+
+        .admin-content p {
+            font-size: 16px;
+            margin-bottom: 8px; /* smaller margin to reduce height */
+            color: var(--text-color);
+        }
+
+        .admin-content .btn {
+            background: var(--text-color); /* royal blue background */
+            color: #ffffff !important; /* white text */
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 10px 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-content .btn:hover {
+            background: #3659b5; /* slightly darker on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Top bar -->
+    <div class="slms-top">
+        <h1>SLMS</h1>
+        <div class="slms-buttons">
+            <a href="/" class="btn">Home</a>
+            <a href="/adminclick" class="btn">Admin</a>
+        </div>
+    </div>
+
+    <!-- Centered admin content -->
+    <div class="admin-content">
+        <h1>Hello, Admin</h1>
+        <p>Welcome to Online Library Management System.</p>
+        <p>You can access various features after Signup/Login.</p>
+        <div>
+            <a class="btn" href="{% url 'adminsignup' %}">SignUp</a>
+            <a class="btn" href="{% url 'adminlogin' %}">Login</a>
+        </div>
+    </div>
+
+</body>
 </html>
