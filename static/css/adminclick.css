@@ -1,0 +1,96 @@
+:root {
+    --text-color: #477ae3; /* Royal Blue */
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden; /* prevent scrolling */
+}
+
+/* Full-page admin image */
+body {
+    background: url("../images/admin.jpg") no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+}
+
+/* Top bar */
+.slms-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.slms-top h1 {
+    margin: 0;
+    font-weight: 700;
+    color: #fff;
+}
+
+.slms-buttons .btn {
+    background: #ffffff;
+    color: var(--text-color) !important;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+.slms-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Centered content */
+.admin-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: #ffffff;
+    padding: 20px 20px;
+    border-radius: 15px;
+    width: 400px;
+}
+
+.admin-content h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.admin-content p {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.admin-content .btn {
+    background: var(--text-color);
+    color: #ffffff !important;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 10px 25px;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+
+.admin-content .btn:hover {
+    background: #3659b5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}

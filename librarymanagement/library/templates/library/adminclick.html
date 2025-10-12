@@ -1,39 +1,39 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
+<html lang="en">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Admin</title>
+
+    <!-- Bootstrap & Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-  <style media="screen">
-  .jumbotron{
-    margin-bottom: 0px;
-  }
-  .jumbotron h1{
-    text-align: center;
-  }
-  </style>
-  </head>
-  <body>
-  {% include "library/navbar.html" %}
-<br><br>
-  <div class="jumbotron">
-    <h1 class="display-4">Hello, Admin</h1>
-    <p class="lead">Welcome to Online Library Management System.</p>
-    <hr class="my-4">
-    <p>You can access various features after Login/SignUp.</p>
-    <p class="lead">
-      <a class="btn btn-primary btn-lg" style="border-radius:0px;" href="{% url 'adminsignup' %}" role="button">SignUp</a>
-      <a class="btn btn-primary btn-lg" style="border-radius:0px;" href="{% url 'adminlogin' %}" role="button">Login</a>
+    <!-- ✅ Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/adminclick.css' %}">
+</head>
+<body>
 
-    </p>
-  </div>
+    <!-- Top bar -->
+    <div class="slms-top">
+        <h1>SLMS</h1>
+        <div class="slms-buttons">
+            <a href="/" class="btn">Home</a>
+            <a href="/adminclick" class="btn">Admin</a>
+        </div>
+    </div>
 
-    {% include "library/footer.html" %}
-  </body>
+    <!-- Centered admin content -->
+    <div class="admin-content">
+        <h1>Hello, Admin</h1>
+        <p>Welcome to Online Library Management System.</p>
+        <p>You can access various features after Login/SignUp.</p>
+        <div>
+            <a class="btn" href="{% url 'adminsignup' %}">SignUp</a>
+            <a class="btn" href="{% url 'adminlogin' %}">Login</a>
+        </div>
+    </div>
+
+</body>
 </html>
