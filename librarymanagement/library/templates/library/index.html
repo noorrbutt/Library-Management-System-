@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Custom CSS -->
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -19,7 +19,31 @@
 </head>
 <body>
 
+<!-- Doodles -->
+<svg class="doodle doodle-book-top-right" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 19.5C4 18.1193 5.11929 17 6.5 17H20V21H6.5C5.11929 21 4 19.8807 4 18.5V19.5Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M4 4.5V18.5C4 19.8807 5.11929 21 6.5 21H20V3H6.5C5.11929 3 4 4.11929 4 5.5V4.5Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M9 7H15" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M9 11H15" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 
+<svg class="doodle doodle-pencil-bottom-left" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 2L3 12V21H12L22 11L13 2Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 17L5 14" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M15 5L19 9" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+<svg class="doodle doodle-magnifier-top-left" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.5 15.5L19 19" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 17C13.866 17 17 13.866 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 13.866 6.13401 17 10 17Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+<svg class="doodle doodle-stack-bottom-right" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 4H19V8H5V4Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 8H19V12H5V8Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 12H19V16H5V12Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 16H19V20H5V16Z" stroke="var(--doodle-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 
 <!-- Carousel with top SLMS + buttons -->
 <div class="position-relative">
