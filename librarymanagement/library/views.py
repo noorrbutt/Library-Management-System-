@@ -7,6 +7,7 @@ from . import forms, models
 from librarymanagement.settings import EMAIL_HOST_USER
 from .models import Book
 from .filters import BookFilter
+from django.contrib import messages
 import json
 
 # -------------------- BASIC VIEWS --------------------
@@ -16,10 +17,12 @@ def home_view(request):
         return redirect('afterlogin')
     return render(request, 'library/index.html')
 
+
 def adminclick_view(request):
     if request.user.is_authenticated:
         return redirect('afterlogin')
     return render(request, 'library/adminclick.html')
+
 
 def adminsignup_view(request):
     form = forms.AdminSigupForm()
@@ -34,10 +37,12 @@ def adminsignup_view(request):
             return redirect('adminlogin')
     return render(request, 'library/adminsignup.html', {'form': form})
 
+
 # -------------------- ROLE CHECK --------------------
 
 def is_admin(user):
     return user.groups.filter(name='ADMIN').exists()
+
 
 # -------------------- AFTER LOGIN --------------------
 
@@ -45,6 +50,7 @@ def afterlogin_view(request):
     if is_admin(request.user):
         return render(request, 'library/adminafterlogin.html')
     return redirect('adminlogin')
+
 
 # -------------------- ADMIN VIEWS --------------------
 
@@ -58,6 +64,7 @@ def addbook_view(request):
             form.save()
             return render(request, 'library/bookadded.html')
     return render(request, 'library/addbook.html', {'form': form})
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -84,10 +91,7 @@ def viewbook_view(request):
         'category_choices': category_choices,
         'language_choices': language_choices,
     })
-    books = models.Book.objects.all()
-    return render(request, 'library/viewbook.html', {'books': books})
 
-from django.contrib import messages
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -129,6 +133,7 @@ def issuebook_view(request):
             return render(request, 'library/bookissued.html')
     return render(request, 'library/issuebook.html', {'form': form})
 
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewissuedbook_view(request):
@@ -153,6 +158,7 @@ def viewissuedbook_view(request):
             ))
     return render(request, 'library/viewissuedbook.html', {'li': data})
 
+
 # -------------------- STUDENT VIEWS --------------------
 
 @login_required(login_url='adminlogin')
@@ -175,16 +181,19 @@ def addstudent_view(request):
             return redirect('studentadded')
     return render(request, 'student/addstudent.html', {'form1': form1, 'form2': form2})
 
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewstudent_view(request):
     students = models.StudentExtra.objects.all()
     return render(request, 'student/viewstudent.html', {'students': students})
 
+
 # -------------------- INFO PAGES --------------------
 
 def aboutus_view(request):
     return render(request, 'library/aboutus.html')
+
 
 def contactus_view(request):
     form = forms.ContactusForm()
@@ -203,6 +212,7 @@ def contactus_view(request):
             )
             return render(request, 'library/contactussuccess.html')
     return render(request, 'library/contactus.html', {'form': form})
+
 
 def studentadded_view(request):
     return render(request, 'student/studentadded.html')
