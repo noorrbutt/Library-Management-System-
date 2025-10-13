@@ -1,129 +1,134 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
+<html lang="en">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>LMS Django</title>
+    <title>SLMS Admin Login</title>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/adminlogin.css' %}">
+</head>
+<body>
 
-    <style type="text/css">
-    	body {
-    		color: #aa082e;
-    			background-color:#b6bde7;
-    		font-family: 'Roboto', sans-serif;
-    	}
-        .form-control {
-    		border-color: #eee;
-            min-height: 41px;
-    		box-shadow: none !important;
-    	}
-        .form-control:focus {
-    		border-color: #5cd3b4;
-    	}
-        .form-control, .btn {
-            border-radius: 3px;
-        }
-    	.signup-form {
-    		width: 500px;
-    		margin: 0 auto;
-    		padding: 30px 0;
-    	}
-        .signup-form h2 {
-    		color: #333;
-            margin: 0 0 30px 0;
-    		display: inline-block;
-    		padding: 0 30px 10px 0;
-    	    border-bottom: 3px solid #ffffff;
-        }
-        .signup-form form {
-    		color: #999;
-    		border-radius: 3px;
-        	margin-bottom: 15px;
-            background: #fff;
-            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-        }
-    	.signup-form .form-group {
-    		margin-bottom: 20px;
-    	}
-    	.signup-form label {
-    		font-weight: normal;
-    		font-size: 13px;
-    	}
-        .signup-form input[type="checkbox"] {
-    		margin-top: 2px;
-    	}
-        .signup-form .btn {
-            font-size: 16px;
-            font-weight: bold;
-
-    		border: none;
-    		margin-top: 20px;
-    		min-width: 140px;
-        }
-    	.signup-form .btn:hover, .signup-form .btn:focus {
-    		background: #41cba9;
-            outline: none !important;
-    	}
-        .signup-form a {
-    		color: #2b04ff;
-
-    		text-decoration: underline;
-    	}
-    	.signup-form a:hover {
-    		text-decoration: none;
-    	}
-        .signup-form form a {
-    		color: #5cd3b4;
-    		text-decoration: none;
-    	}
-    	.signup-form form a:hover {
-    		text-decoration: underline;
-    	}
-    </style>
-
-
-
-
-
-
-  </head>
-  <body>
-    {% include "library/navbar.html" %}
-    <br>
-    <br>
-<center><h3 style=" margin-bottom: 0px;"class = 'alert alert-success'>Login As Admin!</h3></center>
-    <div class="signup-form">
-        <form  method="post" class="form-horizontal">
-
-    			<center><h2>Admin Login</h2></center>
-
-          {% csrf_token %}
-            {% for field in form %}
-            <div class="form-group text-center">
-              <label class="control-label col-xs-4">{{ field.label_tag }}</label>
-              <div class="col-xs-8">
-              {{ field }}
-               </div>
-            </div>
-            {% endfor %}
-
-    		<div class="form-group text-center">
-    			<div class="col-xs-8 col-xs-offset-4">
-            <button type="submit" class="btn btn-success btn-lg" style="border-radius: 0%;">Login</button>
-    			</div>
-    		</div>
-        </form>
-    	<div class="text-center">Do not have account? <a href="{% url 'adminsignup' %}">Signup here</a></div>
+    <!-- Top SLMS bar -->
+    <div class="slms-top">
+        <h1>SLMS</h1>
+        <div class="slms-buttons">
+            <a href="{% url 'home' %}" class="btn">Home</a>
+            <a href="{% url 'adminclick' %}" class="btn">Admin</a>
+        </div>
     </div>
 
+    <!-- Main container -->
+    <div class="login-section">
+        <div class="login-heading">Admin Login</div>
+        
+        <div class="login-container">
+            <div class="person-icon">
+                <i class="fa fa-user-circle"></i>
+            </div>
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle"></i>
+                    There was an error with your login. Please check your credentials.
+                </div>
+            {% endif %}
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="fa fa-user"></i>
+                            </span>
+                        </div>
+                        <input type="text" 
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                               id="username" 
+                               name="{{ form.username.name }}"
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Username"
+                               aria-describedby="usernameHelp"
+                               required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.username.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <small id="usernameHelp" class="form-text text-muted">Enter your admin username</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                        </div>
+                        <input type="password" 
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                               id="password" 
+                               name="{{ form.password.name }}"
+                               placeholder="Password"
+                               aria-describedby="passwordHelp"
+                               required>
+                        <div class="input-group-append">
+                            <span class="input-group-text password-toggle" onclick="togglePassword()">
+                                <i class="fa fa-eye" id="toggleIcon"></i>
+                            </span>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.password.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <small id="passwordHelp" class="form-text text-muted">Enter your admin password</small>
+                </div>
 
+                <button type="submit" class="btn-login">Login</button>
+            </form>
+        </div>
+        
+        <div class="signup-link">
+            Do not have an account? <a href="{% url 'adminsignup' %}">Signup here</a>
+        </div>
+    </div>
 
-    {% include "library/footer.html" %}
-  </body>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
 </html>
