@@ -33,6 +33,21 @@
                 <i class="fa fa-user-circle"></i>
             </div>
             
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle"></i>
+                    There was an error with your login. Please check your credentials.
+                </div>
+            {% endif %}
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
             <form method="post">
                 {% csrf_token %}
                 
@@ -44,8 +59,21 @@
                                 <i class="fa fa-user"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                        <input type="text" 
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                               id="username" 
+                               name="{{ form.username.name }}"
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Username"
+                               aria-describedby="usernameHelp"
+                               required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.username.errors|join:", " }}
+                            </div>
+                        {% endif %}
                     </div>
+                    <small id="usernameHelp" class="form-text text-muted">Enter your admin username</small>
                 </div>
                 
                 <div class="form-group">
@@ -56,8 +84,25 @@
                                 <i class="fa fa-lock"></i>
                             </span>
                         </div>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+                        <input type="password" 
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                               id="password" 
+                               name="{{ form.password.name }}"
+                               placeholder="Password"
+                               aria-describedby="passwordHelp"
+                               required>
+                        <div class="input-group-append">
+                            <span class="input-group-text password-toggle" onclick="togglePassword()">
+                                <i class="fa fa-eye" id="toggleIcon"></i>
+                            </span>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.password.errors|join:", " }}
+                            </div>
+                        {% endif %}
                     </div>
+                    <small id="passwordHelp" class="form-text text-muted">Enter your admin password</small>
                 </div>
 
                 <button type="submit" class="btn-login">Login</button>
@@ -69,5 +114,21 @@
         </div>
     </div>
 
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>
