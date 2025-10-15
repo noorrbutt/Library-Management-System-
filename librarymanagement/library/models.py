@@ -4,10 +4,17 @@ from datetime import datetime, timedelta
 
 
 class StudentExtra(models.Model):
+    genchoice = [
+        ('', 'Select'),  #  placeholder
+        ("Male", "Male"),
+        ("Female", "Female"),
+    ]
     name = models.CharField(max_length=30, null=True, blank=True)
     enrollment = models.CharField(max_length=40, unique=True)
     address = models.CharField(max_length=40)
     phone = models.IntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=genchoice)
+
 
     def __str__(self):
         return f"{self.name} [{self.enrollment}]"
