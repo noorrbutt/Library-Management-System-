@@ -4,20 +4,17 @@ from datetime import datetime, timedelta
 
 
 class StudentExtra(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    enrollment = models.CharField(max_length=40)
-    branch = models.CharField(max_length=40)
+    name = models.CharField(max_length=30, null=True, blank=True)
+    enrollment = models.CharField(max_length=40, unique=True)
+    address = models.CharField(max_length=40)
+    phone = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.first_name} [{self.enrollment}]"
+        return f"{self.name} [{self.enrollment}]"
 
     @property
     def get_name(self):
-        return self.user.first_name
-
-    @property
-    def getuserid(self):
-        return self.user.id
+        return self.name
 
 
 class Book(models.Model):

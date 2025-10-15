@@ -38,15 +38,17 @@
                   <tr>
                     <th scope="col">Student Name</th>
                     <th scope="col">Enrollment</th>
-                    <th scope="col">Branch</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Phone</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for s in students %}
                   <tr>
-                    <td class="py-3 align-middle">{{ s.get_name }}</td>
+                    <td class="py-3 align-middle">{{ s.name }}</td>
                     <td class="py-3 align-middle">{{ s.enrollment }}</td>
-                    <td class="py-3 align-middle">{{ s.branch }}</td>
+                    <td class="py-3 align-middle">{{ s.address }}</td>
+                    <td class="py-3 align-middle">{{ s.phone }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

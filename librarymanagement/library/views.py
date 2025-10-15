@@ -164,28 +164,19 @@ def viewissuedbook_view(request):
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def addstudent_view(request):
-    form1 = forms.StudentUserForm()
-    form2 = forms.StudentExtraForm()
+    form = forms.StudentExtraForm()
     if request.method == 'POST':
-        form1 = forms.StudentUserForm(request.POST)
-        form2 = forms.StudentExtraForm(request.POST)
-        if form1.is_valid() and form2.is_valid():
-            user = form1.save(commit=False)
-            user.set_password(user.password)
-            user.save()
-            extra = form2.save(commit=False)
-            extra.user = user
-            extra.save()
-            student_group, _ = Group.objects.get_or_create(name='STUDENT')
-            student_group.user_set.add(user)
+        form = forms.StudentExtraForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('studentadded')
-    return render(request, 'student/addstudent.html', {'form1': form1, 'form2': form2})
+    return render(request, 'student/addstudent.html', {'form': form})
 
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewstudent_view(request):
-    students = models.StudentExtra.objects.all()
+    students = models.StudentExtra.objects.all()  # No select_related, no user
     return render(request, 'student/viewstudent.html', {'students': students})
 
 

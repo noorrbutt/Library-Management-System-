@@ -21,18 +21,8 @@
       {% csrf_token %}
       <center><h2>Add Student</h2></center>
 
-      <!-- User Form Fields -->
-      {% for field in form1 %}
-      <div class="form-group text-center">
-        <label class="control-label">{{ field.label_tag }}</label>
-        <div>
-          {{ field }}
-        </div>
-      </div>
-      {% endfor %}
-
-      <!-- Student Extra Fields -->
-      {% for field in form2 %}
+      <!-- Student Form Fields -->
+      {% for field in form %}
       <div class="form-group text-center">
         <label class="control-label">{{ field.label_tag }}</label>
         <div>
