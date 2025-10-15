@@ -34,10 +34,12 @@ class StudentExtraForm(forms.ModelForm):
     """Form for admin to add students manually"""
     class Meta:
         model = models.StudentExtra
-        fields = ['name', 'enrollment', 'address', 'phone']
+        fields = ['name', 'enrollment', 'address', 'phone', 'gender']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Full Name', 'class': 'form-control'}),
             'enrollment': forms.TextInput(attrs={'placeholder': 'Enrollment Number', 'class': 'form-control'}),
             'address': forms.TextInput(attrs={'placeholder': 'Address', 'class': 'form-control'}),
             'phone': forms.NumberInput(attrs={'placeholder': 'Phone Number', 'class': 'form-control'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
+            
         }
