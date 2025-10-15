@@ -2,14 +2,6 @@ from django import forms
 from django.contrib.auth.models import User
 from . import models
 
-# -------------------- CONTACT FORM --------------------
-class ContactusForm(forms.Form):
-    Name = forms.CharField(max_length=30)
-    Email = forms.EmailField()
-    Message = forms.CharField(
-        max_length=500,
-        widget=forms.Textarea(attrs={'rows': 3, 'cols': 30})
-    )
 
 # -------------------- ADMIN SIGNUP --------------------
 class AdminSigupForm(forms.ModelForm):
@@ -38,18 +30,14 @@ class IssuedBookForm(forms.Form):
     )
 
 # -------------------- STUDENT FORMS --------------------
-class AddStudentForm(forms.ModelForm):
-    """Simple admin-only form to add students manually"""
-    class Meta:
-        model = models.StudentExtra
-        fields = ['enrollment', 'branch']
-
-class StudentUserForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'password']
-
 class StudentExtraForm(forms.ModelForm):
+    """Form for admin to add students manually"""
     class Meta:
         model = models.StudentExtra
-        fields = ['enrollment', 'branch']
+        fields = ['name', 'enrollment', 'address', 'phone']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Full Name', 'class': 'form-control'}),
+            'enrollment': forms.TextInput(attrs={'placeholder': 'Enrollment Number', 'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'placeholder': 'Address', 'class': 'form-control'}),
+            'phone': forms.NumberInput(attrs={'placeholder': 'Phone Number', 'class': 'form-control'}),
+        }
