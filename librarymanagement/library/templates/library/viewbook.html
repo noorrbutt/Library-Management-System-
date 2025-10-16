@@ -34,15 +34,23 @@
 
         <!-- Search Bar -->
         <div class="mb-3">
-          <form method="GET" class="d-flex justify-content-start gap-2 flex-wrap">
-            <input type="text" name="q" class="search-input" placeholder="Search by Book Name" value="{{ query }}">
+          <form method="GET" class="d-flex justify-content-start gap-2 flex-wrap" id="search-form">
+            <input type="text" name="q" class="search-input" placeholder="Search by Book Name" value="{{ query|default:'' }}">
             <button type="submit" class="btn btn-primary action-btn">Search</button>
+            {% if query %}
+            <a href="{% url 'viewbook' %}{% if request.GET.category or request.GET.language %}?{% endif %}{% if request.GET.category %}category={{ request.GET.category }}{% endif %}{% if request.GET.category and request.GET.language %}&{% endif %}{% if request.GET.language %}language={{ request.GET.language }}{% endif %}" class="btn btn-secondary action-btn">Clear Search</a>
+            {% endif %}
           </form>
         </div>
 
         <!-- Filter Dropdowns -->
         <div class="collapse mb-3" id="filterCollapse">
-          <form method="GET" class="d-flex gap-2 flex-wrap align-items-center">
+          <form method="GET" class="d-flex gap-2 flex-wrap align-items-center" id="filter-form">
+            <!-- Preserve search query in filter form -->
+            {% if query %}
+            <input type="hidden" name="q" value="{{ query }}">
+            {% endif %}
+            
             <select name="category" class="form-select filter-select" style="width:auto;">
               <option value="">Categories</option>
               {% for key, val in category_choices %}
@@ -58,8 +66,8 @@
             </select>
 
             <button type="submit" class="btn filter-btn action-btn">Apply Filters</button>
-            <a href="{% url 'viewbook' %}" class="btn btn-secondary action-btn" style="margin-left: 5px;">
-            Reset Filters
+            <a href="{% url 'viewbook' %}{% if query %}?q={{ query }}{% endif %}" class="btn btn-secondary action-btn" style="margin-left: 5px;">
+              Reset Filters
             </a>
           </form>
         </div>
@@ -109,7 +117,13 @@
         </form>
 
         {% else %}
-        <h4 class="text-center mt-5 text-muted">No Books Available</h4>
+        <h4 class="text-center mt-5 text-muted">
+          {% if query or request.GET.category or request.GET.language %}
+          No books found matching your criteria.
+          {% else %}
+          No Books Available
+          {% endif %}
+        </h4>
         {% endif %}
       </div>
     </main>
@@ -140,13 +154,61 @@
     <script src="{% static 'student/js/viewbook.js' %}"></script>
 
     <!-- Toast Container -->
-    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080">
-      <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body" id="toastMessage"></div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
+<div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080">
+  <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">
+        <!-- Message will be injected dynamically -->
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toastEl = document.getElementById("actionToast");
+  const toastMessage = document.getElementById("toastMessage");
+
+  {% if messages %}
+    {% for message in messages %}
+      toastMessage.textContent = "{{ message }}";
+      // Set background for success or warning
+      toastEl.classList.remove("bg-success", "bg-danger");
+      {% if message.tags == "success" %}
+        toastEl.classList.add("bg-success");
+      {% elif message.tags == "warning" %}
+        toastEl.classList.add("bg-danger");
+      {% endif %}
+      const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+      toast.show();
+    {% endfor %}
+  {% endif %}
+});
+</script>
+
+    <script>
+      // Enhanced search functionality for books
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('search-form');
+        const searchInput = searchForm.querySelector('input[name="q"]');
+        
+        // Clear search when input is empty and form is submitted
+        searchForm.addEventListener('submit', function(e) {
+          if (!searchInput.value.trim()) {
+            e.preventDefault();
+            // Get current URL without search parameter but preserve filters
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.location.href = url.toString();
+          }
+        });
+
+        // Add JavaScript to handle empty search
+        if (searchInput.value === 'None' || searchInput.value === 'none') {
+          searchInput.value = '';
+        }
+      });
+    </script>
   </body>
 </html>

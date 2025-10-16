@@ -6,9 +6,11 @@ from datetime import date
 from . import forms, models
 from librarymanagement.settings import EMAIL_HOST_USER
 from .models import Book
-from .filters import BookFilter
+from .filters import BookFilter, StudentFilter
 from django.contrib import messages
 import json
+from django.http import HttpResponse
+
 
 # -------------------- BASIC VIEWS --------------------
 
@@ -93,13 +95,19 @@ def viewbook_view(request):
     })
 
 
+from django.contrib import messages
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def delete_books_view(request):
     if request.method == "POST":
-        selected_books = request.POST.getlist("selected_books")
+        selected_books = request.POST.getlist("selected_books")  # get list of selected book IDs
         if selected_books:
             models.Book.objects.filter(id__in=selected_books).delete()
+            messages.success(request, f"{len(selected_books)} book(s) deleted successfully!")
+        else:
+            messages.warning(request, "No books selected for deletion.")
+        return redirect("viewbook")
     return redirect("viewbook")
 
 
@@ -107,7 +115,9 @@ def delete_books_view(request):
 @user_passes_test(is_admin)
 def update_books_view(request):
     if request.method == "POST":
+        import json
         books_data = json.loads(request.POST.get("books_data", "[]"))
+
         for book_data in books_data:
             book = models.Book.objects.get(id=book_data["id"])
             book.name = book_data["name"]
@@ -116,6 +126,9 @@ def update_books_view(request):
             book.category = book_data["category"]
             book.language = book_data["language"]
             book.save()
+
+        messages.success(request, "Books updated successfully!")
+        return redirect("viewbook")
     return redirect("viewbook")
 
 
@@ -172,38 +185,59 @@ def addstudent_view(request):
             return redirect('studentadded')
     return render(request, 'student/addstudent.html', {'form': form})
 
+def studentadded_view(request):
+    return render(request, 'student/studentadded.html')
+
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewstudent_view(request):
-    students = models.StudentExtra.objects.all()  # No select_related, no user
-    return render(request, 'student/viewstudent.html', {'students': students})
+    students = models.StudentExtra.objects.all()
+    
+    # Initialize filter - use StudentFilter directly
+    student_filter = StudentFilter(request.GET, queryset=students)
+    students = student_filter.qs
+    
+    # Search functionality (additional to filter)
+    query = request.GET.get('q', '').strip()
+    if query and query != 'None':  # Handle the "None" string case
+        students = students.filter(name__icontains=query)
+    
+    return render(request, 'student/viewstudent.html', {
+        'students': students,
+        'filter': student_filter,
+        'query': query if query != 'None' else '',  # Convert "None" to empty string
+        'gender_choices': models.StudentExtra.genchoice
+    })
+
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def delete_students_view(request):
+    if request.method == "POST":
+        selected_students = request.POST.getlist("selected_students")
+        if selected_students:
+            models.StudentExtra.objects.filter(id__in=selected_students).delete()
+            messages.success(request, f"{len(selected_students)} Student(s) deleted successfully!")
+        else:
+            messages.warning(request, "No student selected for deletion.")
+        return redirect("viewstudent")
+    return redirect("viewstudent")
 
 
-# -------------------- INFO PAGES --------------------
-
-def aboutus_view(request):
-    return render(request, 'library/aboutus.html')
-
-
-def contactus_view(request):
-    form = forms.ContactusForm()
-    if request.method == 'POST':
-        form = forms.ContactusForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['Email']
-            name = form.cleaned_data['Name']
-            message = form.cleaned_data['Message']
-            send_mail(
-                f"{name} || {email}",
-                message,
-                EMAIL_HOST_USER,
-                ['wapka1503@gmail.com'],
-                fail_silently=False
-            )
-            return render(request, 'library/contactussuccess.html')
-    return render(request, 'library/contactus.html', {'form': form})
-
-
-def studentadded_view(request):
-    return render(request, 'student/studentadded.html')
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def update_students_view(request):
+    if request.method == "POST":
+        students_data = json.loads(request.POST.get("students_data", "[]"))
+        for student_data in students_data:
+            student = models.StudentExtra.objects.get(id=student_data["id"])
+            student.name = student_data["name"]
+            student.enrollment = student_data["enrollment"]
+            student.address = student_data["address"]
+            student.phone = student_data["phone"]
+            student.gender = student_data["gender"]
+            student.save()
+            
+        messages.success(request, "Student(s) updated successfully!")
+        return redirect("viewstudent")
+    return redirect("viewstudent")

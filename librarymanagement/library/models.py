@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 class StudentExtra(models.Model):
     genchoice = [
-        ('', 'Select'),  #  placeholder
         ("Male", "Male"),
         ("Female", "Female"),
     ]
@@ -13,7 +12,7 @@ class StudentExtra(models.Model):
     enrollment = models.CharField(max_length=40, unique=True)
     address = models.CharField(max_length=40)
     phone = models.IntegerField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=genchoice)
+    gender = models.CharField(max_length=10, choices=genchoice, default="Female")
 
 
     def __str__(self):

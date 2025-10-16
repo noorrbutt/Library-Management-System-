@@ -5,69 +5,206 @@
     <meta charset="utf-8" />
     <title>View Students</title>
 
-    {% block css %}
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Your custom styles -->
-    <link rel="stylesheet" href="{% static 'student/css/viewstudent.css' %}">
-    {% endblock css %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'student/css/viewstudent.css' %}" />
   </head>
 
   <body>
     {% include "library/navbaradmin.html" %}
 
-    <!-- main content: page-content ensures we don't get hidden behind a fixed navbar -->
     <main class="page-content">
       <div class="container">
+        <!-- Header / Buttons -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <h3 class="page-title mb-0">Students List</h3>
 
-        <!-- header + add button -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <h3 class="page-title mb-3 mb-md-0">Students List</h3>
-          <a href="{% url 'addstudent' %}" class="btn btn-primary">
-            + Add Student
-          </a>
-        </div>
+          <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
+            <a href="{% url 'addstudent' %}" class="btn btn-success action-btn">+ Add Student</a>
 
-        {% if students %}
-        <!-- pop-out card -->
-        <div class="card student-card">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-borderless mb-0">
-                <thead>
-                  <tr>
-                    <th scope="col">Student Name</th>
-                    <th scope="col">Enrollment</th>
-                    <th scope="col">Address</th>
-                    <th scope="col">Phone</th>
-                    <th scope="col">Gender</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for s in students %}
-                  <tr>
-                    <td class="py-3 align-middle">{{ s.name }}</td>
-                    <td class="py-3 align-middle">{{ s.enrollment }}</td>
-                    <td class="py-3 align-middle">{{ s.address }}</td>
-                    <td class="py-3 align-middle">{{ s.phone }}</td>
-                    <td class="py-3 align-middle">{{ s.gender }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
+            <!-- Filter Button -->
+            <button class="btn filter-btn action-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+              Filter Students
+            </button>
+
+            <button id="edit-btn" type="button" class="btn btn-primary action-btn">Edit</button>
+            <button id="toggle-btn" type="button" class="btn btn-danger action-btn">Select</button>
+            <button id="cancel-btn" type="button" class="btn btn-secondary action-btn d-none">Cancel</button>
           </div>
         </div>
-        {% else %}
-        <h4 class="text-center mt-5 text-muted">No Student Registered in Library</h4>
-        {% endif %}
 
+        <!-- Search Bar -->
+        <div class="mb-3">
+          <form method="GET" class="d-flex justify-content-start gap-2 flex-wrap" id="search-form">
+            <input type="text" name="q" class="search-input" placeholder="Search by Student Name" value="{{ query|default:'' }}">
+            <button type="submit" class="btn btn-primary action-btn">Search</button>
+            {% if query %}
+            <a href="{% url 'viewstudent' %}{% if request.GET.gender %}?gender={{ request.GET.gender }}{% endif %}" class="btn btn-secondary action-btn">Clear Search</a>
+            {% endif %}
+          </form>
+        </div>
+
+        <!-- Filter Dropdowns -->
+      <div class="collapse mb-3" id="filterCollapse">
+        <form method="GET" class="d-flex gap-2 flex-wrap align-items-center" id="filter-form">
+          <!-- Preserve search query in filter form -->
+          {% if query %}
+          <input type="hidden" name="q" value="{{ query }}">
+          {% endif %}
+          
+          <!-- Manual select for gender (like books page) -->
+          <select name="gender" class="form-select filter-select" style="width:auto;">
+            <option value="">Genders</option>
+            {% for key, val in gender_choices %}
+            <option value="{{ key }}" {% if request.GET.gender == key %}selected{% endif %}>{{ val }}</option>
+            {% endfor %}
+          </select>
+
+          <button type="submit" class="btn filter-btn action-btn">Apply Filters</button>
+          <a href="{% url 'viewstudent' %}{% if query %}?q={{ query }}{% endif %}" class="btn btn-secondary action-btn" style="margin-left: 5px;">
+            Reset Filters
+          </a>
+        </form>
+      </div>
+
+        {% if students %}
+        <form method="POST" action="{% url 'deletestudents' %}" id="student-form">
+          {% csrf_token %}
+          <div class="card student-card">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-borderless mb-0 align-middle">
+                  <thead>
+                    <tr>
+                      <th class="checkbox-col hidden-checkbox">
+                        <input type="checkbox" id="select-all" />
+                      </th>
+                      <th>Student Name</th>
+                      <th>Enrollment</th>
+                      <th>Address</th>
+                      <th>Phone</th>
+                      <th>Gender</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for student in students %}
+                    <tr data-id="{{ student.id }}">
+                      <td class="checkbox-col hidden-checkbox">
+                        <input type="checkbox" name="selected_students" value="{{ student.id }}" />
+                      </td>
+                      <td class="editable" data-field="name">{{ student.name }}</td>
+                      <td class="editable" data-field="enrollment">{{ student.enrollment }}</td>
+                      <td class="editable" data-field="address">{{ student.address }}</td>
+                      <td class="editable" data-field="phone">{{ student.phone }}</td>
+                      <td class="editable" data-field="gender">{{ student.gender }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <form method="POST" action="{% url 'updatestudents' %}" id="edit-form" class="d-none">
+          {% csrf_token %}
+          <input type="hidden" name="students_data" id="students-data" />
+        </form>
+
+        {% else %}
+        <h4 class="text-center mt-5 text-muted">
+          {% if query or request.GET.gender %}
+          No students found matching your criteria.
+          {% else %}
+          No Students Registered in Library
+          {% endif %}
+        </h4>
+        {% endif %}
       </div>
     </main>
 
     {% include "library/footer.html" %}
 
-    <!-- optional: bootstrap JS bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete the selected students?<br>
+            <strong>This action cannot be undone.</strong>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+<!-- Toast Container -->
+<div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1080">
+  <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">
+        <!-- Message will be injected dynamically -->
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toastEl = document.getElementById("actionToast");
+  const toastMessage = document.getElementById("toastMessage");
+
+  {% if messages %}
+    {% for message in messages %}
+      toastMessage.textContent = "{{ message }}";
+      // Set background for success or warning
+      toastEl.classList.remove("bg-success", "bg-danger");
+      {% if message.tags == "success" %}
+        toastEl.classList.add("bg-success");
+      {% elif message.tags == "warning" %}
+        toastEl.classList.add("bg-danger");
+      {% endif %}
+      const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+      toast.show();
+    {% endfor %}
+  {% endif %}
+});
+</script>
+
+    <script>
+      // Enhanced search functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('search-form');
+        const searchInput = searchForm.querySelector('input[name="q"]');
+        
+        // Clear search when input is empty and form is submitted
+        searchForm.addEventListener('submit', function(e) {
+          if (!searchInput.value.trim()) {
+            e.preventDefault();
+            // Get current URL without search parameter
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.location.href = url.toString();
+          }
+        });
+
+        // Add JavaScript to handle empty search
+        if (searchInput.value === 'None' || searchInput.value === 'none') {
+          searchInput.value = '';
+        }
+      });
+    </script>
+    <!-- Add this before closing body tag, after other scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'student/js/viewstudent.js' %}"></script>
+
   </body>
 </html>
