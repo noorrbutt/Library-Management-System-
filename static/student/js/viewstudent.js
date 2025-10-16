@@ -1,13 +1,13 @@
-// static/student/js/viewbook.js
+// static/student/js/viewstudent.js
 document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-btn");
   const editBtn = document.getElementById("edit-btn");
   const cancelBtn = document.getElementById("cancel-btn");
   const checkCols = document.querySelectorAll(".checkbox-col");
   const selectAll = document.getElementById("select-all");
-  const deleteForm = document.getElementById("book-form");
+  const deleteForm = document.getElementById("student-form");
   const editForm = document.getElementById("edit-form");
-  const booksDataInput = document.getElementById("books-data");
+  const studentsDataInput = document.getElementById("students-data");
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
   const confirmDeleteModal = new bootstrap.Modal(
     document.getElementById("confirmDeleteModal")
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Toast initialization
   const actionToast = document.getElementById('actionToast');
   const toastMessage = document.getElementById('toastMessage');
-  const bootstrapToast = actionToast ? new bootstrap.Toast(actionToast) : null;
+  const bootstrapToast = actionToast ? new bootstrap.Toast(actionToast, {delay: 4000}) : null;
 
   let selecting = false;
   let editing = false;
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleBtn.textContent = "Delete Selected";
     } else {
       const selected = document.querySelectorAll(
-        'input[name="selected_books"]:checked'
+        'input[name="selected_students"]:checked'
       );
       if (selected.length > 0) {
         confirmDeleteModal.show();
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ----- CONFIRM DELETION -----
   confirmDeleteBtn.addEventListener("click", () => {
-    showToast(`Book(s) deleted successfully`, 'success');
+    const selectedCount = document.querySelectorAll('input[name="selected_students"]:checked').length;
+    showToast(`Student(s) deleted successfully`, 'success');
     deleteForm.submit();
   });
 
@@ -70,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (selectAll) {
     selectAll.addEventListener("click", (e) => {
       const checkboxes = document.querySelectorAll(
-        'input[name="selected_books"]'
+        'input[name="selected_students"]'
       );
       checkboxes.forEach((cb) => (cb.checked = e.target.checked));
     });
@@ -94,24 +95,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else {
       const rows = document.querySelectorAll("tbody tr");
-      const booksData = [];
+      const studentsData = [];
 
       rows.forEach((row) => {
         const id = row.getAttribute("data-id");
         const fields = row.querySelectorAll(".editable input");
-        const bookObj = {
+        const studentObj = {
           id: id,
           name: fields[0].value,
-          quantity: fields[1].value,
-          author: fields[2].value,
-          category: fields[3].value,
-          language: fields[4].value,
+          enrollment: fields[1].value,
+          address: fields[2].value,
+          phone: fields[3].value,
+          gender: fields[4].value,
         };
-        booksData.push(bookObj);
+        studentsData.push(studentObj);
       });
 
-      booksDataInput.value = JSON.stringify(booksData);
-      showToast('Book(s) edited successfully', 'success');
+      studentsDataInput.value = JSON.stringify(studentsData);
+      showToast('Student(s) edited successfully', 'success');
       editForm.submit();
 
       // Reset UI after submitting
