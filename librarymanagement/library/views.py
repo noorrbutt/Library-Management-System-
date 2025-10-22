@@ -173,6 +173,9 @@ def viewissuedbook_view(request):
     issuedbooks = models.IssuedBook.objects.all().select_related('student', 'book')
     li = []
     today = date.today()
+    
+    # Check if we're filtering for overdue books
+    show_overdue_only = request.GET.get('show_overdue') == 'true'
 
     for ib in issuedbooks:
         try:
@@ -194,23 +197,49 @@ def viewissuedbook_view(request):
                 fine = 500  # PKR 500 fine
                 is_expired = True
 
-            # Build data tuple
-            li.append((
-                student_name,
-                ib.enrollment,
-                ib.book_name or 'Unknown Book',
-                ib.issuedate.strftime('%Y-%m-%d'),
-                ib.return_date.strftime('%Y-%m-%d'),
-                fine,  # Fine amount
-                is_expired,  # Flag for expired status
-                ib.id  # IssuedBook ID for return functionality
-            ))
+            # Only include in list if not filtering or if book is overdue
+            if not show_overdue_only or is_expired:
+                # Build data tuple
+                li.append((
+                    student_name,
+                    ib.enrollment,
+                    ib.book_name or 'Unknown Book',
+                    ib.issuedate.strftime('%Y-%m-%d'),
+                    ib.return_date.strftime('%Y-%m-%d'),
+                    fine,  # Fine amount
+                    is_expired,  # Flag for expired status
+                    ib.id  # IssuedBook ID for return functionality
+                ))
 
         except Exception as e:
             print(f"Error processing issued book {ib.id}: {e}")
             continue
 
-    return render(request, 'library/viewissuedbook.html', {'li': li})
+    return render(request, 'library/viewissuedbook.html', {
+        'li': li, 
+        'show_overdue_only': show_overdue_only
+    })
+    
+    
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def update_issued_books_view(request):
+    if request.method == "POST":
+        import json
+        books_data = json.loads(request.POST.get("books_data", "[]"))
+
+        for book_data in books_data:
+            issued_book = models.IssuedBook.objects.get(id=book_data["id"])
+            issued_book.student_name = book_data["student_name"]
+            issued_book.enrollment = book_data["enrollment"]
+            issued_book.book_name = book_data["book_name"]
+            issued_book.issue_date = book_data["issue_date"]
+            issued_book.return_date = book_data["return_date"]
+            issued_book.save()
+
+        messages.success(request, "Issued books updated successfully!")
+        return redirect("viewissuedbook")
+    return redirect("viewissuedbook")
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)

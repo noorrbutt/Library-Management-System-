@@ -3,23 +3,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Issued Books to Student</title>
+    <title>Issued Books to Students</title>
 
-    {% block css %}
-    <!-- Bootstrap -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    >
-    <!-- Custom styles -->
+    <!-- Bootstrap & Existing CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'student/css/viewstudent.css' %}">
-    <style>
-      .fine-expired {
-        color: #dc3545;
-        font-weight: bold;
-      }
-    </style>
-    {% endblock css %}
   </head>
 
   <body>
@@ -28,11 +16,31 @@
     <main class="page-content">
       <div class="container">
 
+        <!-- Hidden input for JS URL -->
+        <input type="hidden" id="update-issued-books-url" value="{% url 'update_issued_books' %}">
+
         <!-- Header -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <h3 class="page-title mb-3 mb-md-0">Issued Books to Students</h3>
-          <div class="d-flex gap-2">
-            <a href="{% url 'issuebook' %}" class="btn btn-primary">Issue New Book</a>
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <h3 class="page-title mb-0">
+            {% if show_overdue_only %}
+            Overdue Books
+            {% else %}
+            Issued Books to Students
+            {% endif %}
+          </h3>
+
+          <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
+            <button id="editBtn" class="btn btn-primary action-btn">Edit Records</button>
+            <button id="saveBtn" class="btn btn-success action-btn" style="display: none;">Save Changes</button>
+            <button id="cancelBtn" class="btn btn-secondary action-btn" style="display: none;">Cancel</button>
+            
+            {% if not show_overdue_only %}
+            <a href="{% url 'viewissuedbook' %}?show_overdue=true" class="btn filter-btn action-btn">Show Overdue</a>
+            {% else %}
+            <a href="{% url 'viewissuedbook' %}" class="btn btn-secondary action-btn">Show All</a>
+            {% endif %}
+            
+            <a href="{% url 'issuebook' %}" class="btn btn-primary action-btn">Issue New Book</a>
           </div>
         </div>
 
@@ -42,25 +50,42 @@
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-borderless mb-0 align-middle">
-                <thead class="table-light">
+                <thead>
                   <tr>
-                    <th scope="col">Student Name</th>
-                    <th scope="col">Enrollment</th>
-                    <th scope="col">Book Name</th>
-                    <th scope="col">Issue Date</th>
-                    <th scope="col">Return Date</th>
-                    <th scope="col">Fine</th>
-                    <th scope="col">Action</th>
+                    <th>Student Name</th>
+                    <th>Enrollment</th>
+                    <th>Book Name</th>
+                    <th>Issue Date</th>
+                    <th>Return Date</th>
+                    <th>Fine</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="issuedBooksTable">
                   {% for t in li %}
-                  <tr>
-                    <td class="py-3">{{ t.0 }}</td>
-                    <td class="py-3">{{ t.1 }}</td>
-                    <td class="py-3">{{ t.2 }}</td>
-                    <td class="py-3">{{ t.3 }}</td>
-                    <td class="py-3">{{ t.4 }}</td>
+                  <tr data-issuedbook-id="{{ t.7 }}">
+                    <td class="py-3">
+                      <span class="static-text">{{ t.0 }}</span>
+                      <input type="text" class="editable-field" name="student_name" value="{{ t.0 }}">
+                    </td>
+                    <td class="py-3">
+                      <span class="static-text">{{ t.1 }}</span>
+                      <input type="text" class="editable-field" name="enrollment" value="{{ t.1 }}">
+                    </td>
+                    <td class="py-3">
+                      <span class="static-text">{{ t.2 }}</span>
+                      <input type="text" class="editable-field" name="book_name" value="{{ t.2 }}">
+                    </td>
+                    <td class="py-3">
+                      <span class="static-text">{{ t.3 }}</span>
+                      <!-- Ensure date format is YYYY-MM-DD for input fields -->
+                      <input type="date" class="editable-field" name="issue_date" value="{{ t.3 }}">
+                    </td>
+                    <td class="py-3">
+                      <span class="static-text">{{ t.4 }}</span>
+                      <!-- Ensure date format is YYYY-MM-DD for input fields -->
+                      <input type="date" class="editable-field" name="return_date" value="{{ t.4 }}">
+                    </td>
                     <td class="py-3 {% if t.5 > 0 %}fine-expired{% endif %}">
                       {% if t.5 > 0 %}
                         PKR {{ t.5 }}
@@ -69,10 +94,11 @@
                       {% endif %}
                     </td>
                     <td class="py-3">
-                      <button class="btn btn-sm btn-outline-danger return-btn" 
+                      <button class="btn btn-sm btn-outline-danger return-btn action-btn" 
                               data-issuedbook-id="{{ t.7 }}"
                               data-student-name="{{ t.0 }}"
-                              data-book-name="{{ t.2 }}">
+                              data-book-name="{{ t.2 }}"
+                              style="min-width: 80px;">
                         Return
                       </button>
                     </td>
@@ -87,9 +113,26 @@
         {% else %}
         <!-- No Books Message -->
         <div class="text-center mt-5">
-          <h4 class="text-muted mb-3">No Books Issued</h4>
-          <p class="text-muted">There are currently no books issued to students.</p>
-          <a href="{% url 'issuebook' %}" class="btn btn-primary">Issue First Book</a>
+          <h4 class="text-muted mb-3">
+            {% if show_overdue_only %}
+            No Overdue Books
+            {% else %}
+            No Books Issued
+            {% endif %}
+          </h4>
+          <p class="text-muted">
+            {% if show_overdue_only %}
+            There are currently no books with overdue return dates.
+            {% else %}
+            There are currently no books issued to students.
+            {% endif %}
+          </p>
+          <div class="d-flex justify-content-center gap-2">
+            {% if show_overdue_only %}
+            <a href="{% url 'viewissuedbook' %}" class="btn btn-secondary action-btn">Show All</a>
+            {% endif %}
+            <a href="{% url 'issuebook' %}" class="btn btn-primary action-btn">Issue New Book</a>
+          </div>
         </div>
         {% endif %}
 
@@ -125,11 +168,12 @@
 
     {% include "library/footer.html" %}
 
-    <!-- Bootstrap JS Bundle -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="{% static 'student/js/viewissuedbook.js' %}"></script>
+
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         const returnButtons = document.querySelectorAll('.return-btn');
         const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
         const returnForm = document.getElementById('returnForm');
@@ -137,23 +181,18 @@
         const modalBookName = document.getElementById('modalBookName');
         
         returnButtons.forEach(button => {
-          button.addEventListener('click', function() {
-            const issuedBookId = this.getAttribute('data-issuedbook-id');
-            const studentName = this.getAttribute('data-student-name');
-            const bookName = this.getAttribute('data-book-name');
-            
-            // Update modal content
-            modalStudentName.textContent = studentName;
-            modalBookName.textContent = bookName;
-            
-            // Set form action
-            returnForm.action = "{% url 'return_issued_book' %}?issuedbook_id=" + issuedBookId;
-            
-            // Show modal
-            returnModal.show();
-          });
+            button.addEventListener('click', function() {
+                const issuedBookId = this.getAttribute('data-issuedbook-id');
+                const studentName = this.getAttribute('data-student-name');
+                const bookName = this.getAttribute('data-book-name');
+                
+                modalStudentName.textContent = studentName;
+                modalBookName.textContent = bookName;
+                returnForm.action = "{% url 'return_issued_book' %}?issuedbook_id=" + issuedBookId;
+                returnModal.show();
+            });
         });
-      });
+    });
     </script>
   </body>
 </html>
