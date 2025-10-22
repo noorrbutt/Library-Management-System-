@@ -27,6 +27,7 @@ urlpatterns = [
     path('viewissuedbook/', views.viewissuedbook_view, name='viewissuedbook'),
     path('deletebooks/', views.delete_books_view, name='deletebooks'),
     path('updatebooks/', views.update_books_view, name='updatebooks'),
+    path('return-issued-book/', views.return_issued_book_view, name='return_issued_book'),
 
     # Admin: Student management
     path('addstudent/', views.addstudent_view, name='addstudent'),

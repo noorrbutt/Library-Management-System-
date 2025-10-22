@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from . import models
+from datetime import date, timedelta
 
 
 # -------------------- ADMIN SIGNUP --------------------
@@ -16,19 +17,32 @@ class BookForm(forms.ModelForm):
         fields = ['name', 'quantity', 'author', 'category', 'language']
 
 class IssuedBookForm(forms.Form):
-    quantity2 = forms.ModelChoiceField(
-        queryset=models.Book.objects.all(),
-        empty_label="Name and quantity",
-        to_field_name="quantity",
-        label='Name and quantity'
+    default_return_date = date.today() + timedelta(days=15)
+    
+    book = forms.ModelChoiceField(
+        queryset=models.Book.objects.filter(quantity__gt=0),  # Only show available books
+        empty_label="Select Book",
+        label='Book Name',
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
-    enrollment2 = forms.ModelChoiceField(
+    student = forms.ModelChoiceField(
         queryset=models.StudentExtra.objects.all(),
-        empty_label="Name and Enrollment",
-        to_field_name='enrollment',
-        label='Name and Enrollment'
+        empty_label="Select Student",
+        label='Student',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    return_date = forms.DateField(
+        initial=default_return_date,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label='Return Date'
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Customize the display of books to show name and availability
+        self.fields['book'].label_from_instance = lambda obj: f"{obj.name} (Available: {obj.quantity})"
+        # Customize the display of students to show name and enrollment
+        self.fields['student'].label_from_instance = lambda obj: f"{obj.name} - {obj.enrollment}"
 # -------------------- STUDENT FORMS --------------------
 class StudentExtraForm(forms.ModelForm):
     """Form for admin to add students manually"""
