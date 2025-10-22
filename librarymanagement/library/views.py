@@ -12,6 +12,7 @@ import json
 from django.http import HttpResponse
 
 
+
 # -------------------- BASIC VIEWS --------------------
 
 def home_view(request):
@@ -139,39 +140,104 @@ def issuebook_view(request):
     if request.method == 'POST':
         form = forms.IssuedBookForm(request.POST)
         if form.is_valid():
+            student = form.cleaned_data['student']
+            book = form.cleaned_data['book']
+            return_date = form.cleaned_data['return_date']
+            
+            # Create IssuedBook object with improved structure
             obj = models.IssuedBook()
-            obj.enrollment = request.POST.get('enrollment2')
-            obj.quantity = request.POST.get('quantity2')
-            obj.save()
-            return render(request, 'library/bookissued.html')
+            obj.student = student  # ForeignKey relationship
+            obj.book = book        # ForeignKey relationship  
+            obj.enrollment = student.enrollment
+            obj.book_name = book.name
+            obj.return_date = return_date
+            obj.expirydate = return_date
+            
+            # Reduce book quantity
+            if book.quantity > 0:
+                book.quantity -= 1
+                book.save()
+                
+                obj.save()
+                # Simple message without quotes
+                messages.success(request, f'Book {book.name} issued successfully to {student.name}!')
+                return render(request, 'library/bookissued.html')
+            else:
+                messages.error(request, "This book is out of stock!")
+    
     return render(request, 'library/issuebook.html', {'form': form})
-
 
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewissuedbook_view(request):
-    issuedbooks = models.IssuedBook.objects.all()
-    data = []
+    issuedbooks = models.IssuedBook.objects.all().select_related('student', 'book')
+    li = []
+    today = date.today()
+
     for ib in issuedbooks:
-        issdate = ib.issuedate.strftime('%d-%m-%Y')
-        expdate = ib.expirydate.strftime('%d-%m-%Y')
-        days = (date.today() - ib.issuedate).days
-        fine = max(0, (days - 15) * 10) if days > 15 else 0
-        books = models.Book.objects.filter(quantity=ib.quantity)
-        students = models.StudentExtra.objects.filter(enrollment=ib.enrollment)
-        for student, book in zip(students, books):
-            data.append((
-                student.get_name,
-                student.enrollment,
-                book.name,
-                book.author,
-                issdate,
-                expdate,
-                fine
+        try:
+            # Get student name
+            student_name = 'N/A'
+            if ib.student:
+                student_name = ib.student.name
+            elif ib.enrollment:
+                try:
+                    student = models.StudentExtra.objects.get(enrollment=ib.enrollment)
+                    student_name = student.name
+                except models.StudentExtra.DoesNotExist:
+                    student_name = 'Unknown Student'
+
+            # Calculate fine - PKR 500 if expired
+            fine = 0
+            is_expired = False
+            if today > ib.return_date:
+                fine = 500  # PKR 500 fine
+                is_expired = True
+
+            # Build data tuple
+            li.append((
+                student_name,
+                ib.enrollment,
+                ib.book_name or 'Unknown Book',
+                ib.issuedate.strftime('%Y-%m-%d'),
+                ib.return_date.strftime('%Y-%m-%d'),
+                fine,  # Fine amount
+                is_expired,  # Flag for expired status
+                ib.id  # IssuedBook ID for return functionality
             ))
-    return render(request, 'library/viewissuedbook.html', {'li': data})
 
+        except Exception as e:
+            print(f"Error processing issued book {ib.id}: {e}")
+            continue
 
+    return render(request, 'library/viewissuedbook.html', {'li': li})
+
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def return_issued_book_view(request):
+    if request.method == 'POST':
+        issuedbook_id = request.GET.get('issuedbook_id')
+        try:
+            # Get the issued book record
+            issued_book = models.IssuedBook.objects.get(id=issuedbook_id)
+            
+            # Get the book to increase quantity
+            if issued_book.book:
+                book = issued_book.book
+                book.quantity += 1
+                book.save()
+            
+            # Delete the issued book record
+            issued_book.delete()
+            
+            messages.success(request, 'Book returned successfully!')
+            
+        except models.IssuedBook.DoesNotExist:
+            messages.error(request, 'Issued book record not found!')
+        except Exception as e:
+            messages.error(request, f'Error returning book: {str(e)}')
+    
+    return redirect('viewissuedbook')
 # -------------------- STUDENT VIEWS --------------------
 
 @login_required(login_url='adminlogin')
