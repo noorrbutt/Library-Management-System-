@@ -16,7 +16,7 @@
       <div class="container">
         <!-- Header / Buttons -->
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-          <h3 class="page-title mb-0">Available Books in Library</h3>
+           <h3 class="page-title mb-0">{{ books.count }} Books Available in Library</h3>
 
           <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
             <a href="{% url 'addbook' %}" class="btn btn-success action-btn">+ Add Book</a>
