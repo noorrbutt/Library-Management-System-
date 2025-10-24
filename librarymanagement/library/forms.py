@@ -55,5 +55,12 @@ class StudentExtraForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'placeholder': 'Address', 'class': 'form-control'}),
             'phone': forms.NumberInput(attrs={'placeholder': 'Phone Number', 'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-control'}),
-            
         }
+    
+    def clean_enrollment(self):
+        enrollment = self.cleaned_data.get('enrollment')
+        if enrollment:
+            # Check if enrollment number already exists
+            if models.StudentExtra.objects.filter(enrollment=enrollment).exists():
+                raise forms.ValidationError("This enrollment number already exists.")
+        return enrollment

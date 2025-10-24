@@ -55,10 +55,10 @@ class Book(models.Model):
         ("Urdu", "Urdu"),
     ]
 
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField()
     author = models.CharField(max_length=40)
-    category = models.CharField(max_length=30, choices=catchoice, default="education")
+    category = models.CharField(max_length=30, choices=catchoice, default="Education")
     language = models.CharField(max_length=30, choices=langchoice, default="English")
 
     def __str__(self):
