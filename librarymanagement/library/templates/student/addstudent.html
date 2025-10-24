@@ -21,12 +21,29 @@
       {% csrf_token %}
       <center><h2>Add Student</h2></center>
 
+      <!-- Display form non-field errors -->
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <!-- Student Form Fields -->
       {% for field in form %}
       <div class="form-group text-center">
         <label class="control-label">{{ field.label_tag }}</label>
         <div>
           {{ field }}
+          <!-- Display field-specific errors -->
+          {% if field.errors %}
+            <div class="text-danger small">
+              {% for error in field.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
