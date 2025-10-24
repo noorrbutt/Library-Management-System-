@@ -23,9 +23,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
           <h3 class="page-title mb-0">
             {% if show_overdue_only %}
-            Overdue Books
+            {{ li|length }} Overdue Book{{ li|length|pluralize }}
             {% else %}
-            Issued Books to Students
+            {{ li|length }} Book{{ li|length|pluralize }} Issued to Students
             {% endif %}
           </h3>
 
