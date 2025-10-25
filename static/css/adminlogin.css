@@ -1,0 +1,266 @@
+:root {
+    --text-color: #477ae3;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+body {
+    background: url("../images/background.jpg") no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+}
+
+/* ---------- TOP BAR ---------- */
+.slms-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.slms-top h1 {
+    margin: 0;
+    font-weight: 700;
+    color: #fff;
+}
+
+.slms-buttons .btn {
+    background: #ffffff;
+    color: var(--text-color) !important;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+.slms-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* ---------- SHARED SECTIONS (ADMIN/STUDENT/BOOK ADDED) ---------- */
+.content-section,
+.login-section {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 500px;
+    z-index: 5;
+}
+
+.login-section {
+    max-width: 400px;
+}
+
+/* ---------- LOGIN PAGE ---------- */
+.login-heading {
+    color: white;
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+.login-container {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 30px 25px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.person-icon {
+    font-size: 50px;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.password-toggle {
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.password-toggle:hover {
+    color: #495057;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+    color: #dc3545;
+}
+
+.alert {
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.form-group label {
+    display: none;
+}
+
+.input-group {
+    display: flex;
+    width: 100%;
+}
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 8px 0 0 8px;
+    width: 45px;
+    justify-content: center;
+}
+
+.form-control {
+    padding: 12px 15px;
+    font-size: 16px;
+    border-radius: 0 8px 8px 0;
+    border: 1px solid #ced4da;
+    border-left: none;
+    height: 48px;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 0.2rem rgba(71, 122, 227, 0.25);
+}
+
+.btn-login {
+    width: 100%;
+    margin-top: 15px;
+    background: var(--text-color);
+    color: white;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 12px;
+    border: none;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.btn-login:hover {
+    background: #3659b5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.signup-link a {
+    color: #ffffff;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.signup-link a:hover {
+    color: #dbeafe;
+}
+
+/* ---------- SUCCESS PAGE (BOOK/STUDENT ADDED) ---------- */
+.success-container {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.success-heading {
+    color: #333;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.options .btn {
+    background: var(--text-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.options .btn:hover {
+    background: #3659b5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    color: white;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+    .login-section {
+        max-width: 90%;
+    }
+
+    .login-heading {
+        font-size: 28px;
+    }
+
+    .login-container {
+        padding: 25px 20px;
+    }
+
+    .content-section {
+        max-width: 90%;
+    }
+
+    .success-container {
+        padding: 30px 20px;
+    }
+
+    .success-heading {
+        font-size: 28px;
+    }
+}
