@@ -15,6 +15,7 @@ body {
     position: relative;
 }
 
+/* ---------- TOP BAR ---------- */
 .slms-top {
     position: absolute;
     top: 0;
@@ -51,16 +52,23 @@ body {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
+/* ---------- SHARED SECTIONS (ADMIN/STUDENT/BOOK ADDED) ---------- */
+.content-section,
 .login-section {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     z-index: 5;
 }
 
+.login-section {
+    max-width: 400px;
+}
+
+/* ---------- LOGIN PAGE ---------- */
 .login-heading {
     color: white;
     font-size: 36px;
@@ -117,10 +125,6 @@ body {
 .input-group {
     display: flex;
     width: 100%;
-}
-
-.input-group-prepend {
-    margin-right: -1px;
 }
 
 .input-group-text {
@@ -186,6 +190,55 @@ body {
     color: #dbeafe;
 }
 
+/* ---------- SUCCESS PAGE (BOOK/STUDENT ADDED) ---------- */
+.success-container {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.success-heading {
+    color: #333;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.options .btn {
+    background: var(--text-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.options .btn:hover {
+    background: #3659b5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    color: white;
+}
+
+/* ---------- RESPONSIVE ---------- */
 @media (max-width: 768px) {
     .login-section {
         max-width: 90%;
@@ -194,8 +247,20 @@ body {
     .login-heading {
         font-size: 28px;
     }
-    
+
     .login-container {
         padding: 25px 20px;
+    }
+
+    .content-section {
+        max-width: 90%;
+    }
+
+    .success-container {
+        padding: 30px 20px;
+    }
+
+    .success-heading {
+        font-size: 28px;
     }
 }
