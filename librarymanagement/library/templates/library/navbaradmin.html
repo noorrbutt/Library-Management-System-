@@ -4,24 +4,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>SLMS Admin</title>
+  <title>LMS Admin</title>
 
   <!-- Bootstrap CSS & Scripts -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <!-- Custom Navbar CSS -->
-  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/navbaradmin.css' %}">
 </head>
 <body>
   <div class="bs-example">
-    <nav class="navbar navbar-expand-md fixed-top custom-navbar">
-      <a href="/" class="navbar-brand">SLMS</a>
+    <nav class="navbar navbar-expand-md fixed-top glass-navbar">
+      <a href="/" class="navbar-brand">
+        <i class="fas fa-book-open mr-2"></i>LMS
+      </a>
 
       <button
-        class="navbar-toggler custom-toggler"
+        class="navbar-toggler glass-toggler"
         type="button"
         data-toggle="collapse"
         data-target="#navbarCollapse"
@@ -35,35 +43,55 @@
         <div class="navbar-nav"></div>
 
         <div class="navbar-nav nav-links">
-          <a href="/" class="nav-item nav-link active">Home</a>
+          <a href="/" class="nav-item nav-link active">
+            <i class="fas fa-home mr-1"></i>Home
+          </a>
 
           <!-- Book Dropdown -->
           <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Book</a>
-            <div class="dropdown-menu">
-              <a href="{% url 'addbook' %}" class="dropdown-item">Add Book</a>
-              <a href="{% url 'viewbook' %}" class="dropdown-item">View Book</a>
+            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+              <i class="fas fa-book mr-1"></i>Book
+            </a>
+            <div class="dropdown-menu glass-dropdown">
+              <a href="{% url 'addbook' %}" class="dropdown-item">
+                <i class="fas fa-plus-circle mr-2"></i>Add Book
+              </a>
+              <a href="{% url 'viewbook' %}" class="dropdown-item">
+                <i class="fas fa-list mr-2"></i>View Book
+              </a>
             </div>
           </div>
 
           <!-- Issue Book Dropdown -->
           <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Issue Book</a>
-            <div class="dropdown-menu">
-              <a href="{% url 'issuebook' %}" class="dropdown-item">Issue New Book</a>
-              <a href="{% url 'viewissuedbook' %}" class="dropdown-item">View Issued Book</a>
+            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+              <i class="fas fa-hand-holding mr-1"></i>Issue Book
+            </a>
+            <div class="dropdown-menu glass-dropdown">
+              <a href="{% url 'issuebook' %}" class="dropdown-item">
+                <i class="fas fa-plus mr-2"></i>Issue New Book
+              </a>
+              <a href="{% url 'viewissuedbook' %}" class="dropdown-item">
+                <i class="fas fa-eye mr-2"></i>View Issued Book
+              </a>
             </div>
           </div>
 
           <!-- Student Dropdown -->
           <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Student</a>
-            <div class="dropdown-menu">
-              <a href="{% url 'viewstudent' %}" class="dropdown-item">View Student</a>
+            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+              <i class="fas fa-user-graduate mr-1"></i>Student
+            </a>
+            <div class="dropdown-menu glass-dropdown">
+              <a href="{% url 'viewstudent' %}" class="dropdown-item">
+                <i class="fas fa-users mr-2"></i>View Student
+              </a>
             </div>
           </div>
 
-          <a href="{% url 'logout' %}" class="nav-item nav-link">Logout</a>
+          <a href="{% url 'logout' %}" class="nav-item nav-link logout-btn">
+            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+          </a>
         </div>
       </div>
     </nav>

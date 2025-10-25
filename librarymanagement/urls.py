@@ -15,7 +15,7 @@ urlpatterns = [
     path('adminsignup/', views.adminsignup_view, name='adminsignup'),
     path('adminlogin/', LoginView.as_view(template_name='library/adminlogin.html'), name='adminlogin'),
 
-    # ✅ Fixed logout line
+    # logout line
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     path('afterlogin/', views.afterlogin_view, name='afterlogin'),
