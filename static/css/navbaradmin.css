@@ -1,0 +1,173 @@
+/* === GLASS NAVBAR STYLING === */
+.glass-navbar {
+  background: linear-gradient(135deg, rgba(91, 95, 199, 0.8), rgba(75, 123, 236, 0.8));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px 0 rgba(75, 123, 236, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 30px;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+  border-radius: 0 0 15px 15px;
+  margin: 10px 20px 0;
+  width: calc(100% - 40px);
+  max-width: 1400px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* === BRAND STYLING === */
+.glass-navbar .navbar-brand {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.glass-navbar .navbar-brand:hover {
+  color: #f0f9ff;
+  transform: translateY(-2px);
+}
+
+/* === NAV LINKS === */
+.nav-links .nav-link {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  margin: 0 12px;
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 30px;
+  padding: 8px 16px !important;
+}
+
+/* Hover effect - Applied to ALL nav links */
+.nav-links .nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Active link style - Applied to ALL nav links */
+.nav-links .nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* === DROPDOWN MENU === */
+.dropdown-menu {
+  background: linear-gradient(135deg, rgba(91, 95, 199, 0.95), rgba(75, 123, 236, 0.95));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(75, 123, 236, 0.3);
+  transition: all 0.3s ease;
+  padding: 12px 0;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.dropdown-menu .dropdown-item {
+  color: #ffffff;
+  font-weight: 500;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 4px 10px;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateX(5px);
+}
+
+/* === LOGOUT BUTTON - Now consistent with other buttons === */
+.logout-btn {
+  color: rgba(255, 255, 255, 0.95) !important;
+  padding: 8px 16px !important;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* === TOGGLER BUTTON (Mobile Menu) === */
+.glass-toggler {
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.glass-toggler:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+}
+
+.glass-toggler .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .glass-navbar {
+    margin: 0;
+    width: 100%;
+    border-radius: 0;
+    padding: 10px 15px;
+  }
+  
+  .nav-links .nav-link {
+    margin: 6px 0;
+    border-radius: 8px;
+  }
+  
+  .dropdown-menu {
+    background: linear-gradient(135deg, rgba(91, 95, 199, 0.95), rgba(75, 123, 236, 0.95));
+    margin-top: 5px;
+  }
+  
+  .logout-btn {
+    margin-top: 10px;
+    width: fit-content;
+  }
+}
+
+/* === ANIMATION FOR DROPDOWN ARROWS === */
+.navbar-nav .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+  transition: transform 0.3s ease;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar-nav .dropdown-toggle[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* === SUBTLE ANIMATION ON HOVER === */
+.nav-item {
+  transition: transform 0.2s ease;
+}
+
+.nav-item:hover {
+  transform: translateY(-2px);
+}
