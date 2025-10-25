@@ -10,6 +10,9 @@ from .filters import BookFilter, StudentFilter
 from django.contrib import messages
 import json
 from django.http import HttpResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+
 
 
 
@@ -72,16 +75,28 @@ def addbook_view(request):
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewbook_view(request):
-    books = Book.objects.all()
+    # Get all books sorted by name A-Z by default
+    books = Book.objects.all().order_by('name')
 
     # Search query
     query = request.GET.get('q', '')
     if query:
-        books = books.filter(name__icontains=query)
+        books = books.filter(Q(name__icontains=query) | Q(author__icontains=query))
 
     # Apply filters using BookFilter
     book_filter = BookFilter(request.GET, queryset=books)
     books = book_filter.qs
+
+    # Pagination (10 per page)
+    paginator = Paginator(books, 10)
+    page = request.GET.get('page')
+    
+    try:
+        books = paginator.page(page)
+    except PageNotAnInteger:
+        books = paginator.page(1)
+    except EmptyPage:
+        books = paginator.page(paginator.num_pages)
 
     # Prepare choices for template (using display labels from model choices)
     category_choices = Book.catchoice
@@ -94,10 +109,6 @@ def viewbook_view(request):
         'category_choices': category_choices,
         'language_choices': language_choices,
     })
-
-
-from django.contrib import messages
-
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def delete_books_view(request):
@@ -167,10 +178,11 @@ def issuebook_view(request):
     
     return render(request, 'library/issuebook.html', {'form': form})
 
+
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewissuedbook_view(request):
-    issuedbooks = models.IssuedBook.objects.all().select_related('student', 'book')
+    issuedbooks = models.IssuedBook.objects.all().select_related('student', 'book').order_by('book_name')
     li = []
     today = date.today()
     
@@ -215,10 +227,22 @@ def viewissuedbook_view(request):
             print(f"Error processing issued book {ib.id}: {e}")
             continue
 
+    # Pagination (10 per page)
+    paginator = Paginator(li, 10)
+    page = request.GET.get('page')
+    
+    try:
+        li_page = paginator.page(page)
+    except PageNotAnInteger:
+        li_page = paginator.page(1)
+    except EmptyPage:
+        li_page = paginator.page(paginator.num_pages)
+
     return render(request, 'library/viewissuedbook.html', {
-        'li': li, 
-        'show_overdue_only': show_overdue_only
-    })
+        'li': li_page, 
+        'show_overdue_only': show_overdue_only,
+        'total_count': len(li)  # Total count for header
+    })   
     
     
 @login_required(login_url='adminlogin')
@@ -287,24 +311,37 @@ def studentadded_view(request):
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewstudent_view(request):
-    students = models.StudentExtra.objects.all()
+    # Get all students sorted by name A-Z by default
+    students = models.StudentExtra.objects.all().order_by('name')
+    
+    # Search functionality
+    query = request.GET.get('q', '').strip()
+    if query and query != 'None':  # Handle the "None" string case
+        students = students.filter(Q(name__icontains=query) | Q(enrollment__icontains=query))
     
     # Initialize filter - use StudentFilter directly
     student_filter = StudentFilter(request.GET, queryset=students)
     students = student_filter.qs
+
+    # Pagination (10 per page)
+    paginator = Paginator(students, 10)
+    page = request.GET.get('page')
     
-    # Search functionality (additional to filter)
-    query = request.GET.get('q', '').strip()
-    if query and query != 'None':  # Handle the "None" string case
-        students = students.filter(name__icontains=query)
-    
+    try:
+        students = paginator.page(page)
+    except PageNotAnInteger:
+        students = paginator.page(1)
+    except EmptyPage:
+        students = paginator.page(paginator.num_pages)
+
     return render(request, 'student/viewstudent.html', {
         'students': students,
         'filter': student_filter,
         'query': query if query != 'None' else '',  # Convert "None" to empty string
         'gender_choices': models.StudentExtra.genchoice
     })
-
+    
+    
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def delete_students_view(request):
