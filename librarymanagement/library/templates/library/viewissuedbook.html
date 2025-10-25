@@ -23,9 +23,17 @@
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
           <h3 class="page-title mb-0">
             {% if show_overdue_only %}
-            {{ li|length }} Overdue Book{{ li|length|pluralize }}
+              {% if li.paginator.count == 0 %}
+                0 Overdue Books
+              {% else %}
+                Showing {{ li.start_index }} - {{ li.end_index }} of {{ li.paginator.count }} Overdue Books
+              {% endif %}
             {% else %}
-            {{ li|length }} Book{{ li|length|pluralize }} Issued to Students
+              {% if li.paginator.count == 0 %}
+                0 Books Issued
+              {% else %}
+                Showing {{ li.start_index }} - {{ li.end_index }} of {{ li.paginator.count }} Books Issued
+              {% endif %}
             {% endif %}
           </h3>
 
@@ -52,6 +60,7 @@
               <table class="table table-borderless mb-0 align-middle">
                 <thead>
                   <tr>
+                    <th>#</th>
                     <th>Student Name</th>
                     <th>Enrollment</th>
                     <th>Book Name</th>
@@ -64,6 +73,7 @@
                 <tbody id="issuedBooksTable">
                   {% for t in li %}
                   <tr data-issuedbook-id="{{ t.7 }}">
+                    <td class="py-3 text-muted">{{ forloop.counter0|add:li.start_index }}</td>
                     <td class="py-3">
                       <span class="static-text">{{ t.0 }}</span>
                       <input type="text" class="editable-field" name="student_name" value="{{ t.0 }}">
@@ -109,6 +119,46 @@
             </div>
           </div>
         </div>
+
+        <!-- Pagination -->
+        {% if li.paginator.num_pages > 1 %}
+        <nav aria-label="Issued books pagination" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if li.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if show_overdue_only %}&show_overdue=true{% endif %}">First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ li.previous_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Previous</a>
+              </li>
+            {% endif %}
+
+            {% for num in li.paginator.page_range %}
+              {% if li.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > li.number|add:'-3' and num < li.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% if show_overdue_only %}&show_overdue=true{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if li.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ li.next_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ li.paginator.num_pages }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Last</a>
+              </li>
+            {% endif %}
+          </ul>
+          <div class="text-center text-muted mt-2">
+            Page {{ li.number }} of {{ li.paginator.num_pages }}
+          </div>
+        </nav>
+        {% endif %}
 
         {% else %}
         <!-- No Books Message -->

@@ -16,7 +16,13 @@
       <div class="container">
         <!-- Header / Buttons -->
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-           <h3 class="page-title mb-0">{{ books.count }} Books Available in Library</h3>
+           <h3 class="page-title mb-0">
+             {% if books.paginator.count == 0 %}
+               0 Books Available in Library
+             {% else %}
+               Showing {{ books.start_index }} - {{ books.end_index }} of {{ books.paginator.count }} Books
+             {% endif %}
+           </h3>
 
           <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
             <a href="{% url 'addbook' %}" class="btn btn-success action-btn">+ Add Book</a>
@@ -54,14 +60,14 @@
             <select name="category" class="form-select filter-select" style="width:auto;">
               <option value="">Categories</option>
               {% for key, val in category_choices %}
-              <option value="{{ key }}" {% if filter.data.category == key %}selected{% endif %}>{{ val }}</option>
+              <option value="{{ key }}" {% if request.GET.category == key %}selected{% endif %}>{{ val }}</option>
               {% endfor %}
             </select>
 
             <select name="language" class="form-select filter-select" style="width:auto;">
               <option value="">Languages</option>
               {% for key, val in language_choices %}
-              <option value="{{ key }}" {% if filter.data.language == key %}selected{% endif %}>{{ val }}</option>
+              <option value="{{ key }}" {% if request.GET.language == key %}selected{% endif %}>{{ val }}</option>
               {% endfor %}
             </select>
 
@@ -84,6 +90,7 @@
                       <th class="checkbox-col hidden-checkbox">
                         <input type="checkbox" id="select-all" />
                       </th>
+                      <th>#</th>
                       <th>Book Name</th>
                       <th>Quantity</th>
                       <th>Author</th>
@@ -97,11 +104,12 @@
                       <td class="checkbox-col hidden-checkbox">
                         <input type="checkbox" name="selected_books" value="{{ book.id }}" />
                       </td>
+                      <td class="text-muted">{{ forloop.counter0|add:books.start_index }}</td>
                       <td class="editable" data-field="name">{{ book.name }}</td>
                       <td class="editable" data-field="quantity">{{ book.quantity }}</td>
                       <td class="editable" data-field="author">{{ book.author }}</td>
-                      <td class="editable" data-field="category">{{ book.category }}</td>
-                      <td class="editable" data-field="language">{{ book.language }}</td>
+                      <td class="editable" data-field="category">{{ book.get_category_display }}</td>
+                      <td class="editable" data-field="language">{{ book.get_language_display }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -110,6 +118,46 @@
             </div>
           </div>
         </form>
+
+        <!-- Pagination -->
+        {% if books.paginator.num_pages > 1 %}
+        <nav aria-label="Books pagination" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if books.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ books.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Previous</a>
+              </li>
+            {% endif %}
+
+            {% for num in books.paginator.page_range %}
+              {% if books.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if books.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ books.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ books.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Last</a>
+              </li>
+            {% endif %}
+          </ul>
+          <div class="text-center text-muted mt-2">
+            Page {{ books.number }} of {{ books.paginator.num_pages }}
+          </div>
+        </nav>
+        {% endif %}
 
         <form method="POST" action="{% url 'updatebooks' %}" id="edit-form" class="d-none">
           {% csrf_token %}

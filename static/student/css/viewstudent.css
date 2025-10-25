@@ -327,3 +327,37 @@ body {
     color: #dc3545;
     font-weight: bold;
 }
+
+/* Add this to your existing CSS file */
+.table th.col-md-1,
+.table td.col-md-1 {
+    width: 8.333333%;
+    min-width: 80px;
+}
+
+.table th.col-md-2,
+.table td.col-md-2 {
+    width: 16.666667%;
+    min-width: 120px;
+}
+
+.table th.col-md-3,
+.table td.col-md-3 {
+    width: 25%;
+    min-width: 180px;
+}
+
+/* Ensure date columns have enough space */
+.table th:nth-child(5), /* Issue Date */
+.table th:nth-child(6), /* Return Date */
+.table td:nth-child(5),
+.table td:nth-child(6) {
+    min-width: 110px;
+    white-space: nowrap;
+}
+
+/* Make book name column wider to accommodate long titles */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    min-width: 200px;
+}

@@ -16,7 +16,13 @@
       <div class="container">
         <!-- Header / Buttons -->
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-           <h3 class="page-title mb-0">{{ students.count }} Students Registered</h3>
+           <h3 class="page-title mb-0">
+             {% if students.paginator.count == 0 %}
+               0 Students Registered
+             {% else %}
+               Showing {{ students.start_index }} - {{ students.end_index }} of {{ students.paginator.count }} Students
+             {% endif %}
+           </h3>
 
           <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
             <a href="{% url 'addstudent' %}" class="btn btn-success action-btn">+ Add Student</a>
@@ -35,7 +41,7 @@
         <!-- Search Bar -->
         <div class="mb-3">
           <form method="GET" class="d-flex justify-content-start gap-2 flex-wrap" id="search-form">
-            <input type="text" name="q" class="search-input" placeholder="Search by Student Name" value="{{ query|default:'' }}">
+            <input type="text" name="q" class="search-input" placeholder="Search by Student Name or Enrollment" value="{{ query|default:'' }}">
             <button type="submit" class="btn btn-primary action-btn">Search</button>
             {% if query %}
             <a href="{% url 'viewstudent' %}{% if request.GET.gender %}?gender={{ request.GET.gender }}{% endif %}" class="btn btn-secondary action-btn">Clear Search</a>
@@ -78,6 +84,7 @@
                       <th class="checkbox-col hidden-checkbox">
                         <input type="checkbox" id="select-all" />
                       </th>
+                      <th>#</th>
                       <th>Student Name</th>
                       <th>Enrollment</th>
                       <th>Address</th>
@@ -91,11 +98,12 @@
                       <td class="checkbox-col hidden-checkbox">
                         <input type="checkbox" name="selected_students" value="{{ student.id }}" />
                       </td>
+                      <td class="text-muted">{{ forloop.counter0|add:students.start_index }}</td>
                       <td class="editable" data-field="name">{{ student.name }}</td>
                       <td class="editable" data-field="enrollment">{{ student.enrollment }}</td>
                       <td class="editable" data-field="address">{{ student.address }}</td>
                       <td class="editable" data-field="phone">{{ student.phone }}</td>
-                      <td class="editable" data-field="gender">{{ student.gender }}</td>
+                      <td class="editable" data-field="gender">{{ student.get_gender_display }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -104,6 +112,46 @@
             </div>
           </div>
         </form>
+
+        <!-- Pagination -->
+        {% if students.paginator.num_pages > 1 %}
+        <nav aria-label="Students pagination" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if students.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}">First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}">Previous</a>
+              </li>
+            {% endif %}
+
+            {% for num in students.paginator.page_range %}
+              {% if students.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > students.number|add:'-3' and num < students.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if students.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.gender %}&gender={{ request.GET.gender }}{% endif %}">Last</a>
+              </li>
+            {% endif %}
+          </ul>
+          <div class="text-center text-muted mt-2">
+            Page {{ students.number }} of {{ students.paginator.num_pages }}
+          </div>
+        </nav>
+        {% endif %}
 
         <form method="POST" action="{% url 'updatestudents' %}" id="edit-form" class="d-none">
           {% csrf_token %}
@@ -189,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
         searchForm.addEventListener('submit', function(e) {
           if (!searchInput.value.trim()) {
             e.preventDefault();
-            // Get current URL without search parameter
+            // Get current URL without search parameter but preserve filters
             const url = new URL(window.location.href);
             url.searchParams.delete('q');
             window.location.href = url.toString();
