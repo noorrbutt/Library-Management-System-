@@ -26,28 +26,15 @@ class StudentExtra(models.Model):
 class Book(models.Model):
     catchoice = [
         ("Education", "Education"),
-        ("Entertainment", "Entertainment"),
-        ("Comics", "Comics"),
-        ("Biography", "Biography"),
         ("History", "History"),
         ("Novel", "Novel"),
         ("Fiction", "Fiction"),
-        ("Fantasy", "Fantasy"),
-        ("Thriller", "Thriller"),
+        ("Thriller/Mystery", "Thriller/Mystery"),
         ("Romance", "Romance"),
         ("Scifi", "Sci-Fi"),
-        ("Horror", "Horror"),
         ("Poetry", "Poetry"),
-        ("Children", "Children's Story"),
-        ("Mystery", "Mystery"),
         ("Adventure", "Adventure"),
-        ("Drama", "Drama"),
-        ("Selfhelp", "Self-Help"),
         ("Religion", "Religion & Spirituality"),
-        ("Technology", "Technology"),
-        ("Art", "Art & Design"),
-        ("Travel", "Travel"),
-        ("Health", "Health & Fitness"),
     ]
     
     langchoice = [
