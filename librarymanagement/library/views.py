@@ -215,7 +215,7 @@ def viewissuedbook_view(request):
                 li.append((
                     student_name,
                     ib.enrollment,
-                    ib.book_name,
+                    ib.book.name,
                     ib.issuedate.strftime('%Y-%m-%d'),
                     ib.return_date.strftime('%Y-%m-%d'),
                     fine,  # Fine amount
