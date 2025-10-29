@@ -161,6 +161,7 @@ def issuebook_view(request):
             obj.book = book        # ForeignKey relationship  
             obj.enrollment = student.enrollment
             obj.book_name = book.name
+            obj.issuedate = date.today()
             obj.return_date = return_date
             obj.expirydate = return_date
             
