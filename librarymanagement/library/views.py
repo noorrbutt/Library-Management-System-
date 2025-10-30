@@ -161,6 +161,7 @@ def issuebook_view(request):
             obj.book = book        # ForeignKey relationship  
             obj.enrollment = student.enrollment
             obj.book_name = book.name
+            obj.issuedate = date.today()
             obj.return_date = return_date
             obj.expirydate = return_date
             
@@ -170,7 +171,7 @@ def issuebook_view(request):
                 book.save()
                 
                 obj.save()
-                # Simple message without quotes
+                # message
                 messages.success(request, f'Book {book.name} issued successfully to {student.name}!')
                 return render(request, 'library/bookissued.html')
             else:

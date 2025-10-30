@@ -20,16 +20,16 @@ class IssuedBookForm(forms.Form):
     default_return_date = date.today() + timedelta(days=15)
     
     book = forms.ModelChoiceField(
-        queryset=models.Book.objects.filter(quantity__gt=0),  # Only show available books
+        queryset=models.Book.objects.filter(quantity__gt=0),
         empty_label="Select Book",
         label='Book Name',
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control select2'})
     )
     student = forms.ModelChoiceField(
         queryset=models.StudentExtra.objects.all(),
         empty_label="Select Student",
         label='Student',
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control select2'})
     )
     return_date = forms.DateField(
         initial=default_return_date,
@@ -39,10 +39,9 @@ class IssuedBookForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Customize the display of books to show name and availability
         self.fields['book'].label_from_instance = lambda obj: f"{obj.name} (Available: {obj.quantity})"
-        # Customize the display of students to show name and enrollment
         self.fields['student'].label_from_instance = lambda obj: f"{obj.name} - {obj.enrollment}"
+
 # -------------------- STUDENT FORMS --------------------
 class StudentExtraForm(forms.ModelForm):
     """Form for admin to add students manually"""

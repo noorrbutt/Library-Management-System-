@@ -1,50 +1,84 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-	{% load static %}
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>LMS Django</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-	<link rel="stylesheet" href="{% static 'student/css/addstudent.css' %}">
+{% load static %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>LMS Django</title>
 
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-  </head>
-  <body style="background-color:#b6bde7;">
-    {% include "library/navbaradmin.html" %}
-    <br> <br>
-    
-    <div class="signup-form">
-        <form  method="post" class="form-horizontal">
+  <!-- jQuery (Required for Select2) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 
-    			<center><h2>ISSUE BOOK TO STUDENT</h2></center>
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-		{% csrf_token %}
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="{% static 'student/css/addstudent.css' %}">
 
-            {% for field in form %}
-            <div class="form-group">
-              <label class="control-label col-xs-4">{{ field.label_tag }}</label>
-              <div class="col-xs-8">
-              {{ field }}
-               </div>
-            </div>
-            {% endfor %}
+  <style>
+    /* Optional: Make Select2 fit better with Bootstrap */
+    .select2-container--default .select2-selection--single {
+      height: 38px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      padding: 5px 8px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 36px;
+      right: 10px;
+    }
+  </style>
+</head>
 
+<body style="background-color:#b6bde7;">
+  {% include "library/navbaradmin.html" %}
+  <br><br>
 
-    		<div class="form-group">
-    			<div class="col-xs-8 col-xs-offset-4">
-            <button type="submit" class="btn btn-success btn-lg" style="border-radius: 0%;">ISSUE</button>
-    			</div>
-    		</div>
-        </form>
-    	<div class="text-center">View Issued Book to Student <a href="{% url 'viewissuedbook' %}">Click here</a></div>
+  <div class="signup-form">
+    <form method="post" class="form-horizontal">
+      <center><h2>ISSUE BOOK TO STUDENT</h2></center>
+      {% csrf_token %}
 
+      {% for field in form %}
+        <div class="form-group">
+          <label class="control-label col-xs-4">{{ field.label_tag }}</label>
+          <div class="col-xs-8">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="form-group">
+        <div class="col-xs-8 col-xs-offset-4">
+          <button type="submit" class="btn btn-success btn-lg" style="border-radius: 0%;">ISSUE</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="text-center">
+      View Issued Book to Student <a href="{% url 'viewissuedbook' %}">Click here</a>
     </div>
+  </div>
 
+  {% include "library/footer.html" %}
 
-    {% include "library/footer.html" %}
-  </body>
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <!-- Initialize Select2 -->
+  <script>
+    $(document).ready(function() {
+      $('.select2').select2({
+        placeholder: "Select",
+        allowClear: true,
+        width: '100%'
+      });
+    });
+  </script>
+</body>
 </html>
