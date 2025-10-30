@@ -171,7 +171,7 @@ def issuebook_view(request):
                 book.save()
                 
                 obj.save()
-                # Simple message without quotes
+                # message
                 messages.success(request, f'Book {book.name} issued successfully to {student.name}!')
                 return render(request, 'library/bookissued.html')
             else:
