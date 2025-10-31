@@ -1,50 +1,41 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-	{% load static %}
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>LMS Django</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-	<link rel="stylesheet" href="{% static 'student/css/addstudent.css' %}">
-
-
-  </head>
-  <body style="background-color:#b6bde7;">
-    {% include "library/navbaradmin.html" %}
-    <br> <br>
-    
-    <div class="signup-form">
-        <form  method="post" class="form-horizontal">
-
-    			<center><h2>ISSUE BOOK TO STUDENT</h2></center>
-
-		{% csrf_token %}
-
-            {% for field in form %}
-            <div class="form-group">
-              <label class="control-label col-xs-4">{{ field.label_tag }}</label>
-              <div class="col-xs-8">
-              {{ field }}
-               </div>
-            </div>
-            {% endfor %}
-
-
-    		<div class="form-group">
-    			<div class="col-xs-8 col-xs-offset-4">
-            <button type="submit" class="btn btn-success btn-lg" style="border-radius: 0%;">ISSUE</button>
-    			</div>
-    		</div>
-        </form>
-    	<div class="text-center">View Issued Book to Student <a href="{% url 'viewissuedbook' %}">Click here</a></div>
-
-    </div>
-
-
-    {% include "library/footer.html" %}
-  </body>
+{% load static %} 
+<!DOCTYPE html> 
+<html lang="en" dir="ltr"> 
+  <head> 
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
+    <title>Issue Book - LMS</title> 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script> 
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}"> 
+  </head> 
+  <body> 
+    {% include "library/navbaradmin.html" %} 
+    <div class="signup-form"> 
+      <form method="post" class="form-horizontal"> 
+        <center><h2>ISSUE BOOK TO STUDENT</h2></center> 
+        {% csrf_token %} 
+        {% for field in form %} 
+        <div class="form-group"> 
+          <label>{{ field.label_tag }}</label> 
+          {{ field }} 
+          {% if field.errors %} 
+            <div class="text-danger">{{ field.errors }}</div> 
+          {% endif %} 
+        </div> 
+        {% endfor %} 
+        <div class="form-group"> 
+          <button type="submit" class="btn btn-primary btn-block">ISSUE BOOK</button> 
+        </div> 
+      </form> 
+      <!-- link box moved 2 cm lower by external css -->
+      <div class="link-box text-center mt-3 issuebook-link"> 
+        View Issued Books to Students: 
+        <a href="{% url 'viewissuedbook' %}">Click here</a> 
+      </div> 
+    </div> 
+    {% include "library/footer.html" %} 
+  </body> 
 </html>
