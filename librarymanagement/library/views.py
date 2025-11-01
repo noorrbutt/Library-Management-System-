@@ -255,9 +255,6 @@ def update_issued_books_view(request):
 
         for book_data in books_data:
             issued_book = models.IssuedBook.objects.get(id=book_data["id"])
-            issued_book.student_name = book_data["student_name"]
-            issued_book.enrollment = book_data["enrollment"]
-            issued_book.book_name = book_data["book_name"]
             issued_book.issue_date = book_data["issue_date"]
             issued_book.return_date = book_data["return_date"]
             issued_book.save()
