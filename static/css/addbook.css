@@ -1,0 +1,361 @@
+body {
+    color: #aa082e;
+    background-color: #b6bde7;
+    background-image: url("../images/admin.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: 'Roboto', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.form-control {
+    border-color: #eee;
+    min-height: 41px;
+    box-shadow: none !important;
+}
+
+.form-control:focus {
+    border-color: #5cd3b4;
+}
+
+.form-control, .btn {
+    border-radius: 3px;
+}
+
+.signup-form {
+    width: 350px;
+    margin: 0 auto;
+    padding: 30px 0;
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.signup-form h2 {
+    color: #1a5fb4;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 5px solid #1a5fb4;
+    width: 100%;
+}
+
+.signup-form form {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    transition: all 0.3s ease;
+    color: #999;
+    margin-bottom: 15px;
+}
+
+.signup-form .form-group {
+    margin-bottom: 12px;
+}
+
+/* Row-based form groups (for addbook.html with 3-column layout) */
+.signup-form .form-group.row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 12px;
+}
+
+.signup-form .form-group.row label {
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.signup-form label {
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Column labels for row layout */
+.col-form-label {
+    padding-top: calc(0.375rem + 1px);
+    padding-bottom: calc(0.375rem + 1px);
+}
+
+.text-right {
+    text-align: left;
+}
+
+/* Column sizing for form layout */
+.col-sm-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.col-sm-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+/* Input Fields Styling */
+.signup-form .form-control,
+.signup-form input[type="text"],
+.signup-form input[type="email"],
+.signup-form input[type="number"],
+.signup-form input[type="date"],
+.signup-form input[type="password"],
+.signup-form select,
+.signup-form textarea {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 45px;
+}
+
+.signup-form .form-control:focus,
+.signup-form input:focus,
+.signup-form select:focus,
+.signup-form textarea:focus {
+    border-color: #477ae3;
+    box-shadow: 0 0 0 0.2rem rgba(71, 122, 227, 0.25);
+    outline: none;
+}
+
+/* Select Dropdown */
+.signup-form select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    padding-right: 35px;
+}
+
+/* Textarea */
+.signup-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.signup-form .btn {
+    background: #1a5fb4;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.signup-form .btn:hover, 
+.signup-form .btn:focus {
+    background: #0d4aa8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Button block (full width) */
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Error Messages */
+.text-danger {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+.link-box {
+    width: 350px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    text-align: center;
+    position: absolute;
+    top: 784px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Specific styling for issue book link box */
+.link-box.issue-book-link {
+    top: auto;
+    bottom: 3cm;
+    position: fixed;
+}
+
+.link-box a {
+    color: #477ae3;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.link-box a:hover {
+    color: #3659b5;
+    text-decoration: underline;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Book Added / Confirmation page styles */
+.confirmation-box {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkmark {
+    margin-bottom: 0.5cm;
+    display: inline-block;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.checkmark svg {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.checkmark svg path {
+    fill: white;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: drawCheck 0.5s ease-out 0.3s forwards;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+}
+
+.confirmation-box h2 {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+    animation: fadeIn 0.5s ease-out 0.5s both;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confirmation-box .btn {
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 0;
+    text-transform: uppercase;
+    background-color: #477ae3;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(71, 122, 227, 0.2);
+}
+
+.confirmation-box .btn:hover {
+    background-color: #3668d4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(71, 122, 227, 0.3);
+}
+
+/* Center alignment utility */
+.text-center {
+    text-align: center;
+}
+
+/* Margin top utility */
+.mt-3 {
+    margin-top: -3cm;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .signup-form,
+    .confirmation-box,
+    .link-box {
+        width: 90%;
+        max-width: 350px;
+    }
+
+    .signup-form h2,
+    .confirmation-box h2 {
+        font-size: 20px;
+    }
+
+    .signup-form .btn {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+
+    .form-group.row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .col-sm-3,
+    .col-sm-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .text-right {
+        text-align: left;
+    }
+
+    .col-form-label {
+        margin-bottom: 5px;
+    }
+}
+.issuebook-link {
+  position: relative;
+  top: -0.1cm; /* makes it 2 cm lower than before */
+}
