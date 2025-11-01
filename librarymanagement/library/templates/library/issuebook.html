@@ -1,84 +1,94 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-{% load static %}
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>LMS Django</title>
-
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-  <!-- jQuery (Required for Select2) -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-
-  <!-- Select2 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="{% static 'student/css/addstudent.css' %}">
-
-  <style>
-    /* Optional: Make Select2 fit better with Bootstrap */
-    .select2-container--default .select2-selection--single {
-      height: 38px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      padding: 5px 8px;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-      height: 36px;
-      right: 10px;
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Issue Book - LMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
+    
+    <style>
+        /* Select2 styling to match Bootstrap */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 5px 8px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+            right: 10px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px;
+        }
+    </style>
 </head>
 
-<body style="background-color:#b6bde7;">
-  {% include "library/navbaradmin.html" %}
-  <br><br>
-
-  <div class="signup-form">
-    <form method="post" class="form-horizontal">
-      <center><h2>ISSUE BOOK TO STUDENT</h2></center>
-      {% csrf_token %}
-
-      {% for field in form %}
-        <div class="form-group">
-          <label class="control-label col-xs-4">{{ field.label_tag }}</label>
-          <div class="col-xs-8">
-            {{ field }}
-          </div>
+<body>
+    {% include "library/navbaradmin.html" %}
+    
+    <!-- Add this container and row for centering -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="signup-form">
+                    <form method="post" class="form-horizontal">
+                        <center><h2>ISSUE BOOK TO STUDENT</h2></center>
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="form-group">
+                            <label>{{ field.label_tag }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">ISSUE BOOK</button>
+                        </div>
+                    </form>
+                    
+                    <!-- link box moved 2 cm lower by external css -->
+                    <div class="link-box text-center mt-3 issuebook-link">
+                        View Issued Books to Students: 
+                        <a href="{% url 'viewissuedbook' %}">Click here</a>
+                    </div>
+                </div>
+            </div>
         </div>
-      {% endfor %}
-
-      <div class="form-group">
-        <div class="col-xs-8 col-xs-offset-4">
-          <button type="submit" class="btn btn-success btn-lg" style="border-radius: 0%;">ISSUE</button>
-        </div>
-      </div>
-    </form>
-
-    <div class="text-center">
-      View Issued Book to Student <a href="{% url 'viewissuedbook' %}">Click here</a>
     </div>
-  </div>
+    
+    {% include "library/footer.html" %}
 
-  {% include "library/footer.html" %}
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-  <!-- Select2 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-  <!-- Initialize Select2 -->
-  <script>
-    $(document).ready(function() {
-      $('.select2').select2({
-        placeholder: "Select",
-        allowClear: true,
-        width: '100%'
-      });
-    });
-  </script>
+    <!-- Initialize Select2 -->
+    <script>
+        $(document).ready(function() {
+            $('select').select2({
+                placeholder: "Select",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
 </body>
 </html>
