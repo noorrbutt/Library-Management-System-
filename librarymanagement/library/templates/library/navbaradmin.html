@@ -43,9 +43,9 @@
         <div class="navbar-nav"></div>
 
         <div class="navbar-nav nav-links">
-          <a href="/" class="nav-item nav-link active">
-            <i class="fas fa-home mr-1"></i>Home
-          </a>
+          <a href="/" class="nav-item nav-link">
+          <i class="fas fa-home mr-1"></i>Home
+        </a>
 
           <!-- Book Dropdown -->
           <div class="nav-item dropdown">
@@ -65,7 +65,7 @@
           <!-- Issue Book Dropdown -->
           <div class="nav-item dropdown">
             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-              <i class="fas fa-hand-holding mr-1"></i>Issue Book
+              <i class="fas fa-paper-plane mr-2"></i>Issue Book
             </a>
             <div class="dropdown-menu glass-dropdown">
               <a href="{% url 'issuebook' %}" class="dropdown-item">
@@ -83,9 +83,13 @@
               <i class="fas fa-user-graduate mr-1"></i>Student
             </a>
             <div class="dropdown-menu glass-dropdown">
+              <a href="{% url 'addstudent' %}" class="dropdown-item">
+                <i class="fas fa-user mr-2"></i>Add Student
+              </a>
               <a href="{% url 'viewstudent' %}" class="dropdown-item">
                 <i class="fas fa-users mr-2"></i>View Student
               </a>
+              
             </div>
           </div>
 
