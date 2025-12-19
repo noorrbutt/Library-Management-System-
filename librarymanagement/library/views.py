@@ -2,26 +2,127 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
-from datetime import date
+from datetime import date, datetime, timedelta
 from . import forms, models
 from librarymanagement.settings import EMAIL_HOST_USER
-from .models import Book
+from .models import Book, StudentExtra, IssuedBook
 from .filters import BookFilter, StudentFilter
 from django.contrib import messages
 import json
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import Q, Count
 
 
+# -------------------- ROLE CHECK --------------------
+
+def is_admin(user):
+    return user.groups.filter(name='ADMIN').exists()
 
 
 # -------------------- BASIC VIEWS --------------------
 
 def home_view(request):
     if request.user.is_authenticated:
-        return redirect('afterlogin')
+        return redirect('dashboard')
     return render(request, 'library/index.html')
+
+
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def dashboard_view(request):
+    """
+    Comprehensive dashboard displaying library statistics and metrics.
+    """
+    today = date.today()
+    month_start = today.replace(day=1)
+    
+    # Calculate Statistics
+    total_books = Book.objects.count()
+    issued_books = IssuedBook.objects.filter(returned=False).count()
+    available_books = total_books - issued_books
+    total_members = StudentExtra.objects.count()
+    
+    # Overdue books - where return_date is past today and not returned
+    overdue_books = IssuedBook.objects.filter(
+        return_date__lt=today,
+        returned=False
+    ).count()
+    
+    # Books added this month
+    books_this_month = Book.objects.filter(
+        id__in=IssuedBook.objects.filter(
+            issuedate__gte=month_start,
+            issuedate__lte=today
+        ).values_list('book_id', flat=True).distinct()
+    ).count()
+    
+    # Recent activities (last 15)
+    issued_activities = IssuedBook.objects.select_related('student', 'book').order_by('-issuedate')[:15]
+    
+    # Top 5 most issued books
+    top_books = Book.objects.annotate(
+        issue_count=Count('issuedbook')
+    ).order_by('-issue_count')[:5]
+    
+    # Monthly trends (last 6 months)
+    months_data = []
+    issued_trend = []
+    returned_trend = []
+    
+    for i in range(5, -1, -1):
+        month_date = today - timedelta(days=30*i)
+        month_start_calc = month_date.replace(day=1)
+        month_end_calc = (month_start_calc + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
+        issued_count = IssuedBook.objects.filter(
+            issuedate__gte=month_start_calc,
+            issuedate__lte=month_end_calc
+        ).count()
+        
+        returned_count = IssuedBook.objects.filter(
+            return_date__gte=month_start_calc,
+            return_date__lte=month_end_calc,
+            returned=True
+        ).count()
+        
+        months_data.append(month_start_calc.strftime('%b'))
+        issued_trend.append(issued_count)
+        returned_trend.append(returned_count)
+    
+    # Books status breakdown
+    available = available_books
+    issued = issued_books
+    overdue = overdue_books
+    
+    # Low stock books (quantity < 3)
+    low_stock_books = Book.objects.filter(quantity__lt=3).order_by('quantity')[:10]
+    
+    # Category distribution
+    category_distribution = Book.objects.values('category').annotate(
+        count=Count('id')
+    ).order_by('-count')[:7]
+    
+    context = {
+        'total_books': total_books,
+        'available_books': available_books,
+        'issued_books': issued_books,
+        'total_members': total_members,
+        'overdue_books': overdue_books,
+        'books_this_month': books_this_month,
+        'recent_activities': issued_activities,
+        'top_books': top_books,
+        'months_data': json.dumps(months_data),
+        'issued_trend': json.dumps(issued_trend),
+        'returned_trend': json.dumps(returned_trend),
+        'available': available,
+        'issued': issued,
+        'overdue': overdue,
+        'low_stock_books': low_stock_books,
+        'category_distribution': category_distribution,
+    }
+    
+    return render(request, 'library/dashboard.html', context)
 
 
 def adminclick_view(request):
@@ -42,12 +143,6 @@ def adminsignup_view(request):
             admin_group.user_set.add(user)
             return redirect('adminlogin')
     return render(request, 'library/adminsignup.html', {'form': form})
-
-
-# -------------------- ROLE CHECK --------------------
-
-def is_admin(user):
-    return user.groups.filter(name='ADMIN').exists()
 
 
 # -------------------- AFTER LOGIN --------------------
