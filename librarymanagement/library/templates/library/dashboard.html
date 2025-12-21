@@ -4,19 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management Dashboard</title>
+    <title>Library Dashboard</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
-    <!-- Existing Navbar CSS -->
-    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="{% static 'css/navbaradmin.css' %}">
     
     <!-- Dashboard CSS -->
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -24,273 +27,206 @@
 <body>
     {% include 'library/navbaradmin.html' %}
     
-    <div class="dashboard-container">
-        <!-- Header Section -->
+    <div class="main-content">
+        <!-- Dashboard Header -->
         <div class="dashboard-header">
             <div class="header-content">
-                <h1><i class="fas fa-chart-line"></i> Library Dashboard</h1>
-                <p class="text-muted">Real-time library statistics and metrics</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn-refresh" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
+                <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                <p>Real-time library statistics and metrics</p>
             </div>
         </div>
 
-        <!-- Statistics Cards Section -->
-        <section class="statistics-section">
-            <div class="stats-grid">
-                <!-- Total Books Card -->
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
                 <div class="stat-card total-books-card">
-                    <div class="card-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-book"></i></div>
                     <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ total_books }}">{{ total_books }}</h3>
+                        <h3 class="stat-number" data-count="{{ total_books }}">0</h3>
                         <p class="stat-label">Total Books</p>
                     </div>
-                    <div class="card-border"></div>
-                </div>
-
-                <!-- Available Books Card -->
-                <div class="stat-card available-books-card">
-                    <div class="card-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ available_books }}">{{ available_books }}</h3>
-                        <p class="stat-label">Available Books</p>
-                    </div>
-                    <div class="card-border"></div>
-                </div>
-
-                <!-- Issued Books Card -->
-                <div class="stat-card issued-books-card">
-                    <div class="card-icon">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ issued_books }}">{{ issued_books }}</h3>
-                        <p class="stat-label">Issued Books</p>
-                    </div>
-                    <div class="card-border"></div>
-                </div>
-
-                <!-- Total Members Card -->
-                <div class="stat-card members-card">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ total_members }}">{{ total_members }}</h3>
-                        <p class="stat-label">Total Members</p>
-                    </div>
-                    <div class="card-border"></div>
-                </div>
-
-                <!-- Overdue Books Card -->
-                <div class="stat-card overdue-books-card">
-                    <div class="card-icon">
-                        <i class="fas fa-hourglass-end"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ overdue_books }}">{{ overdue_books }}</h3>
-                        <p class="stat-label">Overdue Books</p>
-                    </div>
-                    <div class="card-border"></div>
-                </div>
-
-                <!-- Books Added This Month Card -->
-                <div class="stat-card recent-card">
-                    <div class="card-icon">
-                        <i class="fas fa-plus-square"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="stat-number" data-count="{{ books_this_month }}">{{ books_this_month }}</h3>
-                        <p class="stat-label">Added This Month</p>
-                    </div>
-                    <div class="card-border"></div>
                 </div>
             </div>
-        </section>
 
-        <!-- Quick Actions Section -->
-        <section class="quick-actions-section">
-            <h2 class="section-title">
-                <i class="fas fa-bolt"></i> Quick Actions
-            </h2>
-            <div class="quick-actions-grid">
-                <a href="{% url 'addbook' %}" class="quick-action-btn add-book">
-                    <div class="action-icon">
-                        <i class="fas fa-plus"></i>
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+                <div class="stat-card issued-books-card">
+                    <div class="card-icon"><i class="fas fa-arrow-right"></i></div>
+                    <div class="card-content">
+                        <h3 class="stat-number" data-count="{{ issued_books }}">0</h3>
+                        <p class="stat-label">Issued</p>
                     </div>
-                    <div class="action-text">
-                        <span>Add New Book</span>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+                <div class="stat-card overdue-books-card">
+                    <div class="card-icon"><i class="fas fa-hourglass-end"></i></div>
+                    <div class="card-content">
+                        <h3 class="stat-number" data-count="{{ overdue_books }}">0</h3>
+                        <p class="stat-label">Overdue</p>
                     </div>
-                </a>
-                <a href="{% url 'addstudent' %}" class="quick-action-btn add-member">
-                    <div class="action-icon">
-                        <i class="fas fa-user-plus"></i>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
+                <div class="stat-card members-card">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-content">
+                        <h3 class="stat-number" data-count="{{ total_members }}">0</h3>
+                        <p class="stat-label">Members</p>
                     </div>
-                    <div class="action-text">
-                        <span>Add Member</span>
-                    </div>
-                </a>
-                <a href="{% url 'issuebook' %}" class="quick-action-btn issue-book">
-                    <div class="action-icon">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                    <div class="action-text">
-                        <span>Issue Book</span>
-                    </div>
-                </a>
-                <a href="{% url 'viewissuedbook' %}" class="quick-action-btn return-book">
-                    <div class="action-icon">
-                        <i class="fas fa-arrow-left"></i>
-                    </div>
-                    <div class="action-text">
-                        <span>Return Book</span>
-                    </div>
-                </a>
-                <a href="{% url 'viewbook' %}" class="quick-action-btn search-books">
-                    <div class="action-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="action-text">
-                        <span>Search Books</span>
-                    </div>
-                </a>
-                <a href="{% url 'viewstudent' %}" class="quick-action-btn view-members">
-                    <div class="action-icon">
-                        <i class="fas fa-list"></i>
-                    </div>
-                    <div class="action-text">
-                        <span>View Members</span>
-                    </div>
-                </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions-section mt-4">
+            <h2 class="section-title"><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div class="row">
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'addbook' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-plus"></i></div>
+                        <div class="action-text"><span>Add Book</span></div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'addstudent' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-user-plus"></i></div>
+                        <div class="action-text"><span>Add Member</span></div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'issuebook' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-arrow-right"></i></div>
+                        <div class="action-text"><span>Issue Book</span></div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'viewissuedbook' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-arrow-left"></i></div>
+                        <div class="action-text"><span>Return Book</span></div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'viewbook' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-search"></i></div>
+                        <div class="action-text"><span>Search</span></div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{% url 'viewstudent' %}" class="quick-action-btn">
+                        <div class="action-icon"><i class="fas fa-list"></i></div>
+                        <div class="action-text"><span>Members</span></div>
+                    </a>
+                </div>
             </div>
         </section>
 
         <!-- Charts Section -->
-        <section class="charts-section">
-            <div class="charts-grid">
-                <!-- Book Status Chart -->
-                <div class="chart-card">
-                    <h3 class="chart-title">
-                        <i class="fas fa-pie-chart"></i> Books Status Distribution
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="statusChart"></canvas>
+        <section class="charts-section mt-4">
+            <!-- First Row: Books Status and Monthly Trend -->
+            <div class="row">
+                <div class="col-lg-6 mb-3">
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-pie-chart"></i> Books Status</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Monthly Trend Chart -->
-                <div class="chart-card">
-                    <h3 class="chart-title">
-                        <i class="fas fa-line-chart"></i> Monthly Trend
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="charts-grid">
-                <!-- Top 5 Books Chart -->
-                <div class="chart-card wide">
-                    <h3 class="chart-title">
-                        <i class="fas fa-bar-chart"></i> Top 5 Most Issued Books
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="topBooksChart"></canvas>
+                <div class="col-lg-6 mb-3">
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-line-chart"></i> Monthly Trend</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="charts-grid">
-                <!-- Category Distribution Chart -->
-                <div class="chart-card">
-                    <h3 class="chart-title">
-                        <i class="fas fa-tags"></i> Category Distribution
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="categoryChart"></canvas>
+            <!-- Second Row: Top 5 Books and Category Distribution -->
+            <div class="row">
+                <div class="col-lg-6 mb-3">
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-bar-chart"></i> Top 5 Most Issued Books</h3>
+                        <div class="chart-container">
+                            <canvas id="topBooksChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-3">
+                    <div class="chart-card">
+                        <h3 class="chart-title"><i class="fas fa-tags"></i> Category Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Main Content Grid -->
-        <div class="content-grid">
-            <!-- Recent Activity Section -->
-            <section class="activity-section">
-                <h2 class="section-title">
-                    <i class="fas fa-clock"></i> Recent Activity
-                </h2>
-                <div class="activity-feed">
-                    {% if recent_activities %}
-                        {% for activity in recent_activities %}
+        <!-- Activity & Low Stock -->
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-3">
+                <section class="activity-section">
+                    <h2 class="section-title"><i class="fas fa-clock"></i> Recent Activity</h2>
+                    <div class="activity-feed">
+                        {% if recent_activities %}
+                            {% for activity in recent_activities %}
                             <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-exchange-alt"></i>
-                                </div>
+                                <div class="activity-icon"><i class="fas fa-exchange-alt"></i></div>
                                 <div class="activity-content">
                                     <p class="activity-text">
                                         <strong>{{ activity.book.name }}</strong> issued to <strong>{{ activity.student.name }}</strong>
                                     </p>
-                                    <p class="activity-time">
-                                        <i class="fas fa-calendar"></i> {{ activity.issuedate }}
-                                    </p>
+                                    <p class="activity-time"><i class="fas fa-calendar"></i> {{ activity.issuedate }}</p>
                                 </div>
                             </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>No recent activities</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </section>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No recent activities</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
 
-            <!-- Low Stock Alert Section -->
-            <section class="low-stock-section">
-                <h2 class="section-title">
-                    <i class="fas fa-exclamation-triangle"></i> Low Stock Books
-                </h2>
-                <div class="low-stock-list">
-                    {% if low_stock_books %}
-                        {% for book in low_stock_books %}
+            <div class="col-lg-6 mb-3">
+                <section class="low-stock-section">
+                    <h2 class="section-title"><i class="fas fa-exclamation-triangle"></i> Low Stock Books</h2>
+                    <div class="low-stock-list">
+                        {% if low_stock_books %}
+                            {% for book in low_stock_books %}
                             <div class="low-stock-item">
                                 <div class="stock-info">
                                     <h4>{{ book.name }}</h4>
                                     <p class="book-author">by {{ book.author }}</p>
                                 </div>
-                                <div class="stock-quantity">
-                                    <span class="qty-badge {% if book.quantity == 0 %}out-of-stock{% elif book.quantity == 1 %}critical{% else %}low{% endif %}">
-                                        {{ book.quantity }} left
-                                    </span>
-                                </div>
+                                <span class="qty-badge {% if book.quantity == 0 %}out-of-stock{% else %}critical{% endif %}">
+                                    {{ book.quantity }} left
+                                </span>
                             </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <p>All books in stock</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </section>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>All books in stock</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
         </div>
 
-        <!-- Top Borrowed Books Section -->
-        <section class="top-borrowed-section">
-            <h2 class="section-title">
-                <i class="fas fa-fire"></i> Most Borrowed Books
-            </h2>
-            <div class="books-table-container">
-                {% if top_books %}
+        <!-- Top Borrowed Books -->
+        <section class="top-borrowed-section mt-4">
+            <h2 class="section-title"><i class="fas fa-fire"></i> Most Borrowed Books</h2>
+            {% if top_books %}
+                <div class="table-responsive">
                     <table class="books-table">
                         <thead>
                             <tr>
@@ -302,42 +238,37 @@
                         </thead>
                         <tbody>
                             {% for book in top_books %}
-                                <tr>
-                                    <td><strong>{{ book.name }}</strong></td>
-                                    <td>{{ book.author }}</td>
-                                    <td>
-                                        <span class="badge bg-primary">{{ book.issue_count }}</span>
-                                    </td>
-                                    <td>
-                                        {% if book.quantity > 0 %}
-                                            <span class="badge bg-success">Available</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Out of Stock</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td><strong>{{ book.name }}</strong></td>
+                                <td>{{ book.author }}</td>
+                                <td><span class="badge bg-primary">{{ book.issue_count }}</span></td>
+                                <td>
+                                    {% if book.quantity > 0 %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-book"></i>
-                        <p>No borrowing data available</p>
-                    </div>
-                {% endif %}
-            </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book"></i>
+                    <p>No borrowing data available</p>
+                </div>
+            {% endif %}
         </section>
     </div>
 
-    <!-- Footer -->
-    {% include 'library/footer.html' %}
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap & jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     
-    <!-- Dashboard JS with Chart Data -->
+    <!-- Chart Data -->
     <script>
-        // Pass data to dashboard.js
         const dashboardData = {
             months: {{ months_data|safe }},
             issuedTrend: {{ issued_trend|safe }},
@@ -345,10 +276,11 @@
             available: {{ available }},
             issued: {{ issued }},
             overdue: {{ overdue }},
-            topBooks: {{ top_books|safe }}
+            categoryDistribution: {{ category_distribution|safe }}
         };
     </script>
     
+    <!-- Dashboard JS -->
     <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>

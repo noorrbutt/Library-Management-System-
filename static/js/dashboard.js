@@ -12,80 +12,51 @@ let statusChart, trendChart, topBooksChart, categoryChart;
 // Initialize dashboard when DOM is ready
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Dashboard initialized');
-    
-    // Animate counter numbers
     animateCounters();
-    
-    // Initialize all charts
     initializeCharts();
-    
-    // Setup interactions
     setupInteractions();
 });
 
-/**
- * Animate counter numbers on statistics cards
- */
+/* ==================== COUNTER ANIMATION ==================== */
 function animateCounters() {
     const counterElements = document.querySelectorAll('.stat-number');
     
     counterElements.forEach(element => {
         const finalCount = parseInt(element.getAttribute('data-count'), 10);
         let currentCount = 0;
-        
-        // Calculate increment based on final value
         const increment = Math.max(1, Math.ceil(finalCount / 50));
-        const duration = 1000; // 1 second
+        const duration = 1000;
         const steps = finalCount / increment;
         const stepDuration = duration / steps;
         
         const counter = setInterval(() => {
             currentCount += increment;
-            
             if (currentCount >= finalCount) {
                 currentCount = finalCount;
                 clearInterval(counter);
             }
-            
             element.textContent = currentCount.toLocaleString();
         }, stepDuration);
     });
 }
 
-/**
- * Initialize all chart instances
- */
+/* ==================== CHART INITIALIZATION ==================== */
 function initializeCharts() {
-    // Status Chart - Pie/Doughnut
     initializeStatusChart();
-    
-    // Trend Chart - Line Chart
     initializeTrendChart();
-    
-    // Top Books Chart - Bar Chart
     initializeTopBooksChart();
-    
-    // Category Chart - Pie Chart
     initializeCategoryChart();
 }
 
-/**
- * Initialize Books Status Distribution Chart
- */
+/* ==================== BOOKS STATUS CHART (Doughnut) ==================== */
 function initializeStatusChart() {
     const ctx = document.getElementById('statusChart');
-    
     if (!ctx) {
         console.warn('Status chart canvas not found');
         return;
     }
     
-    // Colors matching the theme
-    const colors = [
-        '#27ae60', // Available - Green
-        '#f39c12', // Issued - Orange
-        '#e74c3c'  // Overdue - Red
-    ];
+    const colors = ['#27ae60', '#f39c12', '#e74c3c'];
     
     statusChart = new Chart(ctx, {
         type: 'doughnut',
@@ -150,12 +121,9 @@ function initializeStatusChart() {
     });
 }
 
-/**
- * Initialize Monthly Trend Line Chart
- */
+/* ==================== MONTHLY TREND CHART (Line) ==================== */
 function initializeTrendChart() {
     const ctx = document.getElementById('trendChart');
-    
     if (!ctx) {
         console.warn('Trend chart canvas not found');
         return;
@@ -178,8 +146,7 @@ function initializeTrendChart() {
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 2,
                     pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointHoverBackgroundColor: '#4b7bec'
+                    pointHoverRadius: 7
                 },
                 {
                     label: 'Books Returned',
@@ -193,8 +160,7 @@ function initializeTrendChart() {
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 2,
                     pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointHoverBackgroundColor: '#27ae60'
+                    pointHoverRadius: 7
                 }
             ]
         },
@@ -265,18 +231,15 @@ function initializeTrendChart() {
     });
 }
 
-/**
- * Initialize Top 5 Books Bar Chart
- */
+/* ==================== TOP BOOKS CHART (Bar) ==================== */
 function initializeTopBooksChart() {
     const ctx = document.getElementById('topBooksChart');
-    
     if (!ctx) {
         console.warn('Top books chart canvas not found');
         return;
     }
     
-    // Get top books data from template (if available)
+    // Extract data from table
     const topBooksElement = document.querySelector('.books-table tbody');
     let bookLabels = [];
     let bookCounts = [];
@@ -289,7 +252,6 @@ function initializeTopBooksChart() {
             
             if (titleCell && countCell) {
                 let title = titleCell.textContent.trim();
-                // Truncate long titles
                 if (title.length > 25) {
                     title = title.substring(0, 22) + '...';
                 }
@@ -299,14 +261,7 @@ function initializeTopBooksChart() {
         });
     }
     
-    // Generate colors for bars
-    const barColors = [
-        '#4b7bec',
-        '#3498db',
-        '#5b5fc7',
-        '#2980b9',
-        '#1a5f8f'
-    ];
+    const barColors = ['#4b7bec', '#3498db', '#5b5fc7', '#2980b9', '#1a5f8f'];
     
     topBooksChart = new Chart(ctx, {
         type: 'bar',
@@ -317,8 +272,8 @@ function initializeTopBooksChart() {
                 data: bookCounts.length > 0 ? bookCounts : [0],
                 backgroundColor: barColors.slice(0, bookLabels.length || 1),
                 borderColor: barColors.map(color => color),
-                borderWidth: 2,
-                borderRadius: 5,
+                borderWidth: 1,
+                borderRadius: 3,
                 hoverBackgroundColor: '#3498db',
                 hoverBorderColor: '#2980b9'
             }]
@@ -327,19 +282,11 @@ function initializeTopBooksChart() {
             indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
+            barPercentage: 0.5,
+            categoryPercentage: 0.7,
             plugins: {
                 legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        font: {
-                            family: "'Poppins', sans-serif",
-                            size: 12,
-                            weight: '600'
-                        },
-                        padding: 20,
-                        color: '#2c2c2c'
-                    }
+                    display: false
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -354,12 +301,7 @@ function initializeTopBooksChart() {
                         size: 12
                     },
                     borderColor: 'rgba(255, 255, 255, 0.3)',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function (context) {
-                            return `Issues: ${context.parsed.y}`;
-                        }
-                    }
+                    borderWidth: 1
                 }
             },
             scales: {
@@ -375,7 +317,12 @@ function initializeTopBooksChart() {
                             size: 11
                         },
                         color: '#7f8c8d',
-                        stepSize: 1
+                        stepSize: 1,
+                        padding: 5
+                    },
+                    border: {
+                        display: true,
+                        color: 'rgba(200, 200, 200, 0.3)'
                     }
                 },
                 x: {
@@ -385,47 +332,55 @@ function initializeTopBooksChart() {
                     ticks: {
                         font: {
                             family: "'Poppins', sans-serif",
-                            size: 11
+                            size: 10,
+                            weight: '500'
                         },
-                        color: '#7f8c8d'
+                        color: '#7f8c8d',
+                        maxRotation: 45,
+                        minRotation: 0
+                    },
+                    border: {
+                        display: true,
+                        color: 'rgba(200, 200, 200, 0.3)'
                     }
+                }
+            },
+            layout: {
+                padding: {
+                    top: 15,
+                    right: 15,
+                    bottom: 15,
+                    left: 10
                 }
             }
         }
     });
 }
 
-/**
- * Initialize Category Distribution Pie Chart
- */
+/* ==================== CATEGORY CHART (Pie) ==================== */
 function initializeCategoryChart() {
     const ctx = document.getElementById('categoryChart');
-    
     if (!ctx) {
         console.warn('Category chart canvas not found');
         return;
     }
     
-    // Generate colors for categories
     const categoryColors = [
-        '#4b7bec',
-        '#27ae60',
-        '#f39c12',
-        '#e74c3c',
-        '#9b59b6',
-        '#1abc9c',
-        '#34495e'
+        '#4b7bec', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6',
+        '#1abc9c', '#34495e', '#3498db', '#e67e22', '#95a5a6'
     ];
     
-    // Note: Category data should be passed from Django template
-    // For now, we'll create a placeholder
+    // Extract from backend data
+    const categoryLabels = dashboardData.categoryDistribution.map(item => item.category);
+    const categoryCounts = dashboardData.categoryDistribution.map(item => item.count);
+    
     categoryChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: ['Education', 'History', 'Novel', 'Fiction', 'Thriller', 'Romance', 'Sci-Fi'],
+            labels: categoryLabels,
             datasets: [{
-                data: [20, 15, 12, 10, 8, 5, 3],
-                backgroundColor: categoryColors,
+                data: categoryCounts,
+                backgroundColor: categoryColors.slice(0, categoryLabels.length),
                 borderColor: '#ffffff',
                 borderWidth: 3,
                 hoverOffset: 10,
@@ -462,32 +417,34 @@ function initializeCategoryChart() {
                         size: 12
                     },
                     borderColor: 'rgba(255, 255, 255, 0.3)',
-                    borderWidth: 1
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function (context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return `${context.label}: ${context.parsed} (${percentage}%)`;
+                        }
+                    }
                 }
             }
         }
     });
 }
 
-/**
- * Setup interactions and event listeners
- */
+/* ==================== INTERACTIONS ==================== */
 function setupInteractions() {
-    // Add smooth scroll behavior to action buttons
+    // Ripple effect on quick action buttons
     const quickActionButtons = document.querySelectorAll('.quick-action-btn');
-    
     quickActionButtons.forEach(button => {
         button.addEventListener('click', function (e) {
-            // Add ripple effect
             const ripple = document.createElement('span');
             ripple.classList.add('ripple');
             this.appendChild(ripple);
-            
             setTimeout(() => ripple.remove(), 600);
         });
     });
     
-    // Add keyboard navigation
+    // Keyboard shortcuts
     document.addEventListener('keydown', function (e) {
         if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
@@ -495,13 +452,11 @@ function setupInteractions() {
         }
     });
     
-    // Intersection Observer for fade-in animations
+    // Intersection Observer for animations
     observeElements();
 }
 
-/**
- * Observe elements for intersection and animate them
- */
+/* ==================== INTERSECTION OBSERVER ==================== */
 function observeElements() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -515,53 +470,5 @@ function observeElements() {
     });
     
     const elementsToObserve = document.querySelectorAll('.stat-card, .chart-card, .activity-item, .low-stock-item');
-    
-    elementsToObserve.forEach(element => {
-        observer.observe(element);
-    });
+    elementsToObserve.forEach(element => observer.observe(element));
 }
-
-/**
- * Helper function to format numbers with commas
- */
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-/**
- * Helper function to format dates
- */
-function formatDate(date) {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(date).toLocaleDateString(undefined, options);
-}
-
-/**
- * Update dashboard data via AJAX (optional enhancement)
- */
-function refreshDashboardData() {
-    // This function can be extended to fetch fresh data without page reload
-    console.log('Refreshing dashboard data...');
-    // Example: fetch('/api/dashboard-stats/')
-}
-
-// Add ripple effect CSS dynamically
-const style = document.createElement('style');
-style.textContent = `
-    .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.6);
-        transform: scale(0);
-        animation: ripple-animation 0.6s ease-out;
-        pointer-events: none;
-    }
-    
-    @keyframes ripple-animation {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);

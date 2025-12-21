@@ -6,99 +6,142 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>LMS Admin</title>
 
-  <!-- Bootstrap CSS & Scripts -->
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   
-  <!-- Font Awesome for Icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Custom Navbar CSS -->
+  <!-- Sidebar CSS -->
   <link rel="stylesheet" href="{% static 'css/navbaradmin.css' %}">
 </head>
 <body>
-  <div class="bs-example">
-    <nav class="navbar navbar-expand-md fixed-top glass-navbar">
-      <a href="/" class="navbar-brand">
-        <i class="fas fa-book-open mr-2"></i>LMS
-      </a>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-book-open"></i>
+      <span class="sidebar-title">LMS</span>
+    </div>
 
-      <button
-        class="navbar-toggler glass-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarCollapse"
-        aria-controls="navbarCollapse"
-        aria-expanded="false"
-        aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-        <div class="navbar-nav"></div>
-
-        <div class="navbar-nav nav-links">
-          <a href="/" class="nav-item nav-link">
-          <i class="fas fa-home mr-1"></i>Home
+    <ul class="sidebar-menu">
+      <!-- Dashboard -->
+      <li class="menu-item">
+        <a href="{% url 'dashboard' %}" class="menu-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
         </a>
+      </li>
 
-          <!-- Book Dropdown -->
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-              <i class="fas fa-book mr-1"></i>Book
-            </a>
-            <div class="dropdown-menu glass-dropdown">
-              <a href="{% url 'addbook' %}" class="dropdown-item">
-                <i class="fas fa-plus-circle mr-2"></i>Add Book
-              </a>
-              <a href="{% url 'viewbook' %}" class="dropdown-item">
-                <i class="fas fa-list mr-2"></i>View Book
-              </a>
-            </div>
-          </div>
+      <!-- Home -->
+      <li class="menu-item">
+        <a href="/" class="menu-link">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+      </li>
 
-          <!-- Issue Book Dropdown -->
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-              <i class="fas fa-paper-plane mr-2"></i>Issue Book
-            </a>
-            <div class="dropdown-menu glass-dropdown">
-              <a href="{% url 'issuebook' %}" class="dropdown-item">
-                <i class="fas fa-plus mr-2"></i>Issue New Book
-              </a>
-              <a href="{% url 'viewissuedbook' %}" class="dropdown-item">
-                <i class="fas fa-eye mr-2"></i>View Issued Book
-              </a>
-            </div>
-          </div>
+      <!-- Books Section -->
+      <li class="menu-section">
+        <span class="section-title">BOOK MANAGEMENT</span>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'addbook' %}" class="menu-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Book</span>
+        </a>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'viewbook' %}" class="menu-link">
+          <i class="fas fa-book"></i>
+          <span>View Books</span>
+        </a>
+      </li>
 
-          <!-- Student Dropdown -->
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-              <i class="fas fa-user-graduate mr-1"></i>Student
-            </a>
-            <div class="dropdown-menu glass-dropdown">
-              <a href="{% url 'addstudent' %}" class="dropdown-item">
-                <i class="fas fa-user mr-2"></i>Add Student
-              </a>
-              <a href="{% url 'viewstudent' %}" class="dropdown-item">
-                <i class="fas fa-users mr-2"></i>View Student
-              </a>
-              
-            </div>
-          </div>
+      <!-- Issue Books Section -->
+      <li class="menu-section">
+        <span class="section-title">ISSUE MANAGEMENT</span>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'issuebook' %}" class="menu-link">
+          <i class="fas fa-paper-plane"></i>
+          <span>Issue Book</span>
+        </a>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'viewissuedbook' %}" class="menu-link">
+          <i class="fas fa-eye"></i>
+          <span>View Issued Books</span>
+        </a>
+      </li>
 
-          <a href="{% url 'logout' %}" class="nav-item nav-link logout-btn">
-            <i class="fas fa-sign-out-alt mr-1"></i>Logout
-          </a>
-        </div>
-      </div>
-    </nav>
+      <!-- Students Section -->
+      <li class="menu-section">
+        <span class="section-title">STUDENT MANAGEMENT</span>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'addstudent' %}" class="menu-link">
+          <i class="fas fa-user-plus"></i>
+          <span>Add Student</span>
+        </a>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'viewstudent' %}" class="menu-link">
+          <i class="fas fa-users"></i>
+          <span>View Students</span>
+        </a>
+      </li>
+
+      <!-- Logout -->
+      <li class="menu-item logout-item">
+        <a href="{% url 'logout' %}" class="menu-link">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </li>
+    </ul>
   </div>
+
+  <!-- Mobile Toggle Button -->
+  <button class="sidebar-toggle" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Bootstrap & jQuery Scripts -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  
+  <!-- Sidebar Toggle Script -->
+  <script>
+    $(document).ready(function() {
+      $('#sidebarToggle').click(function() {
+        $('#sidebar').toggleClass('active');
+      });
+
+      // Close sidebar when clicking outside on mobile
+      $(document).click(function(e) {
+        if (!$(e.target).closest('#sidebar, #sidebarToggle').length) {
+          $('#sidebar').removeClass('active');
+        }
+      });
+
+      // Highlight active menu item
+      var currentUrl = window.location.pathname;
+      $('.menu-link').each(function() {
+        if ($(this).attr('href') === currentUrl) {
+          $(this).parent().addClass('active');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
