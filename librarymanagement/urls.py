@@ -10,7 +10,7 @@ urlpatterns = [
     path('', url_include('librarymanagement.library.urls')),
     
     # Authentication
-    path('adminlogin/', LoginView.as_view(template_name='library/adminlogin.html'), name='adminlogin'),
+    path('adminlogin/', LoginView.as_view(template_name='library/adminlogin.html', next_page='dashboard'), name='adminlogin'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]
 

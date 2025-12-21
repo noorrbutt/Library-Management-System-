@@ -45,7 +45,7 @@ def dashboard_view(request):
     issued_books_count = IssuedBook.objects.filter(returned=False).count()
     
     # Available books
-    available_books_count = total_books - issued_books_count
+    available_books_count = Book.objects.filter(quantity__gt=0).count()
     
     # Overdue books (past return date and not returned)
     overdue_books_count = IssuedBook.objects.filter(
@@ -166,7 +166,7 @@ def dashboard_view(request):
 
 def adminclick_view(request):
     if request.user.is_authenticated:
-        return redirect('afterlogin')
+        return redirect('dashboard')
     return render(request, 'library/adminclick.html')
 
 
@@ -188,7 +188,7 @@ def adminsignup_view(request):
 
 def afterlogin_view(request):
     if is_admin(request.user):
-        return render(request, 'library/adminafterlogin.html')
+        return redirect('dashboard')
     return redirect('adminlogin')
 
 
