@@ -2,26 +2,166 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
-from datetime import date
+from datetime import date, datetime, timedelta
 from . import forms, models
 from librarymanagement.settings import EMAIL_HOST_USER
-from .models import Book
+from .models import Book, StudentExtra, IssuedBook
 from .filters import BookFilter, StudentFilter
 from django.contrib import messages
 import json
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import Q, Count
 
 
+# -------------------- ROLE CHECK --------------------
+
+def is_admin(user):
+    return user.groups.filter(name='ADMIN').exists()
 
 
 # -------------------- BASIC VIEWS --------------------
 
 def home_view(request):
     if request.user.is_authenticated:
-        return redirect('afterlogin')
+        return redirect('dashboard')
     return render(request, 'library/index.html')
+
+
+@login_required(login_url='adminlogin')
+@user_passes_test(is_admin)
+def dashboard_view(request):
+    """
+    Comprehensive dashboard displaying library statistics and metrics.
+    """
+    today = date.today()
+    month_start = today.replace(day=1)
+    
+    # ========== BASIC STATISTICS ==========
+    total_books = Book.objects.count()
+    total_members = StudentExtra.objects.count()
+    
+    # Issued books (currently not returned)
+    issued_books_count = IssuedBook.objects.filter(returned=False).count()
+    
+    # Available books
+    available_books_count = total_books - issued_books_count
+    
+    # Overdue books (past return date and not returned)
+    overdue_books_count = IssuedBook.objects.filter(
+        return_date__lt=today,
+        returned=False
+    ).count()
+    
+    # Books added this month (new books created this month)
+    books_this_month = Book.objects.filter(
+        id__gte=Book.objects.filter(
+            id__in=IssuedBook.objects.filter(
+                issuedate__gte=month_start
+            ).values_list('book_id', flat=True)
+        ).count()
+    ).count()
+    
+    # If the above logic is wrong, use this simpler version:
+    # books_this_month = Book.objects.filter(
+    #     created_at__gte=month_start  # Assuming you have a created_at field
+    # ).count()
+    
+    # ========== RECENT ACTIVITIES ==========
+    recent_activities = IssuedBook.objects.select_related(
+        'student', 'book'
+    ).order_by('-issuedate')[:15]
+    
+    # ========== TOP 5 MOST ISSUED BOOKS ==========
+    top_books = Book.objects.annotate(
+        issue_count=Count('issuedbook')
+    ).filter(
+        issue_count__gt=0  # Only books that have been issued
+    ).order_by('-issue_count')[:5]
+    
+    # ========== MONTHLY TRENDS (Last 6 Months) ==========
+    months_data = []
+    issued_trend = []
+    returned_trend = []
+    
+    for i in range(5, -1, -1):  # Last 6 months
+        month_date = today - timedelta(days=30 * i)
+        month_start_calc = month_date.replace(day=1)
+        
+        # Calculate month end
+        if month_start_calc.month == 12:
+            month_end_calc = month_start_calc.replace(day=31)
+        else:
+            next_month = month_start_calc.replace(month=month_start_calc.month + 1, day=1)
+            month_end_calc = next_month - timedelta(days=1)
+        
+        # Count issued books in this month
+        issued_count = IssuedBook.objects.filter(
+            issuedate__gte=month_start_calc,
+            issuedate__lte=month_end_calc
+        ).count()
+        
+        # Count returned books in this month
+        returned_count = IssuedBook.objects.filter(
+            return_date__gte=month_start_calc,
+            return_date__lte=month_end_calc,
+            returned=True
+        ).count()
+        
+        months_data.append(month_start_calc.strftime('%b'))
+        issued_trend.append(issued_count)
+        returned_trend.append(returned_count)
+    
+    # ========== LOW STOCK BOOKS ==========
+    low_stock_books = Book.objects.filter(
+        quantity__lt=3
+    ).order_by('quantity')[:10]
+    
+    # ========== CATEGORY DISTRIBUTION ==========
+    # Get category counts
+    category_queryset = Book.objects.values('category').annotate(
+        count=Count('id')
+    ).order_by('-count')[:7]
+    
+    # Convert to list of dicts for JSON serialization
+    category_distribution = []
+    for item in category_queryset:
+        category_distribution.append({
+            'category': item['category'] if item['category'] else 'Uncategorized',
+            'count': item['count']
+        })
+    
+    # ========== CONTEXT DATA ==========
+    context = {
+        # Basic stats
+        'total_books': total_books,
+        'available_books': available_books_count,
+        'issued_books': issued_books_count,
+        'total_members': total_members,
+        'overdue_books': overdue_books_count,
+        'books_this_month': books_this_month,
+        
+        # Activities and lists
+        'recent_activities': recent_activities,
+        'top_books': top_books,
+        'low_stock_books': low_stock_books,
+        
+        # Chart data - JSON serialized
+        'months_data': json.dumps(months_data),
+        'issued_trend': json.dumps(issued_trend),
+        'returned_trend': json.dumps(returned_trend),
+        
+        # Status breakdown for pie chart (use same variables)
+        'available': available_books_count,
+        'issued': issued_books_count,
+        'overdue': overdue_books_count,
+        
+        # Category data - properly serialized
+        'category_distribution': json.dumps(category_distribution),
+    }
+    
+    return render(request, 'library/dashboard.html', context)
+
 
 
 def adminclick_view(request):
@@ -42,12 +182,6 @@ def adminsignup_view(request):
             admin_group.user_set.add(user)
             return redirect('adminlogin')
     return render(request, 'library/adminsignup.html', {'form': form})
-
-
-# -------------------- ROLE CHECK --------------------
-
-def is_admin(user):
-    return user.groups.filter(name='ADMIN').exists()
 
 
 # -------------------- AFTER LOGIN --------------------
@@ -183,7 +317,11 @@ def issuebook_view(request):
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
 def viewissuedbook_view(request):
-    issuedbooks = models.IssuedBook.objects.all().select_related('student', 'book').order_by('book_name')
+    # Only show non-returned books
+    issuedbooks = models.IssuedBook.objects.filter(
+        returned=False
+    ).select_related('student', 'book').order_by('book_name')
+    
     li = []
     today = date.today()
     
@@ -203,6 +341,9 @@ def viewissuedbook_view(request):
                 except models.StudentExtra.DoesNotExist:
                     student_name = 'Unknown Student'
 
+            # Get book name - handle case where book might be deleted
+            book_name = ib.book_name if ib.book_name else (ib.book.name if ib.book else 'Unknown Book')
+
             # Calculate fine - PKR 500 if expired
             fine = 0
             is_expired = False
@@ -216,7 +357,7 @@ def viewissuedbook_view(request):
                 li.append((
                     student_name,
                     ib.enrollment,
-                    ib.book.name,
+                    book_name,
                     ib.issuedate.strftime('%Y-%m-%d'),
                     ib.return_date.strftime('%Y-%m-%d'),
                     fine,  # Fine amount
@@ -243,8 +384,7 @@ def viewissuedbook_view(request):
         'li': li_page, 
         'show_overdue_only': show_overdue_only,
         'total_count': len(li)  # Total count for header
-    })   
-    
+    }) 
     
 @login_required(login_url='adminlogin')
 @user_passes_test(is_admin)
@@ -278,8 +418,9 @@ def return_issued_book_view(request):
                 book.quantity += 1
                 book.save()
             
-            # Delete the issued book record
-            issued_book.delete()
+            # CHANGE: Mark as returned instead of deleting
+            issued_book.returned = True
+            issued_book.save()
             
             messages.success(request, 'Book returned successfully!')
             
