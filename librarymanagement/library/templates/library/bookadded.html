@@ -1,34 +1,25 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <style>
-      /* Minimal inline CSS to fix the issue */
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      .content-wrapper {
-        padding-top: 80px; /* Adjust based on navbar height */
-      }
-    </style>
-  </head>
-  <body>
-    {% include "library/navbaradmin.html" %}
-    
-    <div class="content-wrapper">
-      <br>
-      <br>
-
-      <h3 class="p-3 mb-2 bg-success text-white" style='font-size: 30px;text-align:center;'>Book Added Successfully !</h3>
-      <br><br>
-      
-      <div class="options" style="text-align:center">
-        <a href="{% url 'addbook' %}" class="btn btn-primary btn-lg active" style="border-radius: 0%;" role="button" aria-pressed="true">Add more Book</a><br><br>
-        <a href="{% url 'viewbook' %}" class="btn btn-primary btn-lg active" style="border-radius: 0%;" role="button" aria-pressed="true">View Book in Library</a><br><br>
-      </div>
-      <br>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Book Added Successfully</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="{% static 'css/addbook.css' %}" />
+</head>
+<body>
+  {% include "library/navbaradmin.html" %}
+  <div class="confirmation-box">
+    <div class="checkmark">
+      <svg viewBox="0 0 24 24">
+        <path d="M20.285 6.709l-11.39 11.38-5.18-5.18 1.415-1.415 3.765 3.765 9.976-9.976z" fill="white" />
+      </svg>
     </div>
-    
-    {% include "library/footer.html" %}
-  </body>
+    <h2>Book Added Successfully!</h2>
+    <a href="{% url 'addbook' %}" class="btn btn-primary btn-block">+ Add More Book</a>
+    <a href="{% url 'viewbook' %}" class="btn btn-primary btn-block">📚 View Books in Library</a>
+  </div>
+  {% include "library/footer.html" %}
+</body>
 </html>
