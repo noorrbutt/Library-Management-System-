@@ -81,7 +81,7 @@
 
         <!-- Quick Actions -->
         <section class="quick-actions-section mt-4">
-            <h2 class="section-title"><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <h2 class="chart-title"><i class="fas fa-bolt"></i> Quick Actions</h2>
             <div class="row">
                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
                     <a href="{% url 'addbook' %}" class="quick-action-btn">
@@ -171,7 +171,7 @@
         <div class="row mt-4">
             <div class="col-lg-6 mb-3">
                 <section class="activity-section">
-                    <h2 class="section-title"><i class="fas fa-clock"></i> Recent Activity</h2>
+                    <h2 class="chart-title"><i class="fas fa-clock"></i> Recent Activity</h2>
                     <div class="activity-feed">
                         {% if recent_activities %}
                             {% for activity in recent_activities %}
@@ -197,7 +197,7 @@
 
             <div class="col-lg-6 mb-3">
                 <section class="low-stock-section">
-                    <h2 class="section-title"><i class="fas fa-exclamation-triangle"></i> Low Stock Books</h2>
+                    <h2 class="chart-title"><i class="fas fa-exclamation-triangle"></i> Low Stock Books</h2>
                     <div class="low-stock-list">
                         {% if low_stock_books %}
                             {% for book in low_stock_books %}
@@ -224,7 +224,7 @@
 
         <!-- Top Borrowed Books -->
         <section class="top-borrowed-section mt-4">
-            <h2 class="section-title"><i class="fas fa-fire"></i> Most Borrowed Books</h2>
+            <h2 class="chart-title"><i class="fas fa-fire"></i> Most Borrowed Books</h2>
             {% if top_books %}
                 <div class="table-responsive">
                     <table class="books-table">
