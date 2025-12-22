@@ -1,6 +1,7 @@
 Django>=3.2,<4.0
-django-filter<25
+django-filter>=2.4.0,<25
 django-widget-tweaks==1.4.8
 django-cors-headers==3.13.0
 asgiref>=3.8.1
 sqlparse>=0.3.1
+Pillow>=9.0.0
