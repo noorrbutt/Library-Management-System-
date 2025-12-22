@@ -25,6 +25,7 @@
 }
 
 .profile-card-header {
+    
     background: var(--primary-purple);
     color: white;
     padding: 40px 30px;
@@ -51,7 +52,7 @@
 }
 
 .profile-center-container {
-    max-width: 700px;
+    max-width: 500px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -149,9 +150,11 @@
 .profile-card {
     background: var(--white);
     border-radius: 12px;
-    padding: 30px;
+    padding: 35px;
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
+    margin: 0 auto;
+    width: 100%;
 }
 
 .card-header {
@@ -493,6 +496,10 @@
         padding: 20px 15px;
     }
 
+    .profile-center-container {
+        max-width: 500px;
+    }
+
     .profile-card-header {
         padding: 30px 20px;
         margin-bottom: 30px;
@@ -503,11 +510,12 @@
     }
 
     .profile-card {
-        padding: 20px;
+        padding: 25px;
     }
 
     .form-row {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .avatar-circle {
@@ -531,6 +539,11 @@
         padding: 15px 10px;
     }
 
+    .profile-center-container {
+        max-width: 100%;
+        gap: 20px;
+    }
+
     .profile-card-header {
         padding: 20px 15px;
         margin-bottom: 20px;
@@ -545,7 +558,7 @@
     }
 
     .profile-card {
-        padding: 15px;
+        padding: 18px;
     }
 
     .card-header {
