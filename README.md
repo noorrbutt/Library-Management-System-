@@ -7,30 +7,30 @@ A comprehensive Django web application for librarians to manage library operatio
 
 ## ✨ Features
 
-### Book Management
+### 📖 Book Management
 - Add, update, delete books with bulk operations
 - Advanced search by title, author, category (10+ categories), and language
 - Inline editing and stock tracking with low-stock alerts
 - Filter by category (Education, History, Novel, Fiction, etc.) and language (English/Urdu)
 
-### Member Management
+### 👥 Member Management
 - Register students with complete profiles (name, enrollment, address, phone, gender, photo)
 - Search by name or enrollment number
 - Bulk operations and inline editing
 
-### Issuance & Returns
+### ↩️ Issuance & Returns
 - Smart book issuance with availability checking
 - Custom return dates (default: 15 days)
 - Automatic fine calculation (PKR 500 for overdue books)
 - Track issued and overdue books
 
-### Analytics Dashboard
+### 📊 Analytics Dashboard
 - Real-time statistics (total books, available, issued, members, overdue)
 - 6-month trend charts for issued and returned books
 - Category distribution and top 5 most issued books
 - Recent activities feed and low stock alerts
 
-### User Profile
+### 👤 User Profile
 - Update personal information and profile photo
 - Secure password management
 - Account settings (email, phone, address)
@@ -44,7 +44,7 @@ A comprehensive Django web application for librarians to manage library operatio
 
 ## 🚀 Quick Start
 
-### Installation
+### 💻 Installation
 
 ```bash
 # Clone repository
@@ -74,7 +74,7 @@ python manage.py runserver
 - Dashboard: http://127.0.0.1:8000/dashboard/
 - Admin Panel: http://127.0.0.1:8000/admin/
 
-## 📖 Usage
+## 📜 Usage
 
 1. **Register** - Go to /adminclick/ and signup as admin
 2. **Login** - Use admin credentials to access dashboard
