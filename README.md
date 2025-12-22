@@ -1,85 +1,112 @@
-# Library Management System
+# 📚 Library Management System
 
-A web application for librarians to create, track, and manage library data (books, members, borrowing, etc.).
+A comprehensive Django web application for librarians to manage library operations including books, members, issuance, returns, and analytics.
 
-## Table of Contents
+![Django](https://img.shields.io/badge/Django-3.2+-green.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 
-- [Features](#features)  
-- [Tech Stack](#tech-stack)  
-- [Installation & Setup](#installation--setup)  
-- [Usage](#usage)  
-- [Database](#database)  
+## ✨ Features
 
-## Features
+### 📖 Book Management
+- Add, update, delete books with bulk operations
+- Advanced search by title, author, category (10+ categories), and language
+- Inline editing and stock tracking with low-stock alerts
+- Filter by category (Education, History, Novel, Fiction, etc.) and language (English/Urdu)
 
-- Add, update, delete books  
-- Add, update, delete library members  
-- Issue and return books  
-- Track book availability  
-- Search books by title, author, quantity  
-- Simple user interface for librarians  
-- Static assets (images, CSS, etc.)  
-- Template-driven pages  
+### 👥 Member Management
+- Register students with complete profiles (name, enrollment, address, phone, gender, photo)
+- Search by name or enrollment number
+- Bulk operations and inline editing
 
-## Tech Stack
+### ↩️ Issuance & Returns
+- Smart book issuance with availability checking
+- Custom return dates (default: 15 days)
+- Automatic fine calculation (PKR 500 for overdue books)
+- Track issued and overdue books
 
-- **Backend / Framework**: Django (Python)  
-- **Frontend / Templating**: Django templates, HTML, CSS  
-- **Database**: SQLite (default)  
-- **Static files / Images**  
-- **Python packages** listed in `requirements.txt`  
+### 📊 Analytics Dashboard
+- Real-time statistics (total books, available, issued, members, overdue)
+- 6-month trend charts for issued and returned books
+- Category distribution and top 5 most issued books
+- Recent activities feed and low stock alerts
 
-## Installation & Setup
+### 👤 User Profile
+- Update personal information and profile photo
+- Secure password management
+- Account settings (email, phone, address)
 
-Follow these steps to run the project locally:
+## 🛠️ Tech Stack
 
-1. **Clone the repository**  
-   ```bash
-   git clone https://github.com/noorrbutt/Library-Management-System-.git
-   cd Library-Management-System-
-   ```
+- **Backend**: Django 3.2+, Python 3.8+
+- **Database**: SQLite (default), PostgreSQL-ready
+- **Frontend**: Django Templates, HTML5, CSS3, JavaScript, Chart.js
+- **Key Libraries**: django-filter, django-widget-tweaks, Pillow
 
-2. **Set up a virtual environment** (recommended)  
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate     # on Unix / macOS  
-   venv\Scripts\activate        # on Windows  
-   ```
+## 🚀 Quick Start
 
-3. **Install dependencies**  
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Database migrations**  
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-5. **Run the development server**  
-   ```bash
-   python manage.py runserver
-   ```
-
-6. **Access in browser**  
-   Go to `http://127.0.0.1:8000/` (or whichever port Django says)  
-
-## Usage
-
-- Use the web interface to add books, members.  
-- Issue books to members; mark returns.  
-- Search for books.  
-- Manage data from the admin interface (if enabled).  
-
-You may want to create a **superuser** to access Django’s admin:
+### 💻 Installation
 
 ```bash
+# Clone repository
+git clone https://github.com/noorrbutt/Library-Management-System-.git
+cd Library-Management-System-
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup database
+python manage.py makemigrations
+python manage.py migrate
+
+# Create superuser (optional)
 python manage.py createsuperuser
+
+# Run server
+python manage.py runserver
 ```
 
-## Database
+### Access
+- Main App: http://127.0.0.1:8000/
+- Dashboard: http://127.0.0.1:8000/dashboard/
+- Admin Panel: http://127.0.0.1:8000/admin/
 
-- The project uses **SQLite** out of the box (`db.sqlite3`).  
-- You can change to another database (e.g. PostgreSQL, MySQL) by adjusting `settings.py`.  
-- Make sure to update `DATABASES` config and install relevant DB drivers.  
+## 📜 Usage
+
+1. **Register** - Go to /adminclick/ and signup as admin
+2. **Login** - Use admin credentials to access dashboard
+3. **Add Books** - Navigate to Add Book, fill details, and submit
+4. **Add Students** - Go to Add Student and register members
+5. **Issue Books** - Select student and book, set return date
+6. **Manage** - View, edit, delete, or return books from respective pages
+
+## 📁 Project Structure
+
+```
+Library-Management-System/
+├── librarymanagement/
+│   ├── settings.py
+│   ├── urls.py
+│   └── library/
+│       ├── models.py       # Book, Student, IssuedBook
+│       ├── views.py        # Business logic
+│       ├── forms.py        # Form definitions
+│       ├── filters.py      # Filtering logic
+│       └── templates/      # HTML templates
+├── static/                 # CSS, JS, images
+├── media/                  # User uploads
+├── manage.py
+└── requirements.txt
+```
+
+
+## 🤝 Contributing
+
+Contributions are welcome! Fork the repo, create a feature branch, and submit a PR.
+
+---
+
+Made with ❤️
