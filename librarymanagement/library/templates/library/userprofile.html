@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - LMS</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="{% static 'css/navbaradmin.css' %}">
+    
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    
+    <!-- User Profile CSS -->
+    <link rel="stylesheet" href="{% static 'css/userprofile.css' %}">
+</head>
+<body>
+    {% include 'library/navbaradmin.html' %}
+    
+    <div class="main-content">
+        <div class="profile-wrapper">
+            <!-- Top Profile Card - Compact & Centered -->
+            <div class="profile-card-header">
+                <div class="profile-card-header-content">
+                    <h1><i class="fas fa-user-circle"></i> User Profile</h1>
+                    <p>Manage your account information</p>
+                </div>
+            </div>
+
+            <div class="profile-center-container">
+                <!-- Profile Photo Section -->
+                <div class="profile-photo-section">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-circle" id="avatarCircle">
+                            {% if student_extra and student_extra.photo %}
+                                <img src="{{ student_extra.photo.url }}" alt="Profile Picture" class="avatar-image">
+                            {% endif %}
+                            <span class="avatar-initials" id="avatarInitials">AZ</span>
+                        </div>
+                        <label for="photoInput" class="camera-button" title="Upload Profile Photo">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="photoInput" class="photo-input" accept="image/*" style="display: none;">
+                    </div>
+                    <p class="username-text">@{{ user.username }}</p>
+                </div>
+
+                <!-- Personal Information Card -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+                        </div>
+                        <button class="edit-btn" id="editPersonalBtn" type="button">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    
+                    <form id="personalForm" class="profile-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" class="form-control" value="{{ user.first_name }} {{ user.last_name }}" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emailAddress">Email Address *</label>
+                            <input type="email" id="emailAddress" class="form-control" value="{{ user.email }}" disabled>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="phoneNumber">Phone Number</label>
+                                <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter phone number" value="{% if student_extra and student_extra.phone %}{{ student_extra.phone }}{% endif %}" disabled>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="dateOfBirth">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" class="form-control" value="{% if student_extra and student_extra.date_of_birth %}{{ student_extra.date_of_birth }}{% endif %}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea id="address" class="form-control" rows="3" placeholder="Enter your address" disabled>{% if student_extra and student_extra.address %}{{ student_extra.address }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="form-actions" id="personalActions" style="display: none;">
+                            <button type="button" class="btn btn-success" id="savePersonalBtn">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelPersonalBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Alert Messages -->
+                <div id="successAlert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <strong id="successMessage">Changes saved successfully!</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div id="errorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong id="errorMessage">An error occurred. Please try again.</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Processing...</p>
+                </div>
+
+                <!-- Collapsible Sections -->
+                <div class="collapsible-sections">
+                    <!-- Account Info Section -->
+                    <div class="collapsible-card">
+                        <button class="collapsible-header" type="button">
+                            <span class="icon"><i class="fas fa-info-circle"></i></span>
+                            <span class="title">Account Information</span>
+                            <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                        </button>
+                        <div class="collapsible-content">
+                            <div class="content-inner">
+                                <div class="account-info-row">
+                                    <span class="info-label">Account Created:</span>
+                                    <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                                </div>
+                                <div class="account-info-row">
+                                    <span class="info-label">Last Login:</span>
+                                    <span class="info-value">{% if user.last_login %}{{ user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}</span>
+                                </div>
+                                <div class="account-info-row">
+                                    <span class="info-label">Account Status:</span>
+                                    <span class="info-value status-active"><i class="fas fa-check-circle"></i> Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'library/footer.html' %}
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <!-- User Profile JS -->
+    <script src="{% static 'js/userprofile.js' %}"></script>
+</body>
+</html>
