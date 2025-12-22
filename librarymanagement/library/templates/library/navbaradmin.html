@@ -95,6 +95,18 @@
         </a>
       </li>
 
+      <!-- Account Section -->
+      <li class="menu-section">
+        <span class="section-title">ACCOUNT</span>
+      </li>
+      
+      <li class="menu-item">
+        <a href="{% url 'userprofile' %}" class="menu-link">
+          <i class="fas fa-user-circle"></i>
+          <span>User Profile</span>
+        </a>
+      </li>
+
       <!-- Logout -->
       <li class="menu-item logout-item">
         <form method="post" action="{% url 'logout' %}" style="display: inline;">

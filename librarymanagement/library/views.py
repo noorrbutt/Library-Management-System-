@@ -512,3 +512,245 @@ def update_students_view(request):
         messages.success(request, "Student(s) updated successfully!")
         return redirect("viewstudent")
     return redirect("viewstudent")
+
+
+# -------------------- USER PROFILE VIEWS --------------------
+
+@login_required(login_url='adminlogin')
+def userprofile_view(request):
+    """
+    Display user profile page with personal information and account settings.
+    """
+    user = request.user
+    try:
+        student_extra = StudentExtra.objects.get(user=user)
+    except StudentExtra.DoesNotExist:
+        student_extra = None
+
+    context = {
+        'user': user,
+        'student_extra': student_extra,
+    }
+    return render(request, 'library/userprofile.html', context)
+
+
+@login_required(login_url='adminlogin')
+def update_profile_view(request):
+    """
+    Handle AJAX request to update user profile information.
+    """
+    if request.method != 'POST':
+        return HttpResponse(
+            json.dumps({'message': 'Invalid request method.'}),
+            content_type='application/json',
+            status=405
+        )
+
+    user = request.user
+
+    try:
+        # Update basic user information
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        # Validation
+        if not first_name or not last_name:
+            return HttpResponse(
+                json.dumps({'message': 'First name and last name are required.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        if not email or '@' not in email:
+            return HttpResponse(
+                json.dumps({'message': 'Invalid email address.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Check if email is already used by another user
+        from django.contrib.auth.models import User
+        if User.objects.filter(email=email).exclude(id=user.id).exists():
+            return HttpResponse(
+                json.dumps({'message': 'Email address is already in use.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.save()
+
+        # Update StudentExtra information if it exists
+        try:
+            student_extra = StudentExtra.objects.get(user=user)
+            phone = request.POST.get('phone', '').strip()
+            address = request.POST.get('address', '').strip()
+            date_of_birth = request.POST.get('date_of_birth', '')
+
+            if phone:
+                try:
+                    student_extra.phone = int(phone)
+                except ValueError:
+                    pass
+            if address:
+                student_extra.address = address
+            if date_of_birth:
+                student_extra.date_of_birth = date_of_birth
+            
+            student_extra.save()
+        except StudentExtra.DoesNotExist:
+            # StudentExtra doesn't exist for admin users - that's fine
+            pass
+
+        return HttpResponse(
+            json.dumps({'message': 'Profile updated successfully.'}),
+            content_type='application/json',
+            status=200
+        )
+
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({'message': f'An error occurred: {str(e)}'}),
+            content_type='application/json',
+            status=500
+        )
+
+
+@login_required(login_url='adminlogin')
+def change_password_view(request):
+    """
+    Handle AJAX request to change user password.
+    """
+    if request.method != 'POST':
+        return HttpResponse(
+            json.dumps({'message': 'Invalid request method.'}),
+            content_type='application/json',
+            status=405
+        )
+
+    from django.contrib.auth import authenticate
+    user = request.user
+
+    try:
+        current_password = request.POST.get('current_password', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+
+        # Validation
+        if not current_password or not new_password:
+            return HttpResponse(
+                json.dumps({'message': 'All password fields are required.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Check current password
+        if not user.check_password(current_password):
+            return HttpResponse(
+                json.dumps({'message': 'Current password is incorrect.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Validate new password
+        if len(new_password) < 8:
+            return HttpResponse(
+                json.dumps({'message': 'Password must be at least 8 characters long.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        if current_password == new_password:
+            return HttpResponse(
+                json.dumps({'message': 'New password must be different from current password.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        # Update session to prevent automatic logout
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+
+        return HttpResponse(
+            json.dumps({'message': 'Password changed successfully.'}),
+            content_type='application/json',
+            status=200
+        )
+
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({'message': f'An error occurred: {str(e)}'}),
+            content_type='application/json',
+            status=500
+        )
+
+
+@login_required(login_url='adminlogin')
+def upload_profile_photo_view(request):
+    """
+    Handle AJAX request to upload profile photo.
+    """
+    if request.method != 'POST':
+        return HttpResponse(
+            json.dumps({'message': 'Invalid request method.'}),
+            content_type='application/json',
+            status=405
+        )
+
+    try:
+        if 'photo' not in request.FILES:
+            return HttpResponse(
+                json.dumps({'message': 'No photo file provided.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        photo = request.FILES['photo']
+        user = request.user
+
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if photo.content_type not in allowed_types:
+            return HttpResponse(
+                json.dumps({'message': 'Invalid file type. Please upload an image.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Validate file size (max 5MB)
+        if photo.size > 5 * 1024 * 1024:
+            return HttpResponse(
+                json.dumps({'message': 'File size must be less than 5MB.'}),
+                content_type='application/json',
+                status=400
+            )
+
+        # Update or create StudentExtra with photo
+        # This allows all authenticated users (students and admins) to upload photos
+        student_extra, created = StudentExtra.objects.get_or_create(user=user)
+        
+        # Delete old photo if exists
+        if student_extra.photo:
+            student_extra.photo.delete()
+        
+        student_extra.photo = photo
+        student_extra.save()
+
+        return HttpResponse(
+            json.dumps({'message': 'Photo uploaded successfully.'}),
+            content_type='application/json',
+            status=200
+        )
+
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({'message': f'An error occurred: {str(e)}'}),
+            content_type='application/json',
+            status=500
+        )

@@ -115,6 +115,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [STATIC_DIR]
 
+# Media files (User uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # This removes the auto-field warnings
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

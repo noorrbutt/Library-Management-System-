@@ -24,4 +24,10 @@ urlpatterns = [
     path('viewstudent/', views.viewstudent_view, name='viewstudent'),
     path('deletestudents/', views.delete_students_view, name='deletestudents'),
     path('updatestudents/', views.update_students_view, name='updatestudents'),
+
+    # User Profile Management
+    path('userprofile/', views.userprofile_view, name='userprofile'),
+    path('update-profile/', views.update_profile_view, name='update_profile'),
+    path('change-password/', views.change_password_view, name='change_password'),
+    path('upload-profile-photo/', views.upload_profile_photo_view, name='upload_profile_photo'),
 ]

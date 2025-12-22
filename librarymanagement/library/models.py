@@ -8,11 +8,14 @@ class StudentExtra(models.Model):
         ("Male", "Male"),
         ("Female", "Female"),
     ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='student_profile')
     name = models.CharField(max_length=30, null=True, blank=True)
     enrollment = models.CharField(max_length=40, unique=True)
-    address = models.CharField(max_length=40)
+    address = models.CharField(max_length=40, blank=True, null=True)
     phone = models.IntegerField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=genchoice, default="Female")
+    gender = models.CharField(max_length=10, choices=genchoice, default="Female", blank=True)
+    photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
 
 
     def __str__(self):
