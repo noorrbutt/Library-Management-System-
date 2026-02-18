@@ -70,9 +70,7 @@ python manage.py runserver
 ```
 
 ### Access
-- Main App: http://127.0.0.1:8000/
-- Dashboard: http://127.0.0.1:8000/dashboard/
-- Admin Panel: http://127.0.0.1:8000/admin/
+http://127.0.0.1:8000/
 
 ## 📜 Usage
 
