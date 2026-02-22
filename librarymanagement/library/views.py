@@ -1,3 +1,5 @@
+from urllib import request
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -16,19 +18,21 @@ from django.db.models import Q, Count
 
 # -------------------- ROLE CHECK --------------------
 
+
 def is_admin(user):
-    return user.groups.filter(name='ADMIN').exists()
+    return user.groups.filter(name="ADMIN").exists()
 
 
 # -------------------- BASIC VIEWS --------------------
 
+
 def home_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-    return render(request, 'library/index.html')
+        return redirect("dashboard")
+    return render(request, "library/index.html")
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def dashboard_view(request):
     """
@@ -36,184 +40,183 @@ def dashboard_view(request):
     """
     today = date.today()
     month_start = today.replace(day=1)
-    
+
     # ========== BASIC STATISTICS ==========
     total_books = Book.objects.count()
     total_members = StudentExtra.objects.count()
-    
+
     # Issued books (currently not returned)
     issued_books_count = IssuedBook.objects.filter(returned=False).count()
-    
+
     # Available books
     available_books_count = Book.objects.filter(quantity__gt=0).count()
-    
+
     # Overdue books (past return date and not returned)
     overdue_books_count = IssuedBook.objects.filter(
-        return_date__lt=today,
-        returned=False
+        return_date__lt=today, returned=False
     ).count()
-    
+
     # Books added this month (new books created this month)
     books_this_month = Book.objects.filter(
         id__gte=Book.objects.filter(
-            id__in=IssuedBook.objects.filter(
-                issuedate__gte=month_start
-            ).values_list('book_id', flat=True)
+            id__in=IssuedBook.objects.filter(issuedate__gte=month_start).values_list(
+                "book_id", flat=True
+            )
         ).count()
     ).count()
-    
+
     # If the above logic is wrong, use this simpler version:
     # books_this_month = Book.objects.filter(
     #     created_at__gte=month_start  # Assuming you have a created_at field
     # ).count()
-    
+
     # ========== RECENT ACTIVITIES ==========
-    recent_activities = IssuedBook.objects.select_related(
-        'student', 'book'
-    ).order_by('-issuedate')[:15]
-    
+    recent_activities = IssuedBook.objects.select_related("student", "book").order_by(
+        "-issuedate"
+    )[:15]
+
     # ========== TOP 5 MOST ISSUED BOOKS ==========
-    top_books = Book.objects.annotate(
-        issue_count=Count('issuedbook')
-    ).filter(
-        issue_count__gt=0  # Only books that have been issued
-    ).order_by('-issue_count')[:5]
-    
+    top_books = (
+        Book.objects.annotate(issue_count=Count("issuedbook"))
+        .filter(issue_count__gt=0)  # Only books that have been issued
+        .order_by("-issue_count")[:5]
+    )
+
     # ========== MONTHLY TRENDS (Last 6 Months) ==========
     months_data = []
     issued_trend = []
     returned_trend = []
-    
+
     for i in range(5, -1, -1):  # Last 6 months
         month_date = today - timedelta(days=30 * i)
         month_start_calc = month_date.replace(day=1)
-        
+
         # Calculate month end
         if month_start_calc.month == 12:
             month_end_calc = month_start_calc.replace(day=31)
         else:
-            next_month = month_start_calc.replace(month=month_start_calc.month + 1, day=1)
+            next_month = month_start_calc.replace(
+                month=month_start_calc.month + 1, day=1
+            )
             month_end_calc = next_month - timedelta(days=1)
-        
+
         # Count issued books in this month
         issued_count = IssuedBook.objects.filter(
-            issuedate__gte=month_start_calc,
-            issuedate__lte=month_end_calc
+            issuedate__gte=month_start_calc, issuedate__lte=month_end_calc
         ).count()
-        
+
         # Count returned books in this month
         returned_count = IssuedBook.objects.filter(
             return_date__gte=month_start_calc,
             return_date__lte=month_end_calc,
-            returned=True
+            returned=True,
         ).count()
-        
-        months_data.append(month_start_calc.strftime('%b'))
+
+        months_data.append(month_start_calc.strftime("%b"))
         issued_trend.append(issued_count)
         returned_trend.append(returned_count)
-    
+
     # ========== LOW STOCK BOOKS ==========
-    low_stock_books = Book.objects.filter(
-        quantity__lt=3
-    ).order_by('quantity')[:10]
-    
+    low_stock_books = Book.objects.filter(quantity__lt=3).order_by("quantity")[:10]
+
     # ========== CATEGORY DISTRIBUTION ==========
     # Get category counts
-    category_queryset = Book.objects.values('category').annotate(
-        count=Count('id')
-    ).order_by('-count')[:7]
-    
+    category_queryset = (
+        Book.objects.values("category")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:7]
+    )
+
     # Convert to list of dicts for JSON serialization
     category_distribution = []
     for item in category_queryset:
-        category_distribution.append({
-            'category': item['category'] if item['category'] else 'Uncategorized',
-            'count': item['count']
-        })
-    
+        category_distribution.append(
+            {
+                "category": item["category"] if item["category"] else "Uncategorized",
+                "count": item["count"],
+            }
+        )
+
     # ========== CONTEXT DATA ==========
     context = {
         # Basic stats
-        'total_books': total_books,
-        'available_books': available_books_count,
-        'issued_books': issued_books_count,
-        'total_members': total_members,
-        'overdue_books': overdue_books_count,
-        'books_this_month': books_this_month,
-        
+        "total_books": total_books,
+        "available_books": available_books_count,
+        "issued_books": issued_books_count,
+        "total_members": total_members,
+        "overdue_books": overdue_books_count,
+        "books_this_month": books_this_month,
         # Activities and lists
-        'recent_activities': recent_activities,
-        'top_books': top_books,
-        'low_stock_books': low_stock_books,
-        
+        "recent_activities": recent_activities,
+        "top_books": top_books,
+        "low_stock_books": low_stock_books,
         # Chart data - JSON serialized
-        'months_data': json.dumps(months_data),
-        'issued_trend': json.dumps(issued_trend),
-        'returned_trend': json.dumps(returned_trend),
-        
+        "months_data": json.dumps(months_data),
+        "issued_trend": json.dumps(issued_trend),
+        "returned_trend": json.dumps(returned_trend),
         # Status breakdown for pie chart (use same variables)
-        'available': available_books_count,
-        'issued': issued_books_count,
-        'overdue': overdue_books_count,
-        
+        "available": available_books_count,
+        "issued": issued_books_count,
+        "overdue": overdue_books_count,
         # Category data - properly serialized
-        'category_distribution': json.dumps(category_distribution),
+        "category_distribution": json.dumps(category_distribution),
     }
-    
-    return render(request, 'library/dashboard.html', context)
 
+    return render(request, "library/dashboard.html", context)
 
 
 def adminclick_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-    return render(request, 'library/adminclick.html')
+        return redirect("dashboard")
+    return render(request, "library/adminclick.html")
 
 
 def adminsignup_view(request):
     form = forms.AdminSigupForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.AdminSigupForm(request.POST)
         if form.is_valid():
             user = form.save()
             user.set_password(user.password)
             user.save()
-            admin_group, _ = Group.objects.get_or_create(name='ADMIN')
+            admin_group, _ = Group.objects.get_or_create(name="ADMIN")
             admin_group.user_set.add(user)
-            return redirect('adminlogin')
-    return render(request, 'library/adminsignup.html', {'form': form})
+            return redirect("adminlogin")
+    return render(request, "library/adminsignup.html", {"form": form})
 
 
 # -------------------- AFTER LOGIN --------------------
 
+
 def afterlogin_view(request):
     if is_admin(request.user):
-        return redirect('dashboard')
-    return redirect('adminlogin')
+        return redirect("dashboard")
+    return redirect("adminlogin")
 
 
 # -------------------- ADMIN VIEWS --------------------
 
-@login_required(login_url='adminlogin')
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def addbook_view(request):
     form = forms.BookForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.BookForm(request.POST)
         if form.is_valid():
             form.save()
-            return render(request, 'library/bookadded.html')
-    return render(request, 'library/addbook.html', {'form': form})
+            return render(request, "library/bookadded.html")
+    return render(request, "library/addbook.html", {"form": form})
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def viewbook_view(request):
     # Get all books sorted by name A-Z by default
-    books = Book.objects.all().order_by('name')
+    books = Book.objects.all().order_by("name")
 
     # Search query
-    query = request.GET.get('q', '')
+    query = request.GET.get("q", "")
     if query:
         books = books.filter(Q(name__icontains=query) | Q(author__icontains=query))
 
@@ -223,8 +226,8 @@ def viewbook_view(request):
 
     # Pagination (10 per page)
     paginator = Paginator(books, 10)
-    page = request.GET.get('page')
-    
+    page = request.GET.get("page")
+
     try:
         books = paginator.page(page)
     except PageNotAnInteger:
@@ -236,32 +239,43 @@ def viewbook_view(request):
     category_choices = Book.catchoice
     language_choices = Book.langchoice
 
-    return render(request, 'library/viewbook.html', {
-        'books': books,
-        'filter': book_filter,
-        'query': query,
-        'category_choices': category_choices,
-        'language_choices': language_choices,
-    })
-@login_required(login_url='adminlogin')
+    return render(
+        request,
+        "library/viewbook.html",
+        {
+            "books": books,
+            "filter": book_filter,
+            "query": query,
+            "category_choices": category_choices,
+            "language_choices": language_choices,
+        },
+    )
+
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def delete_books_view(request):
     if request.method == "POST":
-        selected_books = request.POST.getlist("selected_books")  # get list of selected book IDs
+        selected_books = request.POST.getlist(
+            "selected_books"
+        )  # get list of selected book IDs
         if selected_books:
             models.Book.objects.filter(id__in=selected_books).delete()
-            messages.success(request, f"{len(selected_books)} book(s) deleted successfully!")
+            messages.success(
+                request, f"{len(selected_books)} book(s) deleted successfully!"
+            )
         else:
             messages.warning(request, "No books selected for deletion.")
         return redirect("viewbook")
     return redirect("viewbook")
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def update_books_view(request):
     if request.method == "POST":
         import json
+
         books_data = json.loads(request.POST.get("books_data", "[]"))
 
         for book_data in books_data:
@@ -278,60 +292,64 @@ def update_books_view(request):
     return redirect("viewbook")
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def issuebook_view(request):
     form = forms.IssuedBookForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.IssuedBookForm(request.POST)
         if form.is_valid():
-            student = form.cleaned_data['student']
-            book = form.cleaned_data['book']
-            return_date = form.cleaned_data['return_date']
-            
+            student = form.cleaned_data["student"]
+            book = form.cleaned_data["book"]
+            return_date = form.cleaned_data["return_date"]
+
             # Create IssuedBook object with improved structure
             obj = models.IssuedBook()
             obj.student = student  # ForeignKey relationship
-            obj.book = book        # ForeignKey relationship  
+            obj.book = book  # ForeignKey relationship
             obj.enrollment = student.enrollment
             obj.book_name = book.name
             obj.issuedate = date.today()
             obj.return_date = return_date
             obj.expirydate = return_date
-            
+
             # Reduce book quantity
             if book.quantity > 0:
                 book.quantity -= 1
                 book.save()
-                
+
                 obj.save()
                 # message
-                messages.success(request, f'Book {book.name} issued successfully to {student.name}!')
-                return render(request, 'library/bookissued.html')
+                messages.success(
+                    request, f"Book {book.name} issued successfully to {student.name}!"
+                )
+                return render(request, "library/bookissued.html")
             else:
                 messages.error(request, "This book is out of stock!")
-    
-    return render(request, 'library/issuebook.html', {'form': form})
+
+    return render(request, "library/issuebook.html", {"form": form})
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def viewissuedbook_view(request):
     # Only show non-returned books
-    issuedbooks = models.IssuedBook.objects.filter(
-        returned=False
-    ).select_related('student', 'book').order_by('book_name')
-    
+    issuedbooks = (
+        models.IssuedBook.objects.filter(returned=False)
+        .select_related("student", "book")
+        .order_by("book_name")
+    )
+
     li = []
     today = date.today()
-    
+
     # Check if we're filtering for overdue books
-    show_overdue_only = request.GET.get('show_overdue') == 'true'
+    show_overdue_only = request.GET.get("show_overdue") == "true"
 
     for ib in issuedbooks:
         try:
             # Get student name
-            student_name = 'N/A'
+            student_name = "N/A"
             if ib.student:
                 student_name = ib.student.name
             elif ib.enrollment:
@@ -339,10 +357,14 @@ def viewissuedbook_view(request):
                     student = models.StudentExtra.objects.get(enrollment=ib.enrollment)
                     student_name = student.name
                 except models.StudentExtra.DoesNotExist:
-                    student_name = 'Unknown Student'
+                    student_name = "Unknown Student"
 
             # Get book name - handle case where book might be deleted
-            book_name = ib.book_name if ib.book_name else (ib.book.name if ib.book else 'Unknown Book')
+            book_name = (
+                ib.book_name
+                if ib.book_name
+                else (ib.book.name if ib.book else "Unknown Book")
+            )
 
             # Calculate fine - PKR 500 if expired
             fine = 0
@@ -354,16 +376,18 @@ def viewissuedbook_view(request):
             # Only include in list if not filtering or if book is overdue
             if not show_overdue_only or is_expired:
                 # Build data tuple
-                li.append((
-                    student_name,
-                    ib.enrollment,
-                    book_name,
-                    ib.issuedate.strftime('%Y-%m-%d'),
-                    ib.return_date.strftime('%Y-%m-%d'),
-                    fine,  # Fine amount
-                    is_expired,  # Flag for expired status
-                    ib.id  # IssuedBook ID for return functionality
-                ))
+                li.append(
+                    (
+                        student_name,
+                        ib.enrollment,
+                        book_name,
+                        ib.issuedate.strftime("%Y-%m-%d"),
+                        ib.return_date.strftime("%Y-%m-%d"),
+                        fine,  # Fine amount
+                        is_expired,  # Flag for expired status
+                        ib.id,  # IssuedBook ID for return functionality
+                    )
+                )
 
         except Exception as e:
             print(f"Error processing issued book {ib.id}: {e}")
@@ -371,8 +395,8 @@ def viewissuedbook_view(request):
 
     # Pagination (10 per page)
     paginator = Paginator(li, 10)
-    page = request.GET.get('page')
-    
+    page = request.GET.get("page")
+
     try:
         li_page = paginator.page(page)
     except PageNotAnInteger:
@@ -380,17 +404,23 @@ def viewissuedbook_view(request):
     except EmptyPage:
         li_page = paginator.page(paginator.num_pages)
 
-    return render(request, 'library/viewissuedbook.html', {
-        'li': li_page, 
-        'show_overdue_only': show_overdue_only,
-        'total_count': len(li)  # Total count for header
-    }) 
-    
-@login_required(login_url='adminlogin')
+    return render(
+        request,
+        "library/viewissuedbook.html",
+        {
+            "li": li_page,
+            "show_overdue_only": show_overdue_only,
+            "total_count": len(li),  # Total count for header
+        },
+    )
+
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def update_issued_books_view(request):
     if request.method == "POST":
         import json
+
         books_data = json.loads(request.POST.get("books_data", "[]"))
 
         for book_data in books_data:
@@ -403,69 +433,76 @@ def update_issued_books_view(request):
         return redirect("viewissuedbook")
     return redirect("viewissuedbook")
 
-@login_required(login_url='adminlogin')
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def return_issued_book_view(request):
-    if request.method == 'POST':
-        issuedbook_id = request.GET.get('issuedbook_id')
+    if request.method == "POST":
+        issuedbook_id = request.GET.get("issuedbook_id")
         try:
             # Get the issued book record
             issued_book = models.IssuedBook.objects.get(id=issuedbook_id)
-            
+
             # Get the book to increase quantity
             if issued_book.book:
                 book = issued_book.book
                 book.quantity += 1
                 book.save()
-            
+
             # CHANGE: Mark as returned instead of deleting
             issued_book.returned = True
             issued_book.save()
-            
-            messages.success(request, 'Book returned successfully!')
-            
+
+            messages.success(request, "Book returned successfully!")
+
         except models.IssuedBook.DoesNotExist:
-            messages.error(request, 'Issued book record not found!')
+            messages.error(request, "Issued book record not found!")
         except Exception as e:
-            messages.error(request, f'Error returning book: {str(e)}')
-    
-    return redirect('viewissuedbook')
+            messages.error(request, f"Error returning book: {str(e)}")
+
+    return redirect("viewissuedbook")
+
+
 # -------------------- STUDENT VIEWS --------------------
 
-@login_required(login_url='adminlogin')
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def addstudent_view(request):
     form = forms.StudentExtraForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.StudentExtraForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('studentadded')
-    return render(request, 'student/addstudent.html', {'form': form})
+            return redirect("studentadded")
+    return render(request, "student/addstudent.html", {"form": form})
+
 
 def studentadded_view(request):
-    return render(request, 'student/studentadded.html')
+    return render(request, "student/studentadded.html")
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def viewstudent_view(request):
     # Get all students sorted by name A-Z by default
-    students = models.StudentExtra.objects.all().order_by('name')
-    
+    students = models.StudentExtra.objects.all().order_by("name")
+
     # Search functionality
-    query = request.GET.get('q', '').strip()
-    if query and query != 'None':  # Handle the "None" string case
-        students = students.filter(Q(name__icontains=query) | Q(enrollment__icontains=query))
-    
+    query = request.GET.get("q", "").strip()
+    if query and query != "None":  # Handle the "None" string case
+        students = students.filter(
+            Q(name__icontains=query) | Q(enrollment__icontains=query)
+        )
+
     # Initialize filter - use StudentFilter directly
     student_filter = StudentFilter(request.GET, queryset=students)
     students = student_filter.qs
 
     # Pagination (10 per page)
     paginator = Paginator(students, 10)
-    page = request.GET.get('page')
-    
+    page = request.GET.get("page")
+
     try:
         students = paginator.page(page)
     except PageNotAnInteger:
@@ -473,29 +510,35 @@ def viewstudent_view(request):
     except EmptyPage:
         students = paginator.page(paginator.num_pages)
 
-    return render(request, 'student/viewstudent.html', {
-        'students': students,
-        'filter': student_filter,
-        'query': query if query != 'None' else '',  # Convert "None" to empty string
-        'gender_choices': models.StudentExtra.genchoice
-    })
-    
-    
-@login_required(login_url='adminlogin')
+    return render(
+        request,
+        "student/viewstudent.html",
+        {
+            "students": students,
+            "filter": student_filter,
+            "query": query if query != "None" else "",  # Convert "None" to empty string
+            "gender_choices": models.StudentExtra.genchoice,
+        },
+    )
+
+
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def delete_students_view(request):
     if request.method == "POST":
         selected_students = request.POST.getlist("selected_students")
         if selected_students:
             models.StudentExtra.objects.filter(id__in=selected_students).delete()
-            messages.success(request, f"{len(selected_students)} Student(s) deleted successfully!")
+            messages.success(
+                request, f"{len(selected_students)} Student(s) deleted successfully!"
+            )
         else:
             messages.warning(request, "No student selected for deletion.")
         return redirect("viewstudent")
     return redirect("viewstudent")
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 @user_passes_test(is_admin)
 def update_students_view(request):
     if request.method == "POST":
@@ -508,7 +551,7 @@ def update_students_view(request):
             student.phone = student_data["phone"]
             student.gender = student_data["gender"]
             student.save()
-            
+
         messages.success(request, "Student(s) updated successfully!")
         return redirect("viewstudent")
     return redirect("viewstudent")
@@ -516,66 +559,54 @@ def update_students_view(request):
 
 # -------------------- USER PROFILE VIEWS --------------------
 
-@login_required(login_url='adminlogin')
+
+@login_required(login_url="adminlogin")
 def userprofile_view(request):
-    """
-    Display user profile page with personal information and account settings.
-    """
     user = request.user
-    try:
-        student_extra = StudentExtra.objects.get(user=user)
-    except StudentExtra.DoesNotExist:
-        student_extra = None
+    admin_profile, _ = models.AdminProfile.objects.get_or_create(user=user)
 
     context = {
-        'user': user,
-        'student_extra': student_extra,
+        "user": user,
+        "admin_profile": admin_profile,
     }
-    return render(request, 'library/userprofile.html', context)
+    return render(request, "library/userprofile.html", context)
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 def update_profile_view(request):
-    """
-    Handle AJAX request to update user profile information.
-    """
-    if request.method != 'POST':
+    if request.method != "POST":
         return HttpResponse(
-            json.dumps({'message': 'Invalid request method.'}),
-            content_type='application/json',
-            status=405
+            json.dumps({"message": "Invalid request method."}),
+            content_type="application/json",
+            status=405,
         )
 
     user = request.user
 
     try:
-        # Update basic user information
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
-        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
 
-        # Validation
         if not first_name or not last_name:
             return HttpResponse(
-                json.dumps({'message': 'First name and last name are required.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "First name and last name are required."}),
+                content_type="application/json",
+                status=400,
             )
 
-        if not email or '@' not in email:
+        if not email or "@" not in email:
             return HttpResponse(
-                json.dumps({'message': 'Invalid email address.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "Invalid email address."}),
+                content_type="application/json",
+                status=400,
             )
 
-        # Check if email is already used by another user
-        from django.contrib.auth.models import User
         if User.objects.filter(email=email).exclude(id=user.id).exists():
             return HttpResponse(
-                json.dumps({'message': 'Email address is already in use.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "Email address is already in use."}),
+                content_type="application/json",
+                status=400,
             )
 
         user.first_name = first_name
@@ -583,90 +614,88 @@ def update_profile_view(request):
         user.email = email
         user.save()
 
-        # Update StudentExtra information if it exists
-        try:
-            student_extra = StudentExtra.objects.get(user=user)
-            phone = request.POST.get('phone', '').strip()
-            address = request.POST.get('address', '').strip()
-            date_of_birth = request.POST.get('date_of_birth', '')
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address", "").strip()
+        date_of_birth = request.POST.get("date_of_birth", "").strip()
 
-            if phone:
-                try:
-                    student_extra.phone = int(phone)
-                except ValueError:
-                    pass
-            if address:
-                student_extra.address = address
-            if date_of_birth:
-                student_extra.date_of_birth = date_of_birth
-            
-            student_extra.save()
-        except StudentExtra.DoesNotExist:
-            # StudentExtra doesn't exist for admin users - that's fine
-            pass
+        admin_profile, _ = models.AdminProfile.objects.get_or_create(user=user)
+
+        if phone:
+            admin_profile.phone = phone
+        if address:
+            admin_profile.address = address
+        if date_of_birth:
+            admin_profile.date_of_birth = datetime.strptime(
+                date_of_birth, "%Y-%m-%d"
+            ).date()
+
+        admin_profile.save()
 
         return HttpResponse(
-            json.dumps({'message': 'Profile updated successfully.'}),
-            content_type='application/json',
-            status=200
+            json.dumps({"message": "Profile updated successfully."}),
+            content_type="application/json",
+            status=200,
         )
 
     except Exception as e:
         return HttpResponse(
-            json.dumps({'message': f'An error occurred: {str(e)}'}),
-            content_type='application/json',
-            status=500
+            json.dumps({"message": f"An error occurred: {str(e)}"}),
+            content_type="application/json",
+            status=500,
         )
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 def change_password_view(request):
     """
     Handle AJAX request to change user password.
     """
-    if request.method != 'POST':
+    if request.method != "POST":
         return HttpResponse(
-            json.dumps({'message': 'Invalid request method.'}),
-            content_type='application/json',
-            status=405
+            json.dumps({"message": "Invalid request method."}),
+            content_type="application/json",
+            status=405,
         )
 
     from django.contrib.auth import authenticate
+
     user = request.user
 
     try:
-        current_password = request.POST.get('current_password', '').strip()
-        new_password = request.POST.get('new_password', '').strip()
+        current_password = request.POST.get("current_password", "").strip()
+        new_password = request.POST.get("new_password", "").strip()
 
         # Validation
         if not current_password or not new_password:
             return HttpResponse(
-                json.dumps({'message': 'All password fields are required.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "All password fields are required."}),
+                content_type="application/json",
+                status=400,
             )
 
         # Check current password
         if not user.check_password(current_password):
             return HttpResponse(
-                json.dumps({'message': 'Current password is incorrect.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "Current password is incorrect."}),
+                content_type="application/json",
+                status=400,
             )
 
         # Validate new password
         if len(new_password) < 8:
             return HttpResponse(
-                json.dumps({'message': 'Password must be at least 8 characters long.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "Password must be at least 8 characters long."}),
+                content_type="application/json",
+                status=400,
             )
 
         if current_password == new_password:
             return HttpResponse(
-                json.dumps({'message': 'New password must be different from current password.'}),
-                content_type='application/json',
-                status=400
+                json.dumps(
+                    {"message": "New password must be different from current password."}
+                ),
+                content_type="application/json",
+                status=400,
             )
 
         # Set new password
@@ -675,82 +704,75 @@ def change_password_view(request):
 
         # Update session to prevent automatic logout
         from django.contrib.auth import update_session_auth_hash
+
         update_session_auth_hash(request, user)
 
         return HttpResponse(
-            json.dumps({'message': 'Password changed successfully.'}),
-            content_type='application/json',
-            status=200
+            json.dumps({"message": "Password changed successfully."}),
+            content_type="application/json",
+            status=200,
         )
 
     except Exception as e:
         return HttpResponse(
-            json.dumps({'message': f'An error occurred: {str(e)}'}),
-            content_type='application/json',
-            status=500
+            json.dumps({"message": f"An error occurred: {str(e)}"}),
+            content_type="application/json",
+            status=500,
         )
 
 
-@login_required(login_url='adminlogin')
+@login_required(login_url="adminlogin")
 def upload_profile_photo_view(request):
-    """
-    Handle AJAX request to upload profile photo.
-    """
-    if request.method != 'POST':
+    if request.method != "POST":
         return HttpResponse(
-            json.dumps({'message': 'Invalid request method.'}),
-            content_type='application/json',
-            status=405
+            json.dumps({"message": "Invalid request method."}),
+            content_type="application/json",
+            status=405,
         )
 
     try:
-        if 'photo' not in request.FILES:
+        if "photo" not in request.FILES:
             return HttpResponse(
-                json.dumps({'message': 'No photo file provided.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "No photo file provided."}),
+                content_type="application/json",
+                status=400,
             )
 
-        photo = request.FILES['photo']
+        photo = request.FILES["photo"]
         user = request.user
 
-        # Validate file type
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
         if photo.content_type not in allowed_types:
             return HttpResponse(
-                json.dumps({'message': 'Invalid file type. Please upload an image.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "Invalid file type. Please upload an image."}),
+                content_type="application/json",
+                status=400,
             )
 
-        # Validate file size (max 5MB)
         if photo.size > 5 * 1024 * 1024:
             return HttpResponse(
-                json.dumps({'message': 'File size must be less than 5MB.'}),
-                content_type='application/json',
-                status=400
+                json.dumps({"message": "File size must be less than 5MB."}),
+                content_type="application/json",
+                status=400,
             )
 
-        # Update or create StudentExtra with photo
-        # This allows all authenticated users (students and admins) to upload photos
-        student_extra, created = StudentExtra.objects.get_or_create(user=user)
-        
-        # Delete old photo if exists
-        if student_extra.photo:
-            student_extra.photo.delete()
-        
-        student_extra.photo = photo
-        student_extra.save()
+        admin_profile, _ = models.AdminProfile.objects.get_or_create(user=user)
+
+        if admin_profile.photo:
+            admin_profile.photo.delete()
+
+        admin_profile.photo = photo
+        admin_profile.save()
 
         return HttpResponse(
-            json.dumps({'message': 'Photo uploaded successfully.'}),
-            content_type='application/json',
-            status=200
+            json.dumps({"message": "Photo uploaded successfully."}),
+            content_type="application/json",
+            status=200,
         )
 
     except Exception as e:
         return HttpResponse(
-            json.dumps({'message': f'An error occurred: {str(e)}'}),
-            content_type='application/json',
-            status=500
+            json.dumps({"message": f"An error occurred: {str(e)}"}),
+            content_type="application/json",
+            status=500,
         )
