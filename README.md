@@ -75,7 +75,7 @@ Deployed on Railway with PostgreSQL database.
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or higher
+- Python 3.2 or higher
 - pip (Python package manager)
 - Git
 
@@ -190,15 +190,6 @@ ALLOWED_HOSTS=librarymanagementsystem.up.railway.app
 ### Database Setup
 - **Development**: SQLite (no configuration needed)
 - **Production**: PostgreSQL (configured via DATABASE_URL)
-
----
-
-## 📸 Screenshots
-
-- Dashboard with analytics
-- Book management interface
-- Student registration form
-- Issuance tracking page
 
 ---
 
