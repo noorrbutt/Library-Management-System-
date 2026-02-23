@@ -54,7 +54,7 @@ Deployed on Railway with PostgreSQL database.
 
 **Backend**
 - Django 3.2+ - High-level Python web framework
-- Python 3.8+ - Core programming language
+- Python 3.2+ - Core programming language
 - PostgreSQL - Production database (Railway deployment)
 - SQLite - Local development database
 
