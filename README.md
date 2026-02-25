@@ -4,7 +4,7 @@ A comprehensive Django web application for librarians to efficiently manage libr
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Railway-blue?style=for-the-badge)](https://librarymanagementsystem.up.railway.app/)
 [![Django](https://img.shields.io/badge/Django-3.2+-green.svg)](https://www.djangoproject.com/)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.2+-blue.svg)](https://www.python.org/)
 
 ## 🌐 Live Demo
 
@@ -24,10 +24,9 @@ Deployed on Railway with PostgreSQL database.
 - **Categories**: Education, History, Novel, Fiction, Science, Technology, and more
 
 ### 👥 Member Management
-- **Student Registration**: Complete profiles with name, enrollment ID, contact details, and photos
+- **Student Registration**: Complete profiles with name, enrollment ID, contact details, and address
 - **Search & Filter**: Quick lookup by name or enrollment number
 - **Bulk Operations**: Efficient management of multiple members simultaneously
-- **Profile Photos**: Upload and manage student profile pictures
 
 ### ↩️ Issuance & Returns
 - **Smart Issuance**: Automatic availability checking before book issue
@@ -126,7 +125,7 @@ Open your browser and navigate to: `http://127.0.0.1:8000/`
 
 3. **Add Books**
    - Click "Add Book" from dashboard
-   - Fill in book details (title, author, ISBN, category, language)
+   - Fill in book details (title, author, quantity, category, language)
    - Submit to add to inventory
 
 4. **Register Students**
