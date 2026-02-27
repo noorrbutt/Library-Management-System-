@@ -1,136 +1,181 @@
-<!DOCTYPE html>
-{% load static %}
+<!doctype html>
+{% load static %} {% load socialaccount %}
 <html lang="en" dir="ltr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
     <title>LMS Admin Signup</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/adminsignup.css' %}">
-</head>
+    <link rel="stylesheet" href="{% static 'css/adminsignup.css' %}" />
+  </head>
 
-<body>
-
+  <body>
     <!-- Top SLMS bar -->
     <div class="slms-top">
-        <h1>LMS</h1>
-        <div class="slms-buttons">
-            <a href="{% url 'home' %}" class="btn">Home</a>
-            <a href="{% url 'adminclick' %}" class="btn">Admin</a>
-        </div>
+      <h1>LMS</h1>
+      <div class="slms-buttons">
+        <a href="{% url 'home' %}" class="btn">Home</a>
+        <a href="{% url 'adminclick' %}" class="btn">Admin</a>
+      </div>
     </div>
 
     <!-- Main container for heading and signup box -->
     <div class="signup-section">
-        <!-- Admin Signup Heading (on background) -->
-        <div class="signup-heading">Admin Signup</div>
-        
-        <!-- Centered signup box -->
-        <div class="signup-container">
-            <!-- Person icon -->
-            <div class="person-icon">
-                <i class="fa fa-user-plus"></i>
-            </div>
-            
-            <form method="post" id="signupForm">
-                {% csrf_token %}
-                
-                <!-- Name input with icon -->
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-user"></i>
-                            </span>
-                        </div>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
-                    </div>
-                </div>
-                
-                <!-- Username input with icon -->
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-user-circle"></i>
-                            </span>
-                        </div>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                    </div>
-                </div>
-                
-                <!-- Password input with icon -->
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                        </div>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                    </div>
-                </div>
-                
-                <!-- Confirm Password input with icon -->
-                <div class="form-group">
-                    <label for="confirm_password">Confirm Password</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                        </div>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
-                        <div class="invalid-feedback" id="passwordError">
-                            Passwords do not match.
-                        </div>
-                    </div>
-                </div>
+      <!-- Admin Signup Heading (on background) -->
+      <div class="signup-heading">Admin Signup</div>
 
-                <button type="submit" class="btn-signup">Sign Up</button>
-            </form>
+      <!-- Centered signup box -->
+      <div class="signup-container">
+        <!-- Person icon -->
+        <div class="person-icon">
+          <i class="fa fa-user-plus"></i>
         </div>
-        
-        <!-- Login link - moved outside white container -->
-        <div class="login-link">
-            Already have an account? <a href="{% url 'adminlogin' %}">Login here</a>
-        </div>
+
+        <form method="post" id="signupForm">
+          {% csrf_token %}
+
+          <!-- Name input with icon -->
+          <div class="form-group">
+            <label for="name">Name</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-user"></i>
+                </span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                placeholder="Name"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Username input with icon -->
+          <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-user-circle"></i>
+                </span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                placeholder="Username"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Password input with icon -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-lock"></i>
+                </span>
+              </div>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Password"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Confirm Password input with icon -->
+          <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fa fa-lock"></i>
+                </span>
+              </div>
+              <input
+                type="password"
+                class="form-control"
+                id="confirm_password"
+                name="confirm_password"
+                placeholder="Confirm Password"
+                required
+              />
+              <div class="invalid-feedback" id="passwordError">
+                Passwords do not match.
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-signup">Sign Up</button>
+          <div class="text-center mt-3">
+            <p>or</p>
+            <a
+              href="{% provider_login_url 'google' %}"
+              class="btn btn-danger btn-block"
+            >
+              <i class="fa fa-google"></i> Sign up with Google
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Login link - moved outside white container -->
+      <div class="login-link">
+        Already have an account? <a href="{% url 'adminlogin' %}">Login here</a>
+      </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const password = document.getElementById('password');
-            const confirm_password = document.getElementById('confirm_password');
-            const passwordError = document.getElementById('passwordError');
-            const signupForm = document.getElementById('signupForm');
+      document.addEventListener("DOMContentLoaded", function () {
+        const password = document.getElementById("password");
+        const confirm_password = document.getElementById("confirm_password");
+        const passwordError = document.getElementById("passwordError");
+        const signupForm = document.getElementById("signupForm");
 
-            signupForm.addEventListener('submit', function(event) {
-                // Check if passwords match
-                if (password.value !== confirm_password.value) {
-                    // Show error message
-                    confirm_password.classList.add('is-invalid');
-                    passwordError.style.display = 'block';
-                    
-                    // Prevent form submission
-                    event.preventDefault();
-                    
-                    // Focus on confirm password field
-                    confirm_password.focus();
-                } else {
-                    // Hide error message if it was previously shown
-                    confirm_password.classList.remove('is-invalid');
-                    passwordError.style.display = 'none';
-                }
-            });
+        signupForm.addEventListener("submit", function (event) {
+          // Check if passwords match
+          if (password.value !== confirm_password.value) {
+            // Show error message
+            confirm_password.classList.add("is-invalid");
+            passwordError.style.display = "block";
+
+            // Prevent form submission
+            event.preventDefault();
+
+            // Focus on confirm password field
+            confirm_password.focus();
+          } else {
+            // Hide error message if it was previously shown
+            confirm_password.classList.remove("is-invalid");
+            passwordError.style.display = "none";
+          }
         });
+      });
     </script>
-</body>
+  </body>
 </html>
