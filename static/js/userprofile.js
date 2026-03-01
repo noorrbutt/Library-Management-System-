@@ -156,7 +156,7 @@ function cancelEdit() {
 function setFieldsDisabled(disabled) {
     const fields = ['#fullName', '#emailAddress', '#phoneNumber', '#dateOfBirth', '#address'];
     fields.forEach(selector => {
-        $(selector).prop('disabled', disabled);
+        $(selector).prop('readonly', disabled);
     });
 }
 
