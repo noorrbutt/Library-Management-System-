@@ -14,6 +14,15 @@ import json
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
+from allauth.socialaccount.signals import social_account_added
+from django.dispatch import receiver
+
+
+@receiver(social_account_added)
+def add_social_user_to_admin_group(request, sociallogin, **kwargs):
+    user = sociallogin.user
+    admin_group, _ = Group.objects.get_or_create(name="ADMIN")
+    admin_group.user_set.add(user)
 
 
 # -------------------- ROLE CHECK --------------------
@@ -191,7 +200,10 @@ def adminsignup_view(request):
 def afterlogin_view(request):
     if is_admin(request.user):
         return redirect("dashboard")
-    return redirect("adminlogin")
+    # Add Google-authenticated users to ADMIN group automatically
+    admin_group, _ = Group.objects.get_or_create(name="ADMIN")
+    admin_group.user_set.add(request.user)
+    return redirect("dashboard")
 
 
 # -------------------- ADMIN VIEWS --------------------
