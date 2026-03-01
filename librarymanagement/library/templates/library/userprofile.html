@@ -77,7 +77,7 @@
                 style="display: none"
               />
             </div>
-            <p class="username-text">@{{ user.username }}</p>
+            <p class="username-text">@{{ current_user.username }}</p>
           </div>
 
           <!-- Personal Information Card -->
@@ -99,7 +99,7 @@
                   type="text"
                   id="fullName"
                   class="form-control"
-                  value="{{ user.first_name }} {{ user.last_name }}"
+                  value="{{ current_user.first_name }} {{ current_user.last_name }}"
                   disabled
                 />
               </div>
@@ -110,7 +110,7 @@
                   type="email"
                   id="emailAddress"
                   class="form-control"
-                  value="{{ user.email }}"
+                  value="{{ current_user.email }}"
                   disabled
                 />
               </div>
@@ -240,13 +240,13 @@
                   <div class="account-info-row">
                     <span class="info-label">Account Created:</span>
                     <span class="info-value"
-                      >{{ user.date_joined|date:"M d, Y" }}</span
+                      >{{ current_user.date_joined|date:"M d, Y" }}</span
                     >
                   </div>
                   <div class="account-info-row">
                     <span class="info-label">Last Login:</span>
                     <span class="info-value"
-                      >{% if user.last_login %}{{ user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}</span
+                      >{% if user.last_login %}{{ current_user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}</span
                     >
                   </div>
                   <div class="account-info-row">

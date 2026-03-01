@@ -578,7 +578,7 @@ def userprofile_view(request):
     admin_profile, _ = models.AdminProfile.objects.get_or_create(user=user)
 
     context = {
-        "user": user,
+        "current_user": user,
         "admin_profile": admin_profile,
     }
     return render(request, "library/userprofile.html", context)
