@@ -74,7 +74,7 @@ Deployed on Railway with PostgreSQL database.
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.2 or higher
+- Python 3.2 
 - pip (Python package manager)
 - Git
 
