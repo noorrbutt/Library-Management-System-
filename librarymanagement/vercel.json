@@ -8,12 +8,20 @@
                 "maxLambdaSize": "15mb",
                 "runtime": "python3.9"
             }
+        },
+        {
+            "src": "static/**",
+            "use": "@vercel/static"
         }
     ],
-    "rewrites": [
+    "routes": [
         {
-            "source": "/(.*)",
-            "destination": "librarymanagement/wsgi.py"
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "librarymanagement/wsgi.py"
         }
     ]
 }
