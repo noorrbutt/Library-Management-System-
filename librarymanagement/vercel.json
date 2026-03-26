@@ -10,17 +10,10 @@
             }
         }
     ],
-    "routes": [
+    "rewrites": [
         {
-            "src": "/static/(.*)",
-            "headers": {
-                "cache-control": "public, max-age=31536000, immutable"
-            },
-            "dest": "/static/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "librarymanagement/wsgi.py"
+            "source": "/(.*)",
+            "destination": "librarymanagement/wsgi.py"
         }
     ]
 }
