@@ -1,16 +1,17 @@
 # 📚 Library Management System
 
-A comprehensive Django web application for librarians to efficiently manage library operations including books, members, issuance, returns, and real-time analytics.
+A full-stack Django web application for librarians to manage books, members, issuance, returns, and real-time analytics — deployed on Vercel with a Neon PostgreSQL backend.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Railway-blue?style=for-the-badge)](https://librarymanagementsystem.up.railway.app/)
-[![Django](https://img.shields.io/badge/Django-3.2+-green.svg)](https://www.djangoproject.com/)
-[![Python](https://img.shields.io/badge/Python-3.2+-blue.svg)](https://www.python.org/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://librarymsystem.vercel.app/)
+[![Django](https://img.shields.io/badge/Django-3.2-green.svg?logo=django)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.10-blue.svg?logo=python)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-teal.svg?logo=postgresql)](https://neon.tech/)
 
 ## 🌐 Live Demo
 
-**[View Live Application →](https://librarymanagementsystem.up.railway.app/)**
+**[View Live Application →](https://librarymsystem.vercel.app/)**
 
-Deployed on Railway with PostgreSQL database.
+Deployed on Vercel with Neon PostgreSQL database and Google OAuth authentication.
 
 ---
 
@@ -19,8 +20,8 @@ Deployed on Railway with PostgreSQL database.
 ### 📖 Book Management
 - **CRUD Operations**: Add, update, delete books with bulk operations support
 - **Advanced Search**: Filter by title, author, category (10+ categories), and language
-- **Smart Inventory**: Inline editing, stock tracking with automatic low-stock alerts
-- **Multi-language Support**: Manage books in English and Urdu
+- **Smart Inventory**: Stock tracking with automatic low-stock alerts
+- **Multi-language Support**: English and Urdu books
 - **Categories**: Education, History, Novel, Fiction, Science, Technology, and more
 
 ### 👥 Member Management
@@ -42,40 +43,31 @@ Deployed on Railway with PostgreSQL database.
 - **Activity Feed**: Recent library activities at a glance
 - **Alerts**: Low stock warnings and overdue notifications
 
-### 👤 User Profile Management
-- **Profile Updates**: Edit personal information and upload photos
-- **Security**: Secure password management system
-- **Account Settings**: Update email, phone, and address details
+### 👤 Authentication
+- **Google OAuth**: One-click sign-in via django-allauth
+- **Role-based Access**: Admin and librarian access levels
+- **Secure Sessions**: HTTPS enforced on production
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Backend**
-- Django 3.2+ - High-level Python web framework
-- Python 3.2+ - Core programming language
-- PostgreSQL - Production database (Railway deployment)
-- SQLite - Local development database
-
-**Frontend**
-- Django Templates - Server-side rendering
-- HTML5/CSS3 - Modern web standards
-- JavaScript - Interactive features
-- Chart.js - Data visualization for analytics
-
-**Key Libraries**
-- `django-filter` - Advanced filtering capabilities
-- `django-widget-tweaks` - Form rendering customization
-- `Pillow` - Image processing for profile photos
-- `psycopg2` - PostgreSQL adapter
+| Layer | Technology |
+|---|---|
+| Backend | Django 3.2, Python 3.10 |
+| Database | PostgreSQL (Neon) |
+| Auth | django-allauth + Google OAuth |
+| Frontend | Django Templates, HTML5/CSS3, JavaScript, Chart.js |
+| Deployment | Vercel |
+| Static Files | WhiteNoise |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.2 
-- pip (Python package manager)
+- Python 3.10+
+- pip
 - Git
 
 ### 💻 Local Installation
@@ -87,18 +79,18 @@ cd Library-Management-System-
 
 # Create and activate virtual environment
 python -m venv venv
-
-# On macOS/Linux:
-source venv/bin/activate
-
-# On Windows:
-venv\Scripts\activate
+source venv/bin/activate        # macOS/Linux
+venv\Scripts\activate           # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 
+# Set environment variables
+export DATABASE_URL=your_postgres_url   # or use SQLite by default
+export GOOGLE_CLIENT_ID=your_client_id
+export GOOGLE_CLIENT_SECRET=your_client_secret
+
 # Setup database
-python manage.py makemigrations
 python manage.py migrate
 
 # Create admin account
@@ -108,106 +100,62 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-### 🌐 Access the Application
-Open your browser and navigate to: `http://127.0.0.1:8000/`
+Open your browser at `http://127.0.0.1:8000/`
+
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | Django secret key |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `DEBUG` | `True` for dev, `False` for production |
+
+---
+
+## 🗂️ Project Structure
+
+```
+Library-Management-System/
+├── librarymanagement/
+│   ├── settings.py
+│   ├── urls.py
+│   └── library/
+│       ├── models.py        # Book, Student, IssuedBook
+│       ├── views.py
+│       ├── forms.py
+│       ├── filters.py
+│       ├── admin.py
+│       └── templates/
+├── static/
+├── media/
+├── requirements.txt
+└── manage.py
+```
 
 ---
 
 ## 📖 Usage Guide
 
-1. **Admin Registration**
-   - Navigate to `/adminclick/`
-   - Create admin account with signup form
-
-2. **Login**
-   - Use admin credentials to access dashboard
-   - View real-time analytics and system overview
-
-3. **Add Books**
-   - Click "Add Book" from dashboard
-   - Fill in book details (title, author, quantity, category, language)
-   - Submit to add to inventory
-
-4. **Register Students**
-   - Go to "Add Student" section
-   - Enter member information and upload photo
-   - Save to create student account
-
-5. **Issue Books**
-   - Select student from member list
-   - Choose available book
-   - Set return date and confirm issuance
-
-6. **Manage Operations**
-   - View all books, students, and issued books
-   - Edit or delete records as needed
-   - Process returns and calculate fines
-   - Monitor analytics and trends
-
----
-
-## 📁 Project Structure
-
-```
-Library-Management-System/
-├── librarymanagement/           # Main Django project
-│   ├── settings.py              # Project configuration
-│   ├── urls.py                  # URL routing
-│   └── library/                 # Core application
-│       ├── models.py            # Database models (Book, Student, IssuedBook)
-│       ├── views.py             # Business logic and controllers
-│       ├── forms.py             # Django form definitions
-│       ├── filters.py           # Search and filter logic
-│       ├── admin.py             # Admin panel configuration
-│       └── templates/           # HTML templates
-│           ├── dashboard.html
-│           ├── books/
-│           ├── students/
-│           └── issuance/
-├── static/                      # Static assets
-│   ├── css/                     # Stylesheets
-│   ├── js/                      # JavaScript files
-│   └── images/                  # Image assets
-├── media/                       # User uploads (profile photos, etc.)
-├── manage.py                    # Django management script
-├── requirements.txt             # Python dependencies
-└── README.md                    # Documentation
-```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables (Production)
-```
-DEBUG=False
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgresql://user:password@host:port/dbname
-ALLOWED_HOSTS=librarymanagementsystem.up.railway.app
-```
-
-### Database Setup
-- **Development**: SQLite (no configuration needed)
-- **Production**: PostgreSQL (configured via DATABASE_URL)
+1. **Login** via Google OAuth or admin credentials
+2. **Add Books** — fill in title, author, quantity, category, language
+3. **Register Students** — enter member info and upload photo
+4. **Issue Books** — select student + book, set return date
+5. **Process Returns** — mark returned, fines auto-calculated
+6. **Monitor Analytics** — dashboard shows trends, stock alerts, overdue items
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
-
 1. Fork the repository
-2. Create a feature branch 
+2. Create a feature branch
 3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+4. Push and open a Pull Request
 
 ---
 
-## 📝 License
-
-This project is open source and available for educational purposes.
-
----
-
-**Made with ❤️ by Noor Butt**
+**Made with ❤️ by [Noor Butt](https://github.com/noorrbutt)**
