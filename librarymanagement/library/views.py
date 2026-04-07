@@ -186,8 +186,6 @@ def adminsignup_view(request):
         form = forms.AdminSigupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            user.set_password(user.password)
-            user.save()
             admin_group, _ = Group.objects.get_or_create(name="ADMIN")
             admin_group.user_set.add(user)
             return redirect("adminlogin")

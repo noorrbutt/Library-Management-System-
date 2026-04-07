@@ -47,6 +47,18 @@
 
         <form method="post" id="signupForm">
           {% csrf_token %}
+          {% if form.errors %}
+    <div class="alert alert-danger">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <p><strong>{{ field.label }}:</strong> {{ error }}</p>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
 
           <!-- Name input with icon -->
           <div class="form-group">
