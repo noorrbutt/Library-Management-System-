@@ -130,6 +130,10 @@
     .page-link { display: block; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; color: #374151; text-decoration: none; background: #f3f4f6; transition: background 0.1s; }
     .page-link:hover { background: #e5e7eb; }
     .page-item.active .page-link { background: #3b82f6; color: #fff; }
+
+    /* User profile link */
+    #header a[href*="userprofile"] { outline: none; }
+    #header a[href*="userprofile"]:hover { background: #f3f4f6; }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
@@ -219,12 +223,12 @@
       </button>
       <span style="font-size:0.95rem;font-weight:600;color:#111827;">{% block page_title %}Dashboard{% endblock %}</span>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <a href="{% url 'userprofile' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;border-radius:8px;padding:6px 8px;transition:background 0.15s;cursor:pointer;">
       <span style="font-size:0.8rem;color:#6b7280;">{{ request.user.username }}</span>
       <div style="width:32px;height:32px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.8rem;font-weight:700;">
         {{ request.user.username|first|upper }}
       </div>
-    </div>
+    </a>
   </div>
 
   <!-- Page Content -->
