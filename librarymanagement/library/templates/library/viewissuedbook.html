@@ -1,248 +1,131 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Issued Books to Students</title>
+{% block title %}Issued Books — LibraryMS{% endblock %}
+{% block page_title %}Issued Books{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+.editable-field { display: none; width: 100%; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.8rem; }
+.editing .static-text { display: none; }
+.editing .editable-field { display: block; }
+.fine-expired { color: #dc2626; font-weight: 600; }
+</style>
+{% endblock %}
+{% block content %}
+<input type="hidden" id="update-issued-books-url" value="{% url 'update_issued_books' %}">
 
-    <!-- Bootstrap & Existing CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'student/css/viewstudent.css' %}">
-  </head>
+<div class="lms-card">
+  <div class="lms-card-header">
+    <span style="font-size:0.875rem;font-weight:600;">
+      <i class="fas fa-eye" style="color:#3b82f6;margin-right:6px;"></i>
+      {% if show_overdue_only %}Overdue Books{% else %}Issued Books{% endif %}
+      {% if li %}<span style="color:#6b7280;font-weight:400;font-size:0.8rem;margin-left:6px;">({{ li.start_index }}–{{ li.end_index }} of {{ li.paginator.count }})</span>{% endif %}
+    </span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button id="editBtn" class="btn-primary-lms" style="padding:6px 12px;font-size:0.8rem;">Edit Records</button>
+      <button id="saveBtn" class="btn-primary-lms" style="display:none;padding:6px 12px;font-size:0.8rem;background:#16a34a;">Save Changes</button>
+      <button id="cancelBtn" class="btn-secondary-lms" style="display:none;padding:6px 12px;font-size:0.8rem;">Cancel</button>
+      {% if not show_overdue_only %}
+        <a href="{% url 'viewissuedbook' %}?show_overdue=true" class="btn-secondary-lms" style="padding:6px 12px;font-size:0.8rem;">Show Overdue</a>
+      {% else %}
+        <a href="{% url 'viewissuedbook' %}" class="btn-secondary-lms" style="padding:6px 12px;font-size:0.8rem;">Show All</a>
+      {% endif %}
+      <a href="{% url 'issuebook' %}" class="btn-primary-lms" style="padding:6px 12px;font-size:0.8rem;">Issue New</a>
+    </div>
+  </div>
 
-  <body>
-    {% include "library/navbaradmin.html" %}
+  {% if li %}
+  <div style="overflow-x:auto;">
+    <table class="lms-table">
+      <thead>
+        <tr><th>#</th><th>Student</th><th>Enrollment</th><th>Book</th><th>Issue Date</th><th>Return Date</th><th>Fine</th><th>Action</th></tr>
+      </thead>
+      <tbody id="issuedBooksTable">
+        {% for t in li %}
+        <tr data-issuedbook-id="{{ t.7 }}">
+          <td style="color:#9ca3af;">{{ forloop.counter0|add:li.start_index }}</td>
+          <td><span class="static-text">{{ t.0 }}</span><input type="text" class="editable-field" name="student_name" value="{{ t.0 }}"></td>
+          <td><span class="static-text">{{ t.1 }}</span><input type="text" class="editable-field" name="enrollment" value="{{ t.1 }}"></td>
+          <td><span class="static-text">{{ t.2 }}</span><input type="text" class="editable-field" name="book_name" value="{{ t.2 }}"></td>
+          <td><span class="static-text">{{ t.3 }}</span><input type="date" class="editable-field" name="issue_date" value="{{ t.3 }}"></td>
+          <td><span class="static-text">{{ t.4 }}</span><input type="date" class="editable-field" name="return_date" value="{{ t.4 }}"></td>
+          <td class="{% if t.5 > 0 %}fine-expired{% endif %}">{% if t.5 > 0 %}PKR {{ t.5 }}{% else %}No Fine{% endif %}</td>
+          <td>
+            <button class="btn-danger-lms return-btn" style="padding:5px 10px;font-size:0.78rem;"
+                    data-issuedbook-id="{{ t.7 }}" data-student-name="{{ t.0 }}" data-book-name="{{ t.2 }}">
+              Return
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-    <main class="page-content">
-      <div class="container">
-
-        <!-- Hidden input for JS URL -->
-        <input type="hidden" id="update-issued-books-url" value="{% url 'update_issued_books' %}">
-
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-          <h3 class="page-title mb-0">
-            {% if show_overdue_only %}
-              {% if li.paginator.count == 0 %}
-                0 Overdue Books
-              {% else %}
-                Showing {{ li.start_index }} - {{ li.end_index }} of {{ li.paginator.count }} Overdue Books
-              {% endif %}
-            {% else %}
-              {% if li.paginator.count == 0 %}
-                0 Books Issued
-              {% else %}
-                Showing {{ li.start_index }} - {{ li.end_index }} of {{ li.paginator.count }} Books Issued
-              {% endif %}
-            {% endif %}
-          </h3>
-
-          <div class="d-flex gap-2 mt-2 mt-md-0 flex-wrap">
-            <button id="editBtn" class="btn btn-primary action-btn">Edit Records</button>
-            <button id="saveBtn" class="btn btn-success action-btn" style="display: none;">Save Changes</button>
-            <button id="cancelBtn" class="btn btn-secondary action-btn" style="display: none;">Cancel</button>
-            
-            {% if not show_overdue_only %}
-            <a href="{% url 'viewissuedbook' %}?show_overdue=true" class="btn filter-btn action-btn">Show Overdue</a>
-            {% else %}
-            <a href="{% url 'viewissuedbook' %}" class="btn btn-secondary action-btn">Show All</a>
-            {% endif %}
-            
-            <a href="{% url 'issuebook' %}" class="btn btn-success action-btn">Issue New Book</a>
-          </div>
-        </div>
-
-        {% if li %}
-        <!-- Issued Books Table -->
-        <div class="card student-card">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-borderless mb-0 align-middle">
-                <thead>
-                  <tr>
-                    <th>S.No</th>
-                    <th>Student Name</th>
-                    <th>Enrollment</th>
-                    <th>Book Name</th>
-                    <th>Issue Date</th>
-                    <th>Return Date</th>
-                    <th>Fine</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="issuedBooksTable">
-                  {% for t in li %}
-                  <tr data-issuedbook-id="{{ t.7 }}">
-                    <td class="py-3 text-muted">{{ forloop.counter0|add:li.start_index }}</td>
-                    <td class="py-3">
-                      <span class="static-text">{{ t.0 }}</span>
-                      <input type="text" class="editable-field" name="student_name" value="{{ t.0 }}">
-                    </td>
-                    <td class="py-3">
-                      <span class="static-text">{{ t.1 }}</span>
-                      <input type="text" class="editable-field" name="enrollment" value="{{ t.1 }}">
-                    </td>
-                    <td class="py-3">
-                      <span class="static-text">{{ t.2 }}</span>
-                      <input type="text" class="editable-field" name="book_name" value="{{ t.2 }}">
-                    </td>
-                    <td class="py-3">
-                      <span class="static-text">{{ t.3 }}</span>
-                      <!-- Ensure date format is YYYY-MM-DD for input fields -->
-                      <input type="date" class="editable-field" name="issue_date" value="{{ t.3 }}">
-                    </td>
-                    <td class="py-3">
-                      <span class="static-text">{{ t.4 }}</span>
-                      <!-- Ensure date format is YYYY-MM-DD for input fields -->
-                      <input type="date" class="editable-field" name="return_date" value="{{ t.4 }}">
-                    </td>
-                    <td class="py-3 {% if t.5 > 0 %}fine-expired{% endif %}">
-                      {% if t.5 > 0 %}
-                        PKR {{ t.5 }}
-                      {% else %}
-                        No Fine
-                      {% endif %}
-                    </td>
-                    <td class="py-3">
-                      <button class="btn btn-sm btn-outline-danger return-btn action-btn" 
-                              data-issuedbook-id="{{ t.7 }}"
-                              data-student-name="{{ t.0 }}"
-                              data-book-name="{{ t.2 }}"
-                              style="min-width: 80px;">
-                        Return
-                      </button>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pagination -->
-        {% if li.paginator.num_pages > 1 %}
-        <nav aria-label="Issued books pagination" class="mt-4">
-          <ul class="pagination justify-content-center">
-            {% if li.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page=1{% if show_overdue_only %}&show_overdue=true{% endif %}">First</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="?page={{ li.previous_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Previous</a>
-              </li>
-            {% endif %}
-
-            {% for num in li.paginator.page_range %}
-              {% if li.number == num %}
-                <li class="page-item active">
-                  <span class="page-link">{{ num }}</span>
-                </li>
-              {% elif num > li.number|add:'-3' and num < li.number|add:'3' %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ num }}{% if show_overdue_only %}&show_overdue=true{% endif %}">{{ num }}</a>
-                </li>
-              {% endif %}
-            {% endfor %}
-
-            {% if li.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ li.next_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Next</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="?page={{ li.paginator.num_pages }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Last</a>
-              </li>
-            {% endif %}
-          </ul>
-          <div class="text-center text-muted mt-2">
-            Page {{ li.number }} of {{ li.paginator.num_pages }}
-          </div>
-        </nav>
+  <!-- Pagination -->
+  {% if li.paginator.num_pages > 1 %}
+  <div style="padding:16px;">
+    <ul class="pagination">
+      {% if li.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1{% if show_overdue_only %}&show_overdue=true{% endif %}">First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ li.previous_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Prev</a></li>
+      {% endif %}
+      {% for num in li.paginator.page_range %}
+        {% if li.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > li.number|add:'-3' and num < li.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}{% if show_overdue_only %}&show_overdue=true{% endif %}">{{ num }}</a></li>
         {% endif %}
+      {% endfor %}
+      {% if li.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ li.next_page_number }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ li.paginator.num_pages }}{% if show_overdue_only %}&show_overdue=true{% endif %}">Last</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
 
-        {% else %}
-        <!-- No Books Message -->
-        <div class="text-center mt-5">
-          <h4 class="text-muted mb-3">
-            {% if show_overdue_only %}
-            No Overdue Books
-            {% else %}
-            No Books Issued
-            {% endif %}
-          </h4>
-          <p class="text-muted">
-            {% if show_overdue_only %}
-            There are currently no books with overdue return dates.
-            {% else %}
-            There are currently no books issued to students.
-            {% endif %}
-          </p>
-          <div class="d-flex justify-content-center gap-2">
-            {% if show_overdue_only %}
-            <a href="{% url 'viewissuedbook' %}" class="btn btn-secondary action-btn">Show All</a>
-            {% endif %}
-            <a href="{% url 'issuebook' %}" class="btn btn-primary action-btn">Issue New Book</a>
-          </div>
-        </div>
-        {% endif %}
+  {% else %}
+  <div style="text-align:center;padding:48px;color:#9ca3af;">
+    <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+    {% if show_overdue_only %}No overdue books.{% else %}No books issued yet.{% endif %}
+    <div style="margin-top:16px;"><a href="{% url 'issuebook' %}" class="btn-primary-lms">Issue a Book</a></div>
+  </div>
+  {% endif %}
+</div>
 
+<!-- Return Modal -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Confirm Book Return</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p>Return this book?</p>
+        <p><strong>Student:</strong> <span id="modalStudentName"></span></p>
+        <p><strong>Book:</strong> <span id="modalBookName"></span></p>
+        <div class="alert alert-warning"><strong>Note:</strong> This cannot be undone.</div>
       </div>
-    </main>
-
-    <!-- Return Confirmation Modal -->
-    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="returnModalLabel">Confirm Book Return</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Are you sure you want to mark this book as returned?</p>
-            <p><strong>Student:</strong> <span id="modalStudentName"></span></p>
-            <p><strong>Book:</strong> <span id="modalBookName"></span></p>
-            <div class="alert alert-warning mt-3">
-              <strong>Note:</strong> This action cannot be undone. The book will be removed from the issued books list.
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <form id="returnForm" method="POST">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-danger">Confirm Return</button>
-            </form>
-          </div>
-        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="returnForm" method="POST">{% csrf_token %}<button type="submit" class="btn btn-danger">Confirm Return</button></form>
       </div>
     </div>
+  </div>
+</div>
+{% endblock %}
 
-    {% include "library/footer.html" %}
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'student/js/viewissuedbook.js' %}"></script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const returnButtons = document.querySelectorAll('.return-btn');
-        const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
-        const returnForm = document.getElementById('returnForm');
-        const modalStudentName = document.getElementById('modalStudentName');
-        const modalBookName = document.getElementById('modalBookName');
-        
-        returnButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const issuedBookId = this.getAttribute('data-issuedbook-id');
-                const studentName = this.getAttribute('data-student-name');
-                const bookName = this.getAttribute('data-book-name');
-                
-                modalStudentName.textContent = studentName;
-                modalBookName.textContent = bookName;
-                returnForm.action = "{% url 'return_issued_book' %}?issuedbook_id=" + issuedBookId;
-                returnModal.show();
-            });
-        });
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'student/js/viewissuedbook.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+  document.querySelectorAll('.return-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.getElementById('modalStudentName').textContent = this.dataset.studentName;
+      document.getElementById('modalBookName').textContent = this.dataset.bookName;
+      document.getElementById('returnForm').action = "{% url 'return_issued_book' %}?issuedbook_id=" + this.dataset.issuedBookId;
+      returnModal.show();
     });
-    </script>
-  </body>
-</html>
+  });
+});
+</script>
+{% endblock %}

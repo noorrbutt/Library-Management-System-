@@ -1,44 +1,29 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Add Student - LMS</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  </head>
-  <body style="background-color:#b6bde7;">
-    {% include "library/navbaradmin.html" %}
-    
-    <div class="signup-form">
-        <form method="post" class="form-horizontal">
-            <center><h2>ADD STUDENT</h2></center>
-            {% csrf_token %}
-
-            {% for field in form %}
-            <div class="form-group">
-                <label>{{ field.label_tag }}</label>
-                {{ field }}
-                {% if field.errors %}
-                    <div class="text-danger">{{ field.errors }}</div>
-                {% endif %}
-            </div>
-            {% endfor %}
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary btn-block">ADD</button>
-            </div>
-        </form>
+{% block title %}Add Student — LibraryMS{% endblock %}
+{% block page_title %}Add Student{% endblock %}
+{% block content %}
+<div style="max-width:640px;">
+  <div class="lms-card">
+    <div class="lms-card-header">
+      <span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-user-plus" style="color:#3b82f6;margin-right:6px;"></i>Add New Student</span>
     </div>
-    
-    <div class="link-box text-center" style="margin-top: -3cm;">
-        View All Students? <a href="{% url 'viewstudent' %}">Click here</a>
+    <div class="lms-card-body">
+      <form method="post" class="lms-form-fields">
+        {% csrf_token %}
+        {% for field in form %}
+        <div style="margin-bottom:16px;">
+          <label class="lms-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}{% for e in field.errors %}<p style="color:#dc2626;font-size:0.78rem;margin:4px 0 0;">{{ e }}</p>{% endfor %}{% endif %}
+        </div>
+        {% endfor %}
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn-primary-lms"><i class="fas fa-save"></i>Add Student</button>
+          <a href="{% url 'viewstudent' %}" class="btn-secondary-lms">View All Students</a>
+        </div>
+      </form>
     </div>
-
-    {% include "library/footer.html" %}
-  </body>
-</html>
+  </div>
+</div>
+{% endblock %}

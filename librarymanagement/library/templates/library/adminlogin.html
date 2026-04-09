@@ -2,133 +2,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>LMS Admin Login</title>
-
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/adminlogin.css' %}">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login — LibraryMS</title>
+  <link rel="icon" href="{% static 'metronic/assets/media/app/favicon.ico' %}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'metronic/assets/css/styles.css' %}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: #f4f6fa; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .auth-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 40px; width: 100%; max-width: 420px; }
+    .auth-logo { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 32px; }
+    .auth-logo .icon { width: 44px; height: 44px; border-radius: 10px; background: #3b82f6; display: flex; align-items: center; justify-content: center; }
+    .auth-logo span { font-size: 1.2rem; font-weight: 700; color: #111827; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: #111827; text-align: center; margin: 0 0 6px; }
+    .sub { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 0 0 28px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    .input-wrap { position: relative; margin-bottom: 16px; }
+    .input-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.85rem; }
+    input[type=text], input[type=password] {
+      width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 0.875rem; color: #1f2937; font-family: inherit;
+      outline: none; transition: border 0.15s, box-shadow 0.15s;
+    }
+    input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
+    .btn-login { width: 100%; padding: 11px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; margin-top: 8px; }
+    .btn-login:hover { background: #2563eb; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px; }
+    .alert-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+    .link-row { text-align: center; margin-top: 20px; font-size: 0.82rem; color: #6b7280; }
+    .link-row a { color: #3b82f6; text-decoration: none; font-weight: 500; }
+    .link-row a:hover { text-decoration: underline; }
+    .top-nav { position: fixed; top: 0; left: 0; right: 0; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; }
+    .top-nav .brand { font-weight: 700; font-size: 1rem; color: #111827; display: flex; align-items: center; gap: 8px; }
+    .top-nav .nav-links { display: flex; gap: 8px; }
+    .nav-btn { padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 500; text-decoration: none; border: 1px solid #e5e7eb; color: #374151; transition: background 0.15s; }
+    .nav-btn:hover { background: #f3f4f6; }
+    body { padding-top: 64px; }
+  </style>
 </head>
 <body>
-
-    <!-- Top SLMS bar -->
-    <div class="slms-top">
-        <h1>LMS</h1>
-        <div class="slms-buttons">
-            <a href="{% url 'home' %}" class="btn">Home</a>
-            <a href="{% url 'adminclick' %}" class="btn">Admin</a>
-        </div>
+  <nav class="top-nav">
+    <div class="brand"><i class="fas fa-book-open" style="color:#3b82f6;"></i>LibraryMS</div>
+    <div class="nav-links">
+      <a href="{% url 'home' %}" class="nav-btn">Home</a>
+      <a href="{% url 'adminclick' %}" class="nav-btn">Admin</a>
     </div>
+  </nav>
 
-    <!-- Main container -->
-    <div class="login-section">
-        <div class="login-heading">Admin Login</div>
-        
-        <div class="login-container">
-            <div class="person-icon">
-                <i class="fa fa-user-circle"></i>
-            </div>
-            
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    <i class="fa fa-exclamation-circle"></i>
-                    There was an error with your login. Please check your credentials.
-                </div>
-            {% endif %}
-            
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-user"></i>
-                            </span>
-                        </div>
-                        <input type="text" 
-                               class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
-                               id="username" 
-                               name="{{ form.username.name }}"
-                               value="{{ form.username.value|default:'' }}"
-                               placeholder="Username"
-                               aria-describedby="usernameHelp"
-                               required>
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback">
-                                {{ form.username.errors|join:", " }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <small id="usernameHelp" class="form-text text-muted">Enter your admin username</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                        </div>
-                        <input type="password" 
-                               class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
-                               id="password" 
-                               name="{{ form.password.name }}"
-                               placeholder="Password"
-                               aria-describedby="passwordHelp"
-                               required>
-                        <div class="input-group-append">
-                            <span class="input-group-text password-toggle" onclick="togglePassword()">
-                                <i class="fa fa-eye" id="toggleIcon"></i>
-                            </span>
-                        </div>
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback">
-                                {{ form.password.errors|join:", " }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <small id="passwordHelp" class="form-text text-muted">Enter your admin password</small>
-                </div>
-
-                <button type="submit" class="btn-login">Login</button>
-            </form>
-        </div>
-        
-        <div class="signup-link">
-            Do not have an account? <a href="{% url 'adminsignup' %}">Signup here</a>
-        </div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="icon"><i class="fas fa-book-open" style="color:#fff;"></i></div>
+      <span>LibraryMS</span>
     </div>
+    <h2>Admin Login</h2>
+    <p class="sub">Sign in to your admin account</p>
 
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-    </script>
+    {% if form.errors %}
+    <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Invalid username or password.</div>
+    {% endif %}
+    {% if messages %}{% for message in messages %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}{% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label>Username</label>
+      <div class="input-wrap">
+        <i class="fas fa-user"></i>
+        <input type="text" name="{{ form.username.name }}" value="{{ form.username.value|default:'' }}" placeholder="Enter username" required>
+      </div>
+      <label>Password</label>
+      <div class="input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="{{ form.password.name }}" id="passwordField" placeholder="Enter password" required>
+        <button type="button" class="toggle-pw" onclick="togglePw()"><i class="fas fa-eye" id="pwIcon"></i></button>
+      </div>
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+    <div class="link-row">Don't have an account? <a href="{% url 'adminsignup' %}">Sign up here</a></div>
+  </div>
+
+  <script>
+    function togglePw() {
+      const f = document.getElementById('passwordField');
+      const i = document.getElementById('pwIcon');
+      f.type = f.type === 'password' ? 'text' : 'password';
+      i.className = f.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+  </script>
 </body>
 </html>

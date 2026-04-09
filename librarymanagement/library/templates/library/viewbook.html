@@ -1,72 +1,44 @@
 {% extends 'library/base.html' %}
 {% load static %}
-
 {% block title %}View Books — LibraryMS{% endblock %}
 {% block page_title %}View Books{% endblock %}
-
 {% block content %}
-
-<div class="bg-white rounded-xl shadow-sm border border-gray-100">
-
-  <!-- Card Header -->
-  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-    <h2 class="text-sm font-semibold text-gray-700"><i class="fas fa-book text-blue-400 mr-2"></i>All Books</h2>
-    <a href="{% url 'addbook' %}" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
-      <i class="fas fa-plus"></i> Add Book
-    </a>
+<div class="lms-card">
+  <div class="lms-card-header">
+    <span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-book" style="color:#3b82f6;margin-right:6px;"></i>All Books</span>
+    <a href="{% url 'addbook' %}" class="btn-primary-lms"><i class="fas fa-plus"></i>Add Book</a>
   </div>
-
-  <!-- Table -->
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
-          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Author</th>
-          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
-          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-        </tr>
+  <div style="overflow-x:auto;">
+    <table class="lms-table">
+      <thead>
+        <tr><th>Title</th><th>Author</th><th>Category</th><th>Quantity</th><th>Actions</th></tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody>
         {% for book in books %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-5 py-3 font-medium text-gray-800">{{ book.name }}</td>
-          <td class="px-5 py-3 text-gray-500">{{ book.author }}</td>
-          <td class="px-5 py-3 text-gray-500">{{ book.category }}</td>
-          <td class="px-5 py-3">
-            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
-              {% if book.quantity == 0 %}bg-red-100 text-red-600
-              {% elif book.quantity <= 2 %}bg-yellow-100 text-yellow-700
-              {% else %}bg-green-100 text-green-600{% endif %}">
+        <tr>
+          <td style="font-weight:500;">{{ book.name }}</td>
+          <td style="color:#6b7280;">{{ book.author }}</td>
+          <td style="color:#6b7280;">{{ book.category }}</td>
+          <td>
+            <span class="{% if book.quantity == 0 %}badge-danger{% elif book.quantity <= 2 %}badge-warning{% else %}badge-success{% endif %}">
               {{ book.quantity }}
             </span>
           </td>
-          <td class="px-5 py-3">
-            <div class="flex items-center gap-2">
-              <a href="{% url 'updatebooks' %}?id={{ book.id }}"
-                 class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors">
-                <i class="fas fa-edit mr-1"></i>Edit
-              </a>
-              <a href="{% url 'deletebooks' %}?id={{ book.id }}"
-                 class="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"
-                 onclick="return confirm('Delete this book?')">
-                <i class="fas fa-trash mr-1"></i>Delete
-              </a>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'updatebooks' %}?id={{ book.id }}" class="btn-secondary-lms" style="padding:5px 10px;font-size:0.78rem;"><i class="fas fa-edit"></i>Edit</a>
+              <a href="{% url 'deletebooks' %}?id={{ book.id }}" class="btn-danger-lms" style="padding:5px 10px;font-size:0.78rem;" onclick="return confirm('Delete this book?')"><i class="fas fa-trash"></i>Delete</a>
             </div>
           </td>
         </tr>
         {% empty %}
-        <tr>
-          <td colspan="5" class="px-5 py-12 text-center text-gray-400">
-            <i class="fas fa-book text-2xl mb-2 block"></i>
-            <p>No books found. <a href="{% url 'addbook' %}" class="text-blue-500 hover:underline">Add one now.</a></p>
-          </td>
-        </tr>
+        <tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">
+          <i class="fas fa-book" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
+          No books found. <a href="{% url 'addbook' %}" style="color:#3b82f6;">Add one now.</a>
+        </td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
 </div>
 {% endblock %}
