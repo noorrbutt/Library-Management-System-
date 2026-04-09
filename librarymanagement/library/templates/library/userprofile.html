@@ -3,123 +3,163 @@
 {% block title %}User Profile — LibraryMS{% endblock %}
 {% block page_title %}User Profile{% endblock %}
 {% block content %}
-<div style="max-width:720px;">
 
-  <!-- Profile Header -->
-  <div class="lms-card" style="margin-bottom:16px;">
-    <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
-      <div style="position:relative;">
-        <div style="width:72px;height:72px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-          {% if admin_profile and admin_profile.photo %}
-            <img src="{{ admin_profile.photo.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+<div style="display:flex;justify-content:center;">
+  <div style="width:100%;max-width:720px;">
+
+    <!-- Profile Header Card -->
+    <div class="lms-card" style="margin-bottom:16px;">
+      <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
+        <div style="position:relative;flex-shrink:0;">
+          <div style="width:76px;height:76px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            {% if admin_profile and admin_profile.photo %}
+              <img src="{{ admin_profile.photo.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+              <span style="color:#fff;font-size:1.8rem;font-weight:700;">{{ current_user.username|first|upper }}</span>
+            {% endif %}
+          </div>
+          <label for="photoInput" title="Upload photo"
+                 style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:#3b82f6;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <i class="fas fa-camera" style="color:#fff;font-size:0.65rem;"></i>
+          </label>
+          <input type="file" id="photoInput" accept="image/*" style="display:none;">
+        </div>
+        <div>
+          {% if current_user.first_name or current_user.last_name %}
+            <div style="font-size:1.05rem;font-weight:700;color:#111827;">{{ current_user.first_name }} {{ current_user.last_name }}</div>
           {% else %}
-            <span style="color:#fff;font-size:1.6rem;font-weight:700;">{{ current_user.username|first|upper }}</span>
+            <div style="font-size:1.05rem;font-weight:700;color:#111827;">{{ current_user.username }}</div>
+          {% endif %}
+          <div style="font-size:0.85rem;color:#6b7280;margin-top:2px;">@{{ current_user.username }}</div>
+          {% if current_user.email %}
+            <div style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">{{ current_user.email }}</div>
           {% endif %}
         </div>
-        <label for="photoInput" style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:#3b82f6;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-          <i class="fas fa-camera" style="color:#fff;font-size:0.6rem;"></i>
-        </label>
-        <input type="file" id="photoInput" accept="image/*" style="display:none;">
-      </div>
-      <div>
-        <div style="font-size:1.05rem;font-weight:700;color:#111827;">{{ current_user.first_name }} {{ current_user.last_name }}</div>
-        <div style="font-size:0.85rem;color:#6b7280;">@{{ current_user.username }}</div>
-        <div style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">{{ current_user.email }}</div>
       </div>
     </div>
-  </div>
 
-  <!-- Personal Information -->
-  <div class="lms-card" style="margin-bottom:16px;">
-    <div class="lms-card-header">
-      <span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information</span>
-      <button class="btn-secondary-lms" id="editPersonalBtn" type="button" style="padding:5px 12px;font-size:0.78rem;"><i class="fas fa-edit"></i>Edit</button>
+    <!-- Personal Information -->
+    <div class="lms-card" style="margin-bottom:16px;">
+      <div class="lms-card-header">
+        <span style="font-size:0.875rem;font-weight:600;">
+          <i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information
+        </span>
+        <button class="btn-secondary-lms" id="editPersonalBtn" type="button" style="padding:5px 12px;font-size:0.78rem;">
+          <i class="fas fa-edit"></i>Edit
+        </button>
+      </div>
+      <div class="lms-card-body">
+        <form id="personalForm">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label class="lms-label">Full Name</label>
+              <input type="text" class="lms-input" id="fullName"
+                     value="{% if current_user.first_name or current_user.last_name %}{{ current_user.first_name }} {{ current_user.last_name }}{% endif %}"
+                     placeholder="Enter full name" readonly>
+            </div>
+            <div>
+              <label class="lms-label">Email Address</label>
+              <input type="email" class="lms-input" id="emailAddress"
+                     value="{{ current_user.email }}"
+                     placeholder="Enter email" readonly>
+            </div>
+            <div>
+              <label class="lms-label">Phone Number</label>
+              <input type="tel" class="lms-input" id="phoneNumber"
+                     value="{% if admin_profile and admin_profile.phone %}{{ admin_profile.phone }}{% endif %}"
+                     placeholder="Enter phone number" readonly>
+            </div>
+            <div>
+              <label class="lms-label">Date of Birth</label>
+              <input type="date" class="lms-input" id="dateOfBirth"
+                     value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}"
+                     readonly>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="lms-label">Address</label>
+            <textarea class="lms-input" id="address" rows="3" placeholder="Enter your address" readonly>{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
+          </div>
+          <div id="personalActions" style="display:none;gap:10px;">
+            <button type="button" class="btn-primary-lms" id="savePersonalBtn">
+              <i class="fas fa-save"></i>Save Changes
+            </button>
+            <button type="button" class="btn-secondary-lms" id="cancelPersonalBtn">
+              <i class="fas fa-times"></i>Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-    <div class="lms-card-body">
-      <form id="personalForm">
-        {% csrf_token %}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <div>
-            <label class="lms-label">Full Name</label>
-            <input type="text" class="lms-input" id="fullName" value="{{ current_user.first_name }} {{ current_user.last_name }}" readonly>
-          </div>
-          <div>
-            <label class="lms-label">Email Address</label>
-            <input type="email" class="lms-input" id="emailAddress" value="{{ current_user.email }}" readonly>
-          </div>
-          <div>
-            <label class="lms-label">Phone Number</label>
-            <input type="tel" class="lms-input" id="phoneNumber" value="{% if admin_profile and admin_profile.phone %}{{ admin_profile.phone }}{% endif %}" placeholder="Enter phone number" readonly>
-          </div>
-          <div>
-            <label class="lms-label">Date of Birth</label>
-            <input type="date" class="lms-input" id="dateOfBirth" value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}" readonly>
-          </div>
-        </div>
-        <div style="margin-bottom:16px;">
-          <label class="lms-label">Address</label>
-          <textarea class="lms-input" id="address" rows="3" placeholder="Enter your address" readonly>{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
-        </div>
-        <div id="personalActions" style="display:none;gap:10px;display:none;">
-          <button type="button" class="btn-primary-lms" id="savePersonalBtn"><i class="fas fa-save"></i>Save Changes</button>
-          <button type="button" class="btn-secondary-lms" id="cancelPersonalBtn"><i class="fas fa-times"></i>Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Account Info -->
-  <div class="lms-card">
-    <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-info-circle" style="color:#3b82f6;margin-right:6px;"></i>Account Information</span></div>
-    <div class="lms-card-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-        <div>
-          <div style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Account Created</div>
-          <div style="font-size:0.875rem;color:#111827;margin-top:4px;">{{ current_user.date_joined|date:"M d, Y" }}</div>
-        </div>
-        <div>
-          <div style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Last Login</div>
-          <div style="font-size:0.875rem;color:#111827;margin-top:4px;">{% if current_user.last_login %}{{ current_user.last_login|date:"M d, Y" }}{% else %}Never{% endif %}</div>
-        </div>
-        <div>
-          <div style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Status</div>
-          <div style="margin-top:4px;"><span class="badge-success"><i class="fas fa-check-circle"></i> Active</span></div>
+    <!-- Account Information -->
+    <div class="lms-card">
+      <div class="lms-card-header">
+        <span style="font-size:0.875rem;font-weight:600;">
+          <i class="fas fa-info-circle" style="color:#3b82f6;margin-right:6px;"></i>Account Information
+        </span>
+      </div>
+      <div class="lms-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Account Created</div>
+            <div style="font-size:0.875rem;font-weight:500;color:#111827;">{{ current_user.date_joined|date:"M d, Y" }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Last Login</div>
+            <div style="font-size:0.875rem;font-weight:500;color:#111827;">
+              {% if current_user.last_login %}{{ current_user.last_login|date:"M d, Y" }}{% else %}Never{% endif %}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Status</div>
+            <span class="badge-success"><i class="fas fa-check-circle"></i> Active</span>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
-<div id="successAlert" style="display:none;position:fixed;bottom:20px;right:20px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 20px;border-radius:10px;font-size:0.875rem;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+<!-- Success toast -->
+<div id="successAlert" style="display:none;position:fixed;bottom:24px;right:24px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 20px;border-radius:10px;font-size:0.875rem;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:999;">
   <i class="fas fa-check-circle"></i> <span id="successMessage">Changes saved!</span>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/userprofile.js' %}"></script>
 <script>
 const editBtn = document.getElementById('editPersonalBtn');
+const cancelBtn = document.getElementById('cancelPersonalBtn');
 const actions = document.getElementById('personalActions');
-const fields = document.querySelectorAll('#personalForm input, #personalForm textarea');
-editBtn.addEventListener('click', function() {
-  fields.forEach(f => { if(f.type !== 'hidden') f.removeAttribute('readonly'); });
+const inputs = document.querySelectorAll('#personalForm input:not([type=hidden]), #personalForm textarea');
+
+editBtn.addEventListener('click', function () {
+  inputs.forEach(f => f.removeAttribute('readonly'));
   actions.style.display = 'flex';
   editBtn.style.display = 'none';
 });
-document.getElementById('cancelPersonalBtn')?.addEventListener('click', function() {
-  fields.forEach(f => f.setAttribute('readonly', true));
+
+cancelBtn.addEventListener('click', function () {
+  inputs.forEach(f => f.setAttribute('readonly', true));
   actions.style.display = 'none';
   editBtn.style.display = 'inline-flex';
 });
-// photo upload
-document.getElementById('photoInput').addEventListener('change', function() {
-  if (this.files[0]) {
-    const formData = new FormData();
-    formData.append('photo', this.files[0]);
-    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-    fetch("{% url 'upload_profile_photo' %}", { method: 'POST', body: formData })
-      .then(r => r.json()).then(() => location.reload());
-  }
+
+// Photo upload
+document.getElementById('photoInput').addEventListener('change', function () {
+  if (!this.files[0]) return;
+  const formData = new FormData();
+  formData.append('photo', this.files[0]);
+  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+  fetch("{% url 'upload_profile_photo' %}", { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(() => location.reload())
+    .catch(err => console.error(err));
 });
 </script>
 {% endblock %}

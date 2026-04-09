@@ -4,9 +4,24 @@
 {% block page_title %}Dashboard{% endblock %}
 {% block extra_css %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.qa-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: #f8fafc; color: #374151;
+  border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+  text-decoration: none; border: 1.5px solid #e2e8f0;
+  transition: all 0.15s; white-space: nowrap;
+}
+.qa-btn:hover {
+  background: #3b82f6; color: #fff; border-color: #3b82f6;
+  text-decoration: none; transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+}
+</style>
 {% endblock %}
 
 {% block content %}
+
 <!-- Stat Cards -->
 <div class="stat-grid">
   <div class="stat-card">
@@ -27,18 +42,20 @@
   </div>
 </div>
 
-<!-- Quick Actions -->
+<!-- Quick Actions — all uniform style, centered -->
 <div class="lms-card" style="margin-bottom:20px;">
   <div class="lms-card-header">
-    <span style="font-size:0.875rem;font-weight:600;color:#111827;"><i class="fas fa-bolt" style="color:#f59e0b;margin-right:6px;"></i>Quick Actions</span>
+    <span style="font-size:0.875rem;font-weight:600;color:#111827;">
+      <i class="fas fa-bolt" style="color:#f59e0b;margin-right:6px;"></i>Quick Actions
+    </span>
   </div>
-  <div class="lms-card-body" style="display:flex;flex-wrap:wrap;gap:10px;">
-    <a href="{% url 'addbook' %}" class="btn-primary-lms"><i class="fas fa-plus"></i>Add Book</a>
-    <a href="{% url 'addstudent' %}" class="btn-primary-lms" style="background:#16a34a;"><i class="fas fa-user-plus"></i>Add Student</a>
-    <a href="{% url 'issuebook' %}" class="btn-primary-lms" style="background:#ea580c;"><i class="fas fa-paper-plane"></i>Issue Book</a>
-    <a href="{% url 'viewissuedbook' %}" class="btn-secondary-lms"><i class="fas fa-eye"></i>View Issued</a>
-    <a href="{% url 'viewbook' %}" class="btn-secondary-lms"><i class="fas fa-search"></i>Search Books</a>
-    <a href="{% url 'viewstudent' %}" class="btn-secondary-lms"><i class="fas fa-list"></i>View Students</a>
+  <div class="lms-card-body" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:20px 24px;">
+    <a href="{% url 'addbook' %}" class="qa-btn"><i class="fas fa-plus-circle"></i>Add Book</a>
+    <a href="{% url 'addstudent' %}" class="qa-btn"><i class="fas fa-user-plus"></i>Add Student</a>
+    <a href="{% url 'issuebook' %}" class="qa-btn"><i class="fas fa-paper-plane"></i>Issue Book</a>
+    <a href="{% url 'viewissuedbook' %}" class="qa-btn"><i class="fas fa-eye"></i>View Issued</a>
+    <a href="{% url 'viewbook' %}" class="qa-btn"><i class="fas fa-search"></i>Search Books</a>
+    <a href="{% url 'viewstudent' %}" class="qa-btn"><i class="fas fa-list"></i>View Students</a>
   </div>
 </div>
 
@@ -51,7 +68,7 @@
   <div class="lms-card">
     <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-chart-line" style="color:#16a34a;margin-right:6px;"></i>Monthly Trend</span></div>
     <div class="lms-card-body"><div style="height:200px;"><canvas id="trendChart"></canvas></div></div>
-</div>
+  </div>
 </div>
 
 <!-- Activity + Low Stock -->
@@ -124,6 +141,7 @@
   <div style="text-align:center;padding:40px;color:#9ca3af;"><i class="fas fa-book" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>No data yet</div>
   {% endif %}
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
