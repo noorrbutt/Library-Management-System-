@@ -100,9 +100,13 @@ function setupCollapsibleCards() {
 }
 
 function displayAvatarInitials() {
-    const fullName = $.trim($('#fullName').val());
-    const initials = getInitials(fullName);
-    $('#avatarInitials').text(initials);
+    // Only update initials if they exist (when no profile picture)
+    const initialsElement = document.getElementById('avatarInitials');
+    if (initialsElement) {
+        const fullName = $.trim($('#fullName').val());
+        const initials = getInitials(fullName);
+        initialsElement.textContent = initials;
+    }
 }
 
 function getInitials(fullName) {
@@ -118,9 +122,22 @@ function getInitials(fullName) {
 function checkForExistingPhoto() {
     // Check if an image tag already exists in the avatar circle
     const $img = $('#avatarCircle').find('img.avatar-image');
+    const $initials = $('#avatarInitials');
+
     if ($img.length > 0 && $img.attr('src')) {
         profileState.hasExistingPhoto = true;
         $('#avatarCircle').addClass('has-photo');
+        // Hide initials if image exists
+        if ($initials.length > 0) {
+            $initials.hide();
+        }
+    } else {
+        profileState.hasExistingPhoto = false;
+        $('#avatarCircle').removeClass('has-photo');
+        // Show initials if no image
+        if ($initials.length > 0) {
+            $initials.show();
+        }
     }
 }
 
@@ -294,40 +311,22 @@ function handlePhotoUpload(e) {
         // Update avatar to show the preview
         const $avatarCircle = $('#avatarCircle');
         let $img = $avatarCircle.find('img.avatar-image');
-        
+        const $initials = $('#avatarInitials');
+
         if ($img.length > 0) {
             // Update existing image
             $img.attr('src', profileState.photoPreview);
         } else {
-            // Create new image
-            $avatarCircle.prepend(`<img src="${profileState.photoPreview}" alt="Profile Picture" class="avatar-image">`);
+            // Create new image and hide initials
+            $avatarCircle.prepend(`<img src="${profileState.photoPreview}" alt="Profile Picture" class="avatar-image" style="width:100%;height:100%;object-fit:cover;">`);
         }
-        
+
         $avatarCircle.addClass('has-photo');
-        uploadProfilePhoto(file);
-    };
-    reader.readAsDataURL(file);
-}
+        // Hide initials when showing image
+        if ($initials.length > 0) {
+            $initials.hide();
+        }
 
-function uploadProfilePhoto(file) {
-    showLoading();
-
-    const formData = new FormData();
-    formData.append('photo', file);
-
-    $.ajax({
-        url: '/upload-profile-photo/',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        timeout: 30000,
-        success: function(response) {
-            hideLoading();
-            profileState.hasExistingPhoto = true;
-            showSuccess('Profile photo updated successfully!');
-            // Reset file input
-            $('#photoInput').val('');
         },
         error: function(xhr, status, error) {
             hideLoading();

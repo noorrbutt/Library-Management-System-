@@ -1,4 +1,3 @@
-from urllib import request
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
@@ -73,11 +72,6 @@ def dashboard_view(request):
             )
         ).count()
     ).count()
-
-    # If the above logic is wrong, use this simpler version:
-    # books_this_month = Book.objects.filter(
-    #     created_at__gte=month_start  # Assuming you have a created_at field
-    # ).count()
 
     # ========== RECENT ACTIVITIES ==========
     recent_activities = IssuedBook.objects.select_related("student", "book").order_by(

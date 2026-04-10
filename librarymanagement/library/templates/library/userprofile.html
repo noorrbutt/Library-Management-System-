@@ -2,20 +2,56 @@
 {% load static %}
 {% block title %}User Profile — LibraryMS{% endblock %}
 {% block page_title %}User Profile{% endblock %}
-{% block content %}
+{% block extra_css %}
+<!-- userprofile.js uses jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+  .loading-spinner { display:none; text-align:center; padding:20px; }
+  .spinner { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#3b82f6; border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .lms-alert { padding:12px 16px; border-radius:8px; font-size:0.85rem; margin-bottom:16px; display:none; }
+  .lms-alert-success { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+  .lms-alert-danger  { background:#fee2e2; border:1px solid #fecaca; color:#dc2626; }
+  /* Keep personalActions hidden until edit mode */
+  #personalActions { display:none; gap:10px; }
+</style>
+{% endblock %}
 
+{% block content %}
 <div style="display:flex;justify-content:center;">
   <div style="width:100%;max-width:720px;">
 
-    <!-- Profile Header Card -->
+    <!-- Alerts (required by userprofile.js) -->
+    <div id="successAlert" class="lms-alert lms-alert-success">
+      <i class="fas fa-check-circle"></i> <strong id="successMessage">Changes saved successfully!</strong>
+    </div>
+    <div id="errorAlert" class="lms-alert lms-alert-danger">
+      <i class="fas fa-exclamation-circle"></i> <strong id="errorMessage">An error occurred.</strong>
+    </div>
+
+    <!-- Loading Spinner (required by userprofile.js) -->
+    <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner"></div>
+      <p style="font-size:0.8rem;color:#6b7280;">Processing...</p>
+    </div>
+
+    <!-- Profile Header -->
     <div class="lms-card" style="margin-bottom:16px;">
       <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
         <div style="position:relative;flex-shrink:0;">
-          <div style="width:76px;height:76px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <div id="avatarCircle" style="width:76px;height:76px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
             {% if admin_profile and admin_profile.photo %}
-              <img src="{{ admin_profile.photo.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+              <img src="{{ admin_profile.photo.url }}" alt="Profile" class="avatar-image" style="width:100%;height:100%;object-fit:cover;">
             {% else %}
-              <span style="color:#fff;font-size:1.8rem;font-weight:700;">{{ current_user.username|first|upper }}</span>
+              <span id="avatarInitials" style="color:#fff;font-size:1.8rem;font-weight:700;">
+                {% if current_user.first_name and current_user.last_name %}
+                  {{ current_user.first_name|first|upper }}{{ current_user.last_name|first|upper }}
+                {% elif current_user.first_name %}
+                  {{ current_user.first_name|slice:':2'|upper }}
+                {% else %}
+                  {{ current_user.username|slice:':2'|upper }}
+                {% endif %}
+              </span>
             {% endif %}
           </div>
           <label for="photoInput" title="Upload photo"
@@ -25,11 +61,13 @@
           <input type="file" id="photoInput" accept="image/*" style="display:none;">
         </div>
         <div>
-          {% if current_user.first_name or current_user.last_name %}
-            <div style="font-size:1.05rem;font-weight:700;color:#111827;">{{ current_user.first_name }} {{ current_user.last_name }}</div>
-          {% else %}
-            <div style="font-size:1.05rem;font-weight:700;color:#111827;">{{ current_user.username }}</div>
-          {% endif %}
+          <div style="font-size:1.05rem;font-weight:700;color:#111827;">
+            {% if current_user.first_name or current_user.last_name %}
+              {{ current_user.first_name }} {{ current_user.last_name }}
+            {% else %}
+              {{ current_user.username }}
+            {% endif %}
+          </div>
           <div style="font-size:0.85rem;color:#6b7280;margin-top:2px;">@{{ current_user.username }}</div>
           {% if current_user.email %}
             <div style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">{{ current_user.email }}</div>
@@ -49,39 +87,41 @@
         </button>
       </div>
       <div class="lms-card-body">
-        <form id="personalForm">
+        <!-- userprofile.js expects this exact form id and field ids -->
+        <form id="personalForm" class="profile-form">
           {% csrf_token %}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
             <div>
-              <label class="lms-label">Full Name</label>
+              <label class="lms-label">Full Name *</label>
               <input type="text" class="lms-input" id="fullName"
-                     value="{% if current_user.first_name or current_user.last_name %}{{ current_user.first_name }} {{ current_user.last_name }}{% endif %}"
-                     placeholder="Enter full name" readonly>
+                     value="{{ current_user.first_name }} {{ current_user.last_name }}"
+                     placeholder="Enter full name">
             </div>
             <div>
-              <label class="lms-label">Email Address</label>
+              <label class="lms-label">Email Address *</label>
               <input type="email" class="lms-input" id="emailAddress"
                      value="{{ current_user.email }}"
-                     placeholder="Enter email" readonly>
+                     placeholder="Enter email address">
             </div>
             <div>
               <label class="lms-label">Phone Number</label>
               <input type="tel" class="lms-input" id="phoneNumber"
                      value="{% if admin_profile and admin_profile.phone %}{{ admin_profile.phone }}{% endif %}"
-                     placeholder="Enter phone number" readonly>
+                     placeholder="Enter phone number">
             </div>
             <div>
               <label class="lms-label">Date of Birth</label>
               <input type="date" class="lms-input" id="dateOfBirth"
-                     value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}"
-                     readonly>
+                     value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}">
             </div>
           </div>
           <div style="margin-bottom:16px;">
             <label class="lms-label">Address</label>
-            <textarea class="lms-input" id="address" rows="3" placeholder="Enter your address" readonly>{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
+            <textarea class="lms-input" id="address" rows="3" placeholder="Enter your address">{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
           </div>
-          <div id="personalActions" style="display:none;gap:10px;">
+
+          <!-- personalActions shown/hidden by userprofile.js -->
+          <div id="personalActions">
             <button type="button" class="btn-primary-lms" id="savePersonalBtn">
               <i class="fas fa-save"></i>Save Changes
             </button>
@@ -122,44 +162,9 @@
 
   </div>
 </div>
-
-<!-- Success toast -->
-<div id="successAlert" style="display:none;position:fixed;bottom:24px;right:24px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 20px;border-radius:10px;font-size:0.875rem;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:999;">
-  <i class="fas fa-check-circle"></i> <span id="successMessage">Changes saved!</span>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
+<!-- userprofile.js is jQuery-based, jQuery loaded in extra_css above -->
 <script src="{% static 'js/userprofile.js' %}"></script>
-<script>
-const editBtn = document.getElementById('editPersonalBtn');
-const cancelBtn = document.getElementById('cancelPersonalBtn');
-const actions = document.getElementById('personalActions');
-const inputs = document.querySelectorAll('#personalForm input:not([type=hidden]), #personalForm textarea');
-
-editBtn.addEventListener('click', function () {
-  inputs.forEach(f => f.removeAttribute('readonly'));
-  actions.style.display = 'flex';
-  editBtn.style.display = 'none';
-});
-
-cancelBtn.addEventListener('click', function () {
-  inputs.forEach(f => f.setAttribute('readonly', true));
-  actions.style.display = 'none';
-  editBtn.style.display = 'inline-flex';
-});
-
-// Photo upload
-document.getElementById('photoInput').addEventListener('change', function () {
-  if (!this.files[0]) return;
-  const formData = new FormData();
-  formData.append('photo', this.files[0]);
-  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-  fetch("{% url 'upload_profile_photo' %}", { method: 'POST', body: formData })
-    .then(r => r.json())
-    .then(() => location.reload())
-    .catch(err => console.error(err));
-});
-</script>
 {% endblock %}

@@ -2,43 +2,234 @@
 {% load static %}
 {% block title %}View Books — LibraryMS{% endblock %}
 {% block page_title %}View Books{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  .hidden-checkbox { display: none; }
+  .editable { cursor: default; }
+  .filter-select { padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; color: #374151; background: #fff; outline: none; font-family: inherit; }
+  /* Inline edit inputs */
+  .editable input.form-control-sm {
+    padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 0.82rem; font-family: inherit; outline: none; width: 100%;
+  }
+  .editable input.form-control-sm:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="lms-card">
-  <div class="lms-card-header">
-    <span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-book" style="color:#3b82f6;margin-right:6px;"></i>All Books</span>
-    <a href="{% url 'addbook' %}" class="btn-primary-lms"><i class="fas fa-plus"></i>Add Book</a>
+
+  <!-- Header row -->
+  <div class="lms-card-header" style="flex-wrap:wrap;gap:10px;">
+    <span style="font-size:0.875rem;font-weight:600;">
+      <i class="fas fa-book" style="color:#3b82f6;margin-right:6px;"></i>
+      {% if books %}
+        Showing {{ books.start_index }}–{{ books.end_index }} of {{ books.paginator.count }} Books
+      {% else %}
+        Books
+      {% endif %}
+    </span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <a href="{% url 'addbook' %}" class="btn-primary-lms" style="padding:6px 12px;font-size:0.8rem;">
+        <i class="fas fa-plus"></i>Add Book
+      </a>
+      <button class="btn-secondary-lms" type="button" id="filterToggleBtn" style="padding:6px 12px;font-size:0.8rem;">
+        <i class="fas fa-filter"></i>Filter
+      </button>
+      <button id="edit-btn" type="button" class="btn-secondary-lms" style="padding:6px 12px;font-size:0.8rem;">
+        <i class="fas fa-edit"></i>Edit
+      </button>
+      <button id="toggle-btn" type="button" class="btn-secondary-lms" style="padding:6px 12px;font-size:0.8rem;">
+        <i class="fas fa-check-square"></i>Select
+      </button>
+      <button id="cancel-btn" class="btn-secondary-lms d-none" style="padding:6px 12px;font-size:0.8rem;">
+        <i class="fas fa-times"></i>Cancel
+      </button>
+    </div>
   </div>
-  <div style="overflow-x:auto;">
-    <table class="lms-table">
-      <thead>
-        <tr><th>Title</th><th>Author</th><th>Category</th><th>Quantity</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for book in books %}
-        <tr>
-          <td style="font-weight:500;">{{ book.name }}</td>
-          <td style="color:#6b7280;">{{ book.author }}</td>
-          <td style="color:#6b7280;">{{ book.category }}</td>
-          <td>
-            <span class="{% if book.quantity == 0 %}badge-danger{% elif book.quantity <= 2 %}badge-warning{% else %}badge-success{% endif %}">
-              {{ book.quantity }}
-            </span>
-          </td>
-          <td>
-            <div style="display:flex;gap:6px;">
-              <a href="{% url 'updatebooks' %}?id={{ book.id }}" class="btn-secondary-lms" style="padding:5px 10px;font-size:0.78rem;"><i class="fas fa-edit"></i>Edit</a>
-              <a href="{% url 'deletebooks' %}?id={{ book.id }}" class="btn-danger-lms" style="padding:5px 10px;font-size:0.78rem;" onclick="return confirm('Delete this book?')"><i class="fas fa-trash"></i>Delete</a>
-            </div>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af;">
-          <i class="fas fa-book" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
-          No books found. <a href="{% url 'addbook' %}" style="color:#3b82f6;">Add one now.</a>
-        </td></tr>
+
+  <!-- Search bar -->
+  <div style="padding:12px 20px;border-bottom:1px solid #e5e7eb;">
+    <form method="GET" id="search-form" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="text" name="q" class="lms-input" style="max-width:300px;"
+             placeholder="Search by book name" value="{{ query|default:'' }}">
+      <button type="submit" class="btn-primary-lms" style="padding:7px 14px;font-size:0.85rem;">
+        <i class="fas fa-search"></i>Search
+      </button>
+      {% if query %}
+      <a href="{% url 'viewbook' %}{% if request.GET.category or request.GET.language %}?{% endif %}{% if request.GET.category %}category={{ request.GET.category }}{% endif %}{% if request.GET.category and request.GET.language %}&{% endif %}{% if request.GET.language %}language={{ request.GET.language }}{% endif %}"
+         class="btn-secondary-lms" style="padding:7px 14px;font-size:0.85rem;">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Filter collapse -->
+  <div id="filterCollapse" style="display:none;padding:12px 20px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+    <form method="GET" id="filter-form" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+      <select name="category" class="filter-select">
+        <option value="">All Categories</option>
+        {% for key, val in category_choices %}
+        <option value="{{ key }}" {% if request.GET.category == key %}selected{% endif %}>{{ val }}</option>
         {% endfor %}
-      </tbody>
-    </table>
+      </select>
+      <select name="language" class="filter-select">
+        <option value="">All Languages</option>
+        {% for key, val in language_choices %}
+        <option value="{{ key }}" {% if request.GET.language == key %}selected{% endif %}>{{ val }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-primary-lms" style="padding:7px 14px;font-size:0.85rem;">Apply</button>
+      <a href="{% url 'viewbook' %}{% if query %}?q={{ query }}{% endif %}" class="btn-secondary-lms" style="padding:7px 14px;font-size:0.85rem;">Reset</a>
+    </form>
+  </div>
+
+  {% if books %}
+  <!-- Delete form wraps the table -->
+  <form method="POST" action="{% url 'deletebooks' %}" id="book-form">
+    {% csrf_token %}
+    <div style="overflow-x:auto;">
+      <table class="lms-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col hidden-checkbox"><input type="checkbox" id="select-all"></th>
+            <th>#</th>
+            <th>Book Name</th>
+            <th>Quantity</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Language</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for book in books %}
+          <tr data-id="{{ book.id }}">
+            <td class="checkbox-col hidden-checkbox">
+              <input type="checkbox" name="selected_books" value="{{ book.id }}">
+            </td>
+            <td style="color:#9ca3af;">{{ forloop.counter0|add:books.start_index }}</td>
+            <td class="editable" data-field="name">{{ book.name }}</td>
+            <td class="editable" data-field="quantity">{{ book.quantity }}</td>
+            <td class="editable" data-field="author">{{ book.author }}</td>
+            <td class="editable" data-field="category">{{ book.get_category_display }}</td>
+            <td class="editable" data-field="language">{{ book.get_language_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+
+  <!-- Hidden edit submit form -->
+  <form method="POST" action="{% url 'updatebooks' %}" id="edit-form" class="d-none">
+    {% csrf_token %}
+    <input type="hidden" name="books_data" id="books-data">
+  </form>
+
+  <!-- Pagination -->
+  {% if books.paginator.num_pages > 1 %}
+  <div style="padding:16px 20px;">
+    <ul class="pagination">
+      {% if books.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ books.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Prev</a></li>
+      {% endif %}
+      {% for num in books.paginator.page_range %}
+        {% if books.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if books.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ books.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ books.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.language %}&language={{ request.GET.language }}{% endif %}">Last</a></li>
+      {% endif %}
+    </ul>
+    <div style="text-align:center;font-size:0.78rem;color:#9ca3af;margin-top:4px;">Page {{ books.number }} of {{ books.paginator.num_pages }}</div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div style="text-align:center;padding:48px;color:#9ca3af;">
+    <i class="fas fa-book" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+    {% if query or request.GET.category or request.GET.language %}
+      No books match your search.
+    {% else %}
+      No books in library yet.
+    {% endif %}
+    <div style="margin-top:16px;"><a href="{% url 'addbook' %}" class="btn-primary-lms">Add First Book</a></div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Deletion</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">Are you sure you want to delete the selected books?<br><strong>This cannot be undone.</strong></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index:1080;">
+  <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'student/js/viewbook.js' %}"></script>
+<script>
+// Filter toggle
+document.getElementById('filterToggleBtn').addEventListener('click', function () {
+  const fc = document.getElementById('filterCollapse');
+  fc.style.display = fc.style.display === 'none' ? 'block' : 'none';
+});
+
+// Show filter panel if filters are active on page load
+{% if request.GET.category or request.GET.language %}
+  document.getElementById('filterCollapse').style.display = 'block';
+{% endif %}
+
+// Search clear
+document.addEventListener('DOMContentLoaded', function () {
+  const searchForm = document.getElementById('search-form');
+  const searchInput = searchForm.querySelector('input[name="q"]');
+  if (searchInput.value === 'None' || searchInput.value === 'none') searchInput.value = '';
+  searchForm.addEventListener('submit', function (e) {
+    if (!searchInput.value.trim()) {
+      e.preventDefault();
+      const url = new URL(window.location.href);
+      url.searchParams.delete('q');
+      window.location.href = url.toString();
+    }
+  });
+
+  // Django messages toast
+  {% if messages %}{% for message in messages %}
+    const toastEl = document.getElementById('actionToast');
+    document.getElementById('toastMessage').textContent = "{{ message }}";
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    toastEl.classList.add("{% if message.tags == 'success' %}bg-success{% else %}bg-danger{% endif %}");
+    new bootstrap.Toast(toastEl, { delay: 2500 }).show();
+  {% endfor %}{% endif %}
+});
+</script>
 {% endblock %}
