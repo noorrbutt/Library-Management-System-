@@ -37,4 +37,7 @@ urlpatterns = [
         views.upload_profile_photo_view,
         name="upload_profile_photo",
     ),
+    path(
+        "remove-profile-photo/", views.remove_profile_photo, name="remove_profile_photo"
+    ),
 ]

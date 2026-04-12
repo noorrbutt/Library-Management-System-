@@ -3,17 +3,104 @@
 {% block title %}User Profile — LibraryMS{% endblock %}
 {% block page_title %}User Profile{% endblock %}
 {% block extra_css %}
-<!-- userprofile.js uses jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
+  /* ── Spinner ── */
   .loading-spinner { display:none; text-align:center; padding:20px; }
   .spinner { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#3b82f6; border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 8px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── Alerts ── */
   .lms-alert { padding:12px 16px; border-radius:8px; font-size:0.85rem; margin-bottom:16px; display:none; }
   .lms-alert-success { background:#dcfce7; border:1px solid #86efac; color:#166534; }
   .lms-alert-danger  { background:#fee2e2; border:1px solid #fecaca; color:#dc2626; }
-  /* Keep personalActions hidden until edit mode */
+
+  /* ── Form actions ── */
   #personalActions { display:none; gap:10px; }
+
+  /* ── Avatar wrapper — relative so menu can be anchored ── */
+  #avatarWrapper {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  /* ── Avatar circle clickable when photo present ── */
+  #avatarCircle {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: default;
+    transition: filter 0.15s;
+  }
+  #avatarCircle.has-photo {
+    cursor: pointer;
+  }
+  #avatarCircle.has-photo:hover {
+    filter: brightness(0.88);
+  }
+
+  /* ── Camera button (only visible when NO photo) ── */
+  #cameraLabel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  #cameraLabel:hover { background: #2563eb; }
+
+  /* Hide camera badge when photo is present — JS adds .has-photo to avatarCircle */
+  #avatarCircle.has-photo + #cameraLabel,
+  .avatar-has-photo #cameraLabel { display: none; }
+
+  /* ── Photo action menu ── */
+  #photoMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    min-width: 160px;
+    z-index: 100;
+    overflow: hidden;
+    display: none;
+  }
+  #photoMenu.photo-menu--open { display: block; }
+
+  .photo-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #374151;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s;
+  }
+  .photo-menu-item:hover { background: #f3f4f6; }
+  .photo-menu-item.danger { color: #dc2626; }
+  .photo-menu-item + .photo-menu-item { border-top: 1px solid #f3f4f6; }
 </style>
 {% endblock %}
 
@@ -21,7 +108,7 @@
 <div style="display:flex;justify-content:center;">
   <div style="width:100%;max-width:720px;">
 
-    <!-- Alerts (required by userprofile.js) -->
+    <!-- Alerts -->
     <div id="successAlert" class="lms-alert lms-alert-success">
       <i class="fas fa-check-circle"></i> <strong id="successMessage">Changes saved successfully!</strong>
     </div>
@@ -29,7 +116,7 @@
       <i class="fas fa-exclamation-circle"></i> <strong id="errorMessage">An error occurred.</strong>
     </div>
 
-    <!-- Loading Spinner (required by userprofile.js) -->
+    <!-- Loading Spinner -->
     <div id="loadingSpinner" class="loading-spinner">
       <div class="spinner"></div>
       <p style="font-size:0.8rem;color:#6b7280;">Processing...</p>
@@ -38,10 +125,15 @@
     <!-- Profile Header -->
     <div class="lms-card" style="margin-bottom:16px;">
       <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
-        <div style="position:relative;flex-shrink:0;">
-          <div id="avatarCircle" style="width:76px;height:76px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+
+        <!-- Avatar + menu wrapper -->
+        <div id="avatarWrapper">
+
+          <!-- Circle: shows initials OR photo -->
+          <div id="avatarCircle">
             {% if admin_profile and admin_profile.photo %}
-              <img src="{{ admin_profile.photo.url }}" alt="Profile" class="avatar-image" style="width:100%;height:100%;object-fit:cover;">
+              <img src="{{ admin_profile.photo.url }}" alt="Profile" class="avatar-image"
+                   style="width:100%;height:100%;object-fit:cover;">
             {% else %}
               <span id="avatarInitials" style="color:#fff;font-size:1.8rem;font-weight:700;">
                 {% if current_user.first_name and current_user.last_name %}
@@ -54,12 +146,28 @@
               </span>
             {% endif %}
           </div>
-          <label for="photoInput" title="Upload photo"
-                 style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:#3b82f6;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+
+          <!-- Camera badge — hidden by JS when photo present -->
+          <label id="cameraLabel" for="photoInput" title="Upload photo">
             <i class="fas fa-camera" style="color:#fff;font-size:0.65rem;"></i>
           </label>
+
+          <!-- Hidden file input -->
           <input type="file" id="photoInput" accept="image/*" style="display:none;">
-        </div>
+
+          <!-- Dropdown menu (change / remove) shown only when photo present -->
+          <div id="photoMenu">
+            <button class="photo-menu-item" id="photoMenuChange">
+              <i class="fas fa-camera" style="font-size:13px;"></i> Change photo
+            </button>
+            <button class="photo-menu-item danger" id="photoMenuRemove">
+              <i class="fas fa-trash" style="font-size:13px;"></i> Remove photo
+            </button>
+          </div>
+
+        </div><!-- /avatarWrapper -->
+
+        <!-- Name / username / email -->
         <div>
           <div style="font-size:1.05rem;font-weight:700;color:#111827;">
             {% if current_user.first_name or current_user.last_name %}
@@ -83,11 +191,10 @@
           <i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information
         </span>
         <button class="btn-secondary-lms" id="editPersonalBtn" type="button" style="padding:5px 12px;font-size:0.78rem;">
-          <i class="fas fa-edit"></i>Edit
+          <i class="fas fa-edit"></i> Edit
         </button>
       </div>
       <div class="lms-card-body">
-        <!-- userprofile.js expects this exact form id and field ids -->
         <form id="personalForm" class="profile-form">
           {% csrf_token %}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
@@ -117,16 +224,15 @@
           </div>
           <div style="margin-bottom:16px;">
             <label class="lms-label">Address</label>
-            <textarea class="lms-input" id="address" rows="3" placeholder="Enter your address">{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
+            <textarea class="lms-input" id="address" rows="3"
+                      placeholder="Enter your address">{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
           </div>
-
-          <!-- personalActions shown/hidden by userprofile.js -->
           <div id="personalActions">
             <button type="button" class="btn-primary-lms" id="savePersonalBtn">
-              <i class="fas fa-save"></i>Save Changes
+              <i class="fas fa-save"></i> Save Changes
             </button>
             <button type="button" class="btn-secondary-lms" id="cancelPersonalBtn">
-              <i class="fas fa-times"></i>Cancel
+              <i class="fas fa-times"></i> Cancel
             </button>
           </div>
         </form>
@@ -165,6 +271,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- userprofile.js is jQuery-based, jQuery loaded in extra_css above -->
 <script src="{% static 'js/userprofile.js' %}"></script>
 {% endblock %}
