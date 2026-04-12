@@ -1,4 +1,5 @@
 from urllib import request
+
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
@@ -73,11 +74,6 @@ def dashboard_view(request):
             )
         ).count()
     ).count()
-
-    # If the above logic is wrong, use this simpler version:
-    # books_this_month = Book.objects.filter(
-    #     created_at__gte=month_start  # Assuming you have a created_at field
-    # ).count()
 
     # ========== RECENT ACTIVITIES ==========
     recent_activities = IssuedBook.objects.select_related("student", "book").order_by(
@@ -776,6 +772,35 @@ def upload_profile_photo_view(request):
 
         return HttpResponse(
             json.dumps({"message": "Photo uploaded successfully."}),
+            content_type="application/json",
+            status=200,
+        )
+
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({"message": f"An error occurred: {str(e)}"}),
+            content_type="application/json",
+            status=500,
+        )
+
+
+@login_required(login_url="adminlogin")
+def remove_profile_photo(request):
+    if request.method != "POST":
+        return HttpResponse(
+            json.dumps({"message": "Invalid request method."}),
+            content_type="application/json",
+            status=405,
+        )
+
+    try:
+        admin_profile, _ = models.AdminProfile.objects.get_or_create(user=request.user)
+
+        if admin_profile.photo:
+            admin_profile.photo.delete(save=True)
+
+        return HttpResponse(
+            json.dumps({"message": "Photo removed successfully."}),
             content_type="application/json",
             status=200,
         )

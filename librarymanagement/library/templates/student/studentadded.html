@@ -1,32 +1,19 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Student Added - LMS</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  </head>
-  <body style="background-color:#b6bde7;">
-    {% include "library/navbaradmin.html" %}
-    
-    <div class="confirmation-box">
-        <div class="checkmark">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <path fill="white" d="M21 33l-8-8-3 3 11 11L44 16l-3-3z"/>
-            </svg>
-        </div>
-        
-        <h2>Student Added Successfully!</h2>
-        
-        <a href="{% url 'addstudent' %}" class="btn btn-primary">Add Another Student</a>
-        <a href="{% url 'viewstudent' %}" class="btn btn-primary">View All Students</a>
+{% block title %}Student Added — LibraryMS{% endblock %}
+{% block page_title %}Student Added{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+  <div class="lms-card" style="padding:40px 32px;">
+    <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <i class="fas fa-check" style="color:#16a34a;font-size:1.5rem;"></i>
     </div>
-
-    {% include "library/footer.html" %}
-  </body>
-</html>
+    <h2 style="font-size:1.2rem;font-weight:700;color:#111827;margin-bottom:8px;">Student Added Successfully!</h2>
+    <p style="color:#6b7280;font-size:0.875rem;margin-bottom:24px;">The student has been registered in the library.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'addstudent' %}" class="btn-primary-lms"><i class="fas fa-user-plus"></i>Add Another</a>
+      <a href="{% url 'viewstudent' %}" class="btn-secondary-lms"><i class="fas fa-users"></i>View All Students</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

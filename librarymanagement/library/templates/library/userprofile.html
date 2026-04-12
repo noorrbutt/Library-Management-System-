@@ -1,167 +1,275 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile - LMS</title>
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'css/navbaradmin.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/userprofile.css' %}" />
-    <style>
-      /* Make readonly fields look the same as disabled ones visually */
-      .form-control[readonly] {
-        background-color: #e9ecef;
-        opacity: 1;
-        cursor: default;
-      }
-      .form-control:not([readonly]):not([disabled]) {
-        background-color: #fff;
-        cursor: text;
-      }
-    </style>
-  </head>
-  <body>
-    {% include 'library/navbaradmin.html' %}
+{% block title %}User Profile — LibraryMS{% endblock %}
+{% block page_title %}User Profile{% endblock %}
+{% block extra_css %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+  /* ── Spinner ── */
+  .loading-spinner { display:none; text-align:center; padding:20px; }
+  .spinner { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#3b82f6; border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
-    <div class="main-content">
-      <div class="profile-wrapper">
-        <div class="profile-card-header">
-          <div class="profile-card-header-content">
-            <h1><i class="fas fa-user-circle"></i> User Profile</h1>
-            <p>Manage your account information</p>
-          </div>
-        </div>
+  /* ── Alerts ── */
+  .lms-alert { padding:12px 16px; border-radius:8px; font-size:0.85rem; margin-bottom:16px; display:none; }
+  .lms-alert-success { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+  .lms-alert-danger  { background:#fee2e2; border:1px solid #fecaca; color:#dc2626; }
 
-        <div class="profile-center-container">
-          <!-- Profile Photo Section -->
-          <div class="profile-photo-section">
-            <div class="avatar-wrapper">
-              <div class="avatar-circle" id="avatarCircle">
-                {% if admin_profile and admin_profile.photo %}
-                <img src="{{ admin_profile.photo.url }}" alt="Profile Picture" class="avatar-image" />
+  /* ── Form actions ── */
+  #personalActions { display:none; gap:10px; }
+
+  /* ── Avatar wrapper — relative so menu can be anchored ── */
+  #avatarWrapper {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  /* ── Avatar circle clickable when photo present ── */
+  #avatarCircle {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: default;
+    transition: filter 0.15s;
+  }
+  #avatarCircle.has-photo {
+    cursor: pointer;
+  }
+  #avatarCircle.has-photo:hover {
+    filter: brightness(0.88);
+  }
+
+  /* ── Camera button (only visible when NO photo) ── */
+  #cameraLabel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  #cameraLabel:hover { background: #2563eb; }
+
+  /* Hide camera badge when photo is present — JS adds .has-photo to avatarCircle */
+  #avatarCircle.has-photo + #cameraLabel,
+  .avatar-has-photo #cameraLabel { display: none; }
+
+  /* ── Photo action menu ── */
+  #photoMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    min-width: 160px;
+    z-index: 100;
+    overflow: hidden;
+    display: none;
+  }
+  #photoMenu.photo-menu--open { display: block; }
+
+  .photo-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #374151;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.12s;
+  }
+  .photo-menu-item:hover { background: #f3f4f6; }
+  .photo-menu-item.danger { color: #dc2626; }
+  .photo-menu-item + .photo-menu-item { border-top: 1px solid #f3f4f6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:center;">
+  <div style="width:100%;max-width:720px;">
+
+    <!-- Alerts -->
+    <div id="successAlert" class="lms-alert lms-alert-success">
+      <i class="fas fa-check-circle"></i> <strong id="successMessage">Changes saved successfully!</strong>
+    </div>
+    <div id="errorAlert" class="lms-alert lms-alert-danger">
+      <i class="fas fa-exclamation-circle"></i> <strong id="errorMessage">An error occurred.</strong>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner"></div>
+      <p style="font-size:0.8rem;color:#6b7280;">Processing...</p>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="lms-card" style="margin-bottom:16px;">
+      <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
+
+        <!-- Avatar + menu wrapper -->
+        <div id="avatarWrapper">
+
+          <!-- Circle: shows initials OR photo -->
+          <div id="avatarCircle">
+            {% if admin_profile and admin_profile.photo %}
+              <img src="{{ admin_profile.photo.url }}" alt="Profile" class="avatar-image"
+                   style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+              <span id="avatarInitials" style="color:#fff;font-size:1.8rem;font-weight:700;">
+                {% if current_user.first_name and current_user.last_name %}
+                  {{ current_user.first_name|first|upper }}{{ current_user.last_name|first|upper }}
+                {% elif current_user.first_name %}
+                  {{ current_user.first_name|slice:':2'|upper }}
+                {% else %}
+                  {{ current_user.username|slice:':2'|upper }}
                 {% endif %}
-                <span class="avatar-initials" id="avatarInitials">AZ</span>
-              </div>
-              <label for="photoInput" class="camera-button" title="Upload Profile Photo">
-                <i class="fas fa-camera"></i>
-              </label>
-              <input type="file" id="photoInput" class="photo-input" accept="image/*" style="display: none" />
-            </div>
-            <p class="username-text">@{{ current_user.username }}</p>
+              </span>
+            {% endif %}
           </div>
 
-          <!-- Personal Information Card -->
-          <div class="profile-card">
-            <div class="card-header">
-              <div class="card-header-left">
-                <h3><i class="fas fa-id-card"></i> Personal Information</h3>
-              </div>
-              <button class="edit-btn" id="editPersonalBtn" type="button">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-            </div>
+          <!-- Camera badge — hidden by JS when photo present -->
+          <label id="cameraLabel" for="photoInput" title="Upload photo">
+            <i class="fas fa-camera" style="color:#fff;font-size:0.65rem;"></i>
+          </label>
 
-            <form id="personalForm" class="profile-form">
-              {% csrf_token %}
-              <div class="form-group">
-                <label for="fullName">Full Name *</label>
-                <input type="text" id="fullName" class="form-control" value="{{ current_user.first_name }} {{ current_user.last_name }}" readonly />
-              </div>
+          <!-- Hidden file input -->
+          <input type="file" id="photoInput" accept="image/*" style="display:none;">
 
-              <div class="form-group">
-                <label for="emailAddress">Email Address *</label>
-                <input type="email" id="emailAddress" class="form-control" value="{{ current_user.email }}" readonly />
-              </div>
-
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="phoneNumber">Phone Number</label>
-                  <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter phone number" value="{% if admin_profile and admin_profile.phone %}{{ admin_profile.phone }}{% endif %}" readonly />
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="dateOfBirth">Date of Birth</label>
-                  <input type="date" id="dateOfBirth" class="form-control" value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}" readonly />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="address">Address</label>
-                <textarea id="address" class="form-control" rows="3" placeholder="Enter your address" readonly>{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
-              </div>
-
-              <div class="form-actions" id="personalActions" style="display: none">
-                <button type="button" class="btn btn-success" id="savePersonalBtn">
-                  <i class="fas fa-save"></i> Save Changes
-                </button>
-                <button type="button" class="btn btn-secondary" id="cancelPersonalBtn">
-                  <i class="fas fa-times"></i> Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Alert Messages -->
-          <div id="successAlert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none">
-            <i class="fas fa-check-circle"></i>
-            <strong id="successMessage">Changes saved successfully!</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+          <!-- Dropdown menu (change / remove) shown only when photo present -->
+          <div id="photoMenu">
+            <button class="photo-menu-item" id="photoMenuChange">
+              <i class="fas fa-camera" style="font-size:13px;"></i> Change photo
+            </button>
+            <button class="photo-menu-item danger" id="photoMenuRemove">
+              <i class="fas fa-trash" style="font-size:13px;"></i> Remove photo
             </button>
           </div>
 
-          <div id="errorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none">
-            <i class="fas fa-exclamation-circle"></i>
-            <strong id="errorMessage">An error occurred. Please try again.</strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+        </div><!-- /avatarWrapper -->
+
+        <!-- Name / username / email -->
+        <div>
+          <div style="font-size:1.05rem;font-weight:700;color:#111827;">
+            {% if current_user.first_name or current_user.last_name %}
+              {{ current_user.first_name }} {{ current_user.last_name }}
+            {% else %}
+              {{ current_user.username }}
+            {% endif %}
+          </div>
+          <div style="font-size:0.85rem;color:#6b7280;margin-top:2px;">@{{ current_user.username }}</div>
+          {% if current_user.email %}
+            <div style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">{{ current_user.email }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="lms-card" style="margin-bottom:16px;">
+      <div class="lms-card-header">
+        <span style="font-size:0.875rem;font-weight:600;">
+          <i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information
+        </span>
+        <button class="btn-secondary-lms" id="editPersonalBtn" type="button" style="padding:5px 12px;font-size:0.78rem;">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+      </div>
+      <div class="lms-card-body">
+        <form id="personalForm" class="profile-form">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label class="lms-label">Full Name *</label>
+              <input type="text" class="lms-input" id="fullName"
+                     value="{{ current_user.first_name }} {{ current_user.last_name }}"
+                     placeholder="Enter full name">
+            </div>
+            <div>
+              <label class="lms-label">Email Address *</label>
+              <input type="email" class="lms-input" id="emailAddress"
+                     value="{{ current_user.email }}"
+                     placeholder="Enter email address">
+            </div>
+            <div>
+              <label class="lms-label">Phone Number</label>
+              <input type="tel" class="lms-input" id="phoneNumber"
+                     value="{% if admin_profile and admin_profile.phone %}{{ admin_profile.phone }}{% endif %}"
+                     placeholder="Enter phone number">
+            </div>
+            <div>
+              <label class="lms-label">Date of Birth</label>
+              <input type="date" class="lms-input" id="dateOfBirth"
+                     value="{% if admin_profile and admin_profile.date_of_birth %}{{ admin_profile.date_of_birth }}{% endif %}">
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="lms-label">Address</label>
+            <textarea class="lms-input" id="address" rows="3"
+                      placeholder="Enter your address">{% if admin_profile and admin_profile.address %}{{ admin_profile.address }}{% endif %}</textarea>
+          </div>
+          <div id="personalActions">
+            <button type="button" class="btn-primary-lms" id="savePersonalBtn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+            <button type="button" class="btn-secondary-lms" id="cancelPersonalBtn">
+              <i class="fas fa-times"></i> Cancel
             </button>
           </div>
+        </form>
+      </div>
+    </div>
 
-          <!-- Loading Spinner -->
-          <div id="loadingSpinner" class="loading-spinner" style="display: none">
-            <div class="spinner"></div>
-            <p>Processing...</p>
+    <!-- Account Information -->
+    <div class="lms-card">
+      <div class="lms-card-header">
+        <span style="font-size:0.875rem;font-weight:600;">
+          <i class="fas fa-info-circle" style="color:#3b82f6;margin-right:6px;"></i>Account Information
+        </span>
+      </div>
+      <div class="lms-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Account Created</div>
+            <div style="font-size:0.875rem;font-weight:500;color:#111827;">{{ current_user.date_joined|date:"M d, Y" }}</div>
           </div>
-
-          <!-- Collapsible Sections -->
-          <div class="collapsible-sections">
-            <div class="collapsible-card">
-              <button class="collapsible-header" type="button">
-                <span class="icon"><i class="fas fa-info-circle"></i></span>
-                <span class="title">Account Information</span>
-                <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
-              </button>
-              <div class="collapsible-content">
-                <div class="content-inner">
-                  <div class="account-info-row">
-                    <span class="info-label">Account Created:</span>
-                    <span class="info-value">{{ current_user.date_joined|date:"M d, Y" }}</span>
-                  </div>
-                  <div class="account-info-row">
-                    <span class="info-label">Last Login:</span>
-                    <span class="info-value">{% if current_user.last_login %}{{ current_user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}</span>
-                  </div>
-                  <div class="account-info-row">
-                    <span class="info-label">Account Status:</span>
-                    <span class="info-value status-active"><i class="fas fa-check-circle"></i> Active</span>
-                  </div>
-                </div>
-              </div>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Last Login</div>
+            <div style="font-size:0.875rem;font-weight:500;color:#111827;">
+              {% if current_user.last_login %}{{ current_user.last_login|date:"M d, Y" }}{% else %}Never{% endif %}
             </div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Status</div>
+            <span class="badge-success"><i class="fas fa-check-circle"></i> Active</span>
           </div>
         </div>
       </div>
     </div>
 
-    {% include 'library/footer.html' %}
+  </div>
+</div>
+{% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/userprofile.js' %}"></script>
-  </body>
-</html>
+{% block extra_js %}
+<script src="{% static 'js/userprofile.js' %}"></script>
+{% endblock %}

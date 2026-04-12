@@ -1,27 +1,19 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Book Issued Successfully</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="{% static 'css/addbook.css' %}" />
-</head>
-<body>
-  {% include "library/navbaradmin.html" %}
-  
-  <div class="confirmation-box">
-    <div class="checkmark">
-      <svg viewBox="0 0 24 24">
-        <path d="M20.285 6.709l-11.39 11.38-5.18-5.18 1.415-1.415 3.765 3.765 9.976-9.976z" fill="white" stroke="white" stroke-width="0.5"/>
-      </svg>
+{% block title %}Book Issued — LibraryMS{% endblock %}
+{% block page_title %}Book Issued{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+  <div class="lms-card" style="padding:40px 32px;">
+    <div style="width:64px;height:64px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <i class="fas fa-check" style="color:#3b82f6;font-size:1.5rem;"></i>
     </div>
-    <h2>Book Issued Successfully!</h2>
-    <a href="{% url 'issuebook' %}" class="btn btn-primary btn-block">Issue More Book</a>
-    <a href="{% url 'viewissuedbook' %}" class="btn btn-primary btn-block">View Issued Books</a>
+    <h2 style="font-size:1.2rem;font-weight:700;color:#111827;margin-bottom:8px;">Book Issued Successfully!</h2>
+    <p style="color:#6b7280;font-size:0.875rem;margin-bottom:24px;">The book has been issued to the student.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'issuebook' %}" class="btn-primary-lms"><i class="fas fa-paper-plane"></i>Issue More</a>
+      <a href="{% url 'viewissuedbook' %}" class="btn-secondary-lms"><i class="fas fa-eye"></i>View Issued</a>
+    </div>
   </div>
-  
-  {% include "library/footer.html" %}
-</body>
-</html>
+</div>
+{% endblock %}

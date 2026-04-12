@@ -1,25 +1,19 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>Book Added Successfully</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="{% static 'css/addbook.css' %}" />
-</head>
-<body>
-  {% include "library/navbaradmin.html" %}
-  <div class="confirmation-box">
-    <div class="checkmark">
-      <svg viewBox="0 0 24 24">
-        <path d="M20.285 6.709l-11.39 11.38-5.18-5.18 1.415-1.415 3.765 3.765 9.976-9.976z" fill="white" />
-      </svg>
+{% block title %}Book Added — LibraryMS{% endblock %}
+{% block page_title %}Book Added{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+  <div class="lms-card" style="padding:40px 32px;">
+    <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <i class="fas fa-check" style="color:#16a34a;font-size:1.5rem;"></i>
     </div>
-    <h2>Book Added Successfully!</h2>
-    <a href="{% url 'addbook' %}" class="btn btn-primary btn-block">+ Add More Book</a>
-    <a href="{% url 'viewbook' %}" class="btn btn-primary btn-block">📚 View Books in Library</a>
+    <h2 style="font-size:1.2rem;font-weight:700;color:#111827;margin-bottom:8px;">Book Added Successfully!</h2>
+    <p style="color:#6b7280;font-size:0.875rem;margin-bottom:24px;">The book has been added to the library.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'addbook' %}" class="btn-primary-lms"><i class="fas fa-plus"></i>Add More Books</a>
+      <a href="{% url 'viewbook' %}" class="btn-secondary-lms"><i class="fas fa-book"></i>View Library</a>
+    </div>
   </div>
-  {% include "library/footer.html" %}
-</body>
-</html>
+</div>
+{% endblock %}

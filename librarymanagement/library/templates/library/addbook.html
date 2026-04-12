@@ -1,44 +1,37 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Add Book - LMS</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/addbook.css' %}">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  </head>
-  <body style="background-color:#b6bde7;">
-    {% include "library/navbaradmin.html" %}
-    
-    <div class="signup-form">
-        <form method="post" class="form-horizontal">
-            <center><h2>ADD BOOK IN LIBRARY</h2></center>
-            {% csrf_token %}
+{% block title %}Add Book — LibraryMS{% endblock %}
+{% block page_title %}Add Book{% endblock %}
+{% block content %}
 
-            {% for field in form %}
-            <div class="form-group">
-                <label>{{ field.label_tag }}</label>
-                {{ field }}
-                {% if field.errors %}
-                    <div class="text-danger">{{ field.errors }}</div>
-                {% endif %}
-            </div>
+<div style="display:flex;justify-content:center;">
+  <div class="lms-card" style="width:100%;max-width:620px;">
+    <div class="lms-card-header">
+      <span style="font-size:0.875rem;font-weight:600;">
+        <i class="fas fa-plus-circle" style="color:#3b82f6;margin-right:6px;"></i>Add New Book
+      </span>
+    </div>
+    <div class="lms-card-body">
+      <form method="post" class="lms-form-fields">
+        {% csrf_token %}
+        {% for field in form %}
+        <div style="margin-bottom:16px;">
+          <label class="lms-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            {% for e in field.errors %}
+            <p style="color:#dc2626;font-size:0.78rem;margin:4px 0 0;">{{ e }}</p>
             {% endfor %}
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary btn-block">ADD</button>
-            </div>
-        </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button type="submit" class="btn-primary-lms"><i class="fas fa-save"></i>Save Book</button>
+          <a href="{% url 'viewbook' %}" class="btn-secondary-lms">Cancel</a>
+        </div>
+      </form>
     </div>
-    
-    <div class="link-box text-center" style="margin-top: -3cm;">
-        View Available Books In Library: <a href="{% url 'viewbook' %}">Click here</a>
-    </div>
+  </div>
+</div>
 
-    {% include "library/footer.html" %}
-  </body>
-</html>
+{% endblock %}
