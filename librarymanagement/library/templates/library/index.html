@@ -49,18 +49,8 @@
     .feature-card .f-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.2rem; }
     .feature-card h3 { font-size: 0.95rem; font-weight: 600; color: #111827; margin: 0 0 8px; }
     .feature-card p { font-size: 0.82rem; color: #6b7280; margin: 0; line-height: 1.5; }
-    /* Panels */
-    .panels-section { padding: 80px 40px; background: #fff; }
-    .panels-section h2 { text-align: center; font-size: 1.6rem; font-weight: 700; color: #111827; margin-bottom: 48px; }
-    .panels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 700px; margin: 0 auto; }
-    .panel-card { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 16px; padding: 40px 32px; text-align: center; border: 1.5px solid #bfdbfe; }
-    .panel-card.green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #bbf7d0; }
-    .panel-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 16px; }
-    .panel-card h3 { font-size: 1rem; font-weight: 700; color: #111827; margin: 0 0 16px; }
-    .panel-btn { display: inline-block; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; background: #3b82f6; color: #fff; transition: background 0.15s; }
-    .panel-btn:hover { background: #2563eb; }
-    .panel-btn.green { background: #16a34a; }
-    .panel-btn.green:hover { background: #15803d; }
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
+
     /* Footer */
     footer { background: #1e2129; color: #9ca3af; text-align: center; padding: 24px; font-size: 0.82rem; }
     footer span { color: #6b7280; }
@@ -99,50 +89,32 @@
   </div>
 
   <!-- Features -->
-  <section class="features-section" id="features">
-    <h2>Everything You Need</h2>
-    <p>A complete suite of tools for modern library management</p>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="f-icon" style="background:#dbeafe;"><i class="fas fa-book" style="color:#3b82f6;"></i></div>
-        <h3>Book Management</h3>
-        <p>Add, update, and track all books with quantity and category management.</p>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon" style="background:#dcfce7;"><i class="fas fa-users" style="color:#16a34a;"></i></div>
-        <h3>Student Records</h3>
-        <p>Register and manage student profiles with enrollment and contact details.</p>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon" style="background:#fef9c3;"><i class="fas fa-exchange-alt" style="color:#ca8a04;"></i></div>
-        <h3>Issue & Return</h3>
-        <p>Track book issuing and returns with fine calculation for overdue books.</p>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon" style="background:#ede9fe;"><i class="fas fa-chart-line" style="color:#7c3aed;"></i></div>
-        <h3>Analytics</h3>
-        <p>Dashboard with charts showing borrowing trends, stock levels, and more.</p>
-      </div>
+<section class="features-section" id="features">
+  <h2>Everything You Need</h2>
+  <p>A complete suite of tools for modern library management</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="f-icon" style="background:#dbeafe;"><i class="fas fa-book" style="color:#3b82f6;"></i></div>
+      <h3>Book Management</h3>
+      <p>Add, update, and track all books with quantity and category management.</p>
     </div>
-  </section>
-
-  <!-- Panels -->
-  <section class="panels-section">
-    <h2>Access Portal</h2>
-    <div class="panels-grid">
-      <div class="panel-card">
-        <img src="{% static 'images/AdminIcon.png' %}" alt="Admin">
-        <h3>Admin Panel</h3>
-        <a href="{% url 'adminclick' %}" class="panel-btn">Enter Admin</a>
-      </div>
-      <div class="panel-card green">
-        <img src="{% static 'images/student.png' %}" alt="Student">
-        <h3>Student Panel</h3>
-        <a href="/studentclick" class="panel-btn green">Student Access</a>
-      </div>
+    <div class="feature-card">
+      <div class="f-icon" style="background:#dcfce7;"><i class="fas fa-users" style="color:#16a34a;"></i></div>
+      <h3>Student Records</h3>
+      <p>Register and manage student profiles with enrollment and contact details.</p>
     </div>
-  </section>
-
+    <div class="feature-card">
+      <div class="f-icon" style="background:#fef9c3;"><i class="fas fa-exchange-alt" style="color:#ca8a04;"></i></div>
+      <h3>Issue &amp; Return</h3>
+      <p>Track book issuing and returns with fine calculation for overdue books.</p>
+    </div>
+    <div class="feature-card">
+      <div class="f-icon" style="background:#ede9fe;"><i class="fas fa-chart-line" style="color:#7c3aed;"></i></div>
+      <h3>Analytics</h3>
+      <p>Dashboard with charts showing borrowing trends, stock levels, and more.</p>
+    </div>
+  </div>
+</section>
   <footer>
     <span>© 2026 LibraryMS — Library Management System</span>
   </footer>
