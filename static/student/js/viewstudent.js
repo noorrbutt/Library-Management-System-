@@ -1,149 +1,124 @@
 // static/student/js/viewstudent.js
 document.addEventListener("DOMContentLoaded", () => {
-  const toggleBtn = document.getElementById("toggle-btn");
-  const editBtn = document.getElementById("edit-btn");
-  const cancelBtn = document.getElementById("cancel-btn");
-  const checkCols = document.querySelectorAll(".checkbox-col");
-  const selectAll = document.getElementById("select-all");
-  const deleteForm = document.getElementById("student-form");
-  const editForm = document.getElementById("edit-form");
+  const toggleBtn         = document.getElementById("toggle-btn");
+  const editBtn           = document.getElementById("edit-btn");
+  const cancelBtn         = document.getElementById("cancel-btn");
+  const filterBtn         = document.getElementById("filter-btn");
+  const filterCollapse    = document.getElementById("filterCollapse");
+  const table             = document.getElementById("studentsTable");
+  const deleteForm        = document.getElementById("student-form");
+  const editForm          = document.getElementById("edit-form");
   const studentsDataInput = document.getElementById("students-data");
-  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-  const confirmDeleteModal = new bootstrap.Modal(
-    document.getElementById("confirmDeleteModal")
-  );
+  const confirmDeleteBtn  = document.getElementById("confirmDeleteBtn");
+  const confirmDeleteModal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
 
-  // Toast initialization
-  const actionToast = document.getElementById('actionToast');
-  const toastMessage = document.getElementById('toastMessage');
-  const bootstrapToast = actionToast ? new bootstrap.Toast(actionToast, {delay: 4000}) : null;
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  const actionToast   = document.getElementById("actionToast");
+  const toastMessage  = document.getElementById("toastMessage");
+  const bsToast       = actionToast ? new bootstrap.Toast(actionToast, { delay: 3000 }) : null;
 
-  let selecting = false;
-  let editing = false;
-
-  function showToast(message, type = 'success') {
-    if (!bootstrapToast || !actionToast || !toastMessage) return;
-    
-    // Update toast color based on type
-    actionToast.className = `toast align-items-center text-white border-0`;
-    if (type === 'success') {
-      actionToast.classList.add('bg-success');
-    } else if (type === 'error') {
-      actionToast.classList.add('bg-danger');
-    }
-    
+  function showToast(message, type = "success") {
+    if (!bsToast) return;
+    actionToast.classList.remove("bg-success", "bg-danger");
+    actionToast.classList.add(type === "success" ? "bg-success" : "bg-danger");
     toastMessage.textContent = message;
-    bootstrapToast.show();
+    bsToast.show();
   }
 
-  // ----- SELECT / DELETE -----
-  toggleBtn.addEventListener("click", () => {
-    if (editing) return;
-    selecting = !selecting;
-    cancelBtn.classList.toggle("d-none", !selecting);
+  // ── Filter toggle ──────────────────────────────────────────────────────────
+  filterBtn?.addEventListener("click", () => {
+    const isOpen = filterCollapse.style.display === "block";
+    filterCollapse.style.display = isOpen ? "none" : "block";
+    filterBtn.innerHTML = isOpen
+      ? '<i class="fas fa-filter"></i>Filter'
+      : '<i class="fas fa-times"></i>Close Filter';
+  });
 
-    checkCols.forEach((col) =>
-      col.classList.toggle("hidden-checkbox", !selecting)
-    );
-
-    if (selecting) {
-      toggleBtn.textContent = "Delete Selected";
-    } else {
-      const selected = document.querySelectorAll(
-        'input[name="selected_students"]:checked'
-      );
-      if (selected.length > 0) {
-        confirmDeleteModal.show();
-      } else {
-        toggleBtn.textContent = "Select";
-      }
+  // ── Search: don't submit empty q ───────────────────────────────────────────
+  const searchForm  = document.getElementById("search-form");
+  const searchInput = searchForm?.querySelector('input[name="q"]');
+  if (searchInput?.value === "None") searchInput.value = "";
+  searchForm?.addEventListener("submit", function (e) {
+    if (!searchInput.value.trim()) {
+      e.preventDefault();
+      const url = new URL(window.location.href);
+      url.searchParams.delete("q");
+      window.location.href = url.toString();
     }
   });
 
-  // ----- CONFIRM DELETION -----
-  confirmDeleteBtn.addEventListener("click", () => {
-    const selectedCount = document.querySelectorAll('input[name="selected_students"]:checked').length;
-    showToast(`Student(s) deleted successfully`, 'success');
-    deleteForm.submit();
+  // ── Edit / Save ────────────────────────────────────────────────────────────
+  editBtn?.addEventListener("click", () => {
+    if (table.classList.contains("editing-mode")) {
+      saveInlineEdits();
+    } else {
+      table.classList.add("editing-mode");
+      editBtn.innerHTML = '<i class="fas fa-save"></i>Save';
+      cancelBtn.classList.remove("d-none");
+    }
   });
 
-  // ----- SELECT ALL -----
-  if (selectAll) {
-    selectAll.addEventListener("click", (e) => {
-      const checkboxes = document.querySelectorAll(
-        'input[name="selected_students"]'
-      );
-      checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+  cancelBtn?.addEventListener("click", () => {
+    if (table.classList.contains("editing-mode")) {
+      table.classList.remove("editing-mode");
+      editBtn.innerHTML = '<i class="fas fa-edit"></i>Edit';
+      cancelBtn.classList.add("d-none");
+      resetInlineEdits();
+    } else if (table.classList.contains("select-mode")) {
+      table.classList.remove("select-mode");
+      toggleBtn.innerHTML = '<i class="fas fa-check-square"></i>Select';
+      document.getElementById("delete-toolbar").style.display = "none";
+      document.querySelectorAll('input[name="selected_students"]').forEach(cb => cb.checked = false);
+      cancelBtn.classList.add("d-none");
+    }
+  });
+
+  function saveInlineEdits() {
+    const studentsData = [];
+    document.querySelectorAll("#studentsTable tbody tr").forEach(row => {
+      const data = { id: row.dataset.id };
+      row.querySelectorAll(".editable").forEach(cell => {
+        const input = cell.querySelector("input");
+        if (cell.dataset.field && input) data[cell.dataset.field] = input.value;
+      });
+      studentsData.push(data);
+    });
+    studentsDataInput.value = JSON.stringify(studentsData);
+    showToast("Student(s) updated successfully");
+    editForm.submit();
+  }
+
+  function resetInlineEdits() {
+    document.querySelectorAll(".editable").forEach(cell => {
+      const span  = cell.querySelector("span");
+      const input = cell.querySelector("input");
+      if (span && input) input.value = span.textContent.trim();
     });
   }
 
-  // ----- EDIT / SAVE -----
-  editBtn.addEventListener("click", () => {
-    if (selecting) return;
-    editing = !editing;
-    cancelBtn.classList.toggle("d-none", !editing);
-
-    const cells = document.querySelectorAll(".editable");
-
-    if (editing) {
-      editBtn.textContent = "Save Changes";
-      editBtn.classList.replace("btn-primary", "btn-success");
-
-      cells.forEach((cell) => {
-        const value = cell.textContent.trim();
-        cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${value}">`;
-      });
-    } else {
-      const rows = document.querySelectorAll("tbody tr");
-      const studentsData = [];
-
-      rows.forEach((row) => {
-        const id = row.getAttribute("data-id");
-        const fields = row.querySelectorAll(".editable input");
-        const studentObj = {
-          id: id,
-          name: fields[0].value,
-          enrollment: fields[1].value,
-          address: fields[2].value,
-          phone: fields[3].value,
-          gender: fields[4].value,
-        };
-        studentsData.push(studentObj);
-      });
-
-      studentsDataInput.value = JSON.stringify(studentsData);
-      showToast('Student(s) edited successfully', 'success');
-      editForm.submit();
-
-      // Reset UI after submitting
-      editing = false;
-      cancelBtn.classList.add("d-none");
-      editBtn.textContent = "Edit";
-      editBtn.classList.replace("btn-success", "btn-primary");
-      cells.forEach(
-        (cell) => (cell.textContent = cell.querySelector("input").value)
-      );
+  // ── Select / Delete ────────────────────────────────────────────────────────
+  toggleBtn?.addEventListener("click", () => {
+    const isSelecting = table.classList.toggle("select-mode");
+    toggleBtn.innerHTML = isSelecting
+      ? '<i class="fas fa-times"></i>Cancel Select'
+      : '<i class="fas fa-check-square"></i>Select';
+    document.getElementById("delete-toolbar").style.display = isSelecting ? "block" : "none";
+    cancelBtn.classList.toggle("d-none", !isSelecting);
+    if (!isSelecting) {
+      document.querySelectorAll('input[name="selected_students"]').forEach(cb => cb.checked = false);
     }
   });
 
-  // ----- CANCEL BUTTON -----
-  cancelBtn.addEventListener("click", () => {
-    if (editing) {
-      editing = false;
-      cancelBtn.classList.add("d-none");
-      editBtn.textContent = "Edit";
-      editBtn.classList.replace("btn-success", "btn-primary");
+  document.getElementById("delete-selected-btn")?.addEventListener("click", () => {
+    confirmDeleteModal.show();
+  });
 
-      const cells = document.querySelectorAll(".editable");
-      cells.forEach((cell) => {
-        const input = cell.querySelector("input");
-        if (input) cell.textContent = input.value;
-      });
-    } else if (selecting) {
-      selecting = false;
-      cancelBtn.classList.add("d-none");
-      toggleBtn.textContent = "Select";
-      checkCols.forEach((col) => col.classList.add("hidden-checkbox"));
-    }
+  confirmDeleteBtn?.addEventListener("click", () => {
+    showToast("Student(s) deleted successfully");
+    deleteForm.submit();
+  });
+
+  document.getElementById("select-all")?.addEventListener("change", function () {
+    document.querySelectorAll('input[name="selected_students"]').forEach(cb => cb.checked = this.checked);
   });
 });

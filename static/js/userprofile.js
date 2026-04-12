@@ -8,7 +8,6 @@ const profileState = {
 };
 
 $(document).ready(function() {
-    // Set up jQuery AJAX to include CSRF token
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!(/^http:/.test(settings.url) || /^https:/.test(settings.url))) {
@@ -16,72 +15,53 @@ $(document).ready(function() {
             }
         }
     });
-    
+
     initializeProfile();
     setupEventListeners();
     setupCollapsibleCards();
     displayAvatarInitials();
     checkForExistingPhoto();
+    setupPhotoMenu();
 });
 
 function initializeProfile() {
-    const fullNameValue = $.trim($('#fullName').val());
-    const emailValue = $.trim($('#emailAddress').val());
-    const phoneValue = $.trim($('#phoneNumber').val());
-    const dobValue = $.trim($('#dateOfBirth').val());
-    const addressValue = $.trim($('#address').val());
-
     profileState.originalData = {
-        fullName: fullNameValue,
-        email: emailValue,
-        phone: phoneValue,
-        dob: dobValue,
-        address: addressValue
+        fullName: $.trim($('#fullName').val()),
+        email:    $.trim($('#emailAddress').val()),
+        phone:    $.trim($('#phoneNumber').val()),
+        dob:      $.trim($('#dateOfBirth').val()),
+        address:  $.trim($('#address').val())
     };
-
     profileState.currentData = JSON.parse(JSON.stringify(profileState.originalData));
-    
     setFieldsDisabled(true);
     updateButtonDisplay();
 }
 
 function setupEventListeners() {
-    // Edit button click
     $('#editPersonalBtn').on('click', function(e) {
         e.preventDefault();
-        if (profileState.isEditing) {
-            savePersonalInfo();
-        } else {
-            enterEditMode();
-        }
+        profileState.isEditing ? savePersonalInfo() : enterEditMode();
     });
 
-    // Cancel button click
     $('#cancelPersonalBtn').on('click', function(e) {
         e.preventDefault();
         cancelEdit();
     });
 
-    // Save button click
     $('#savePersonalBtn').on('click', function(e) {
         e.preventDefault();
-        if (validatePersonalForm()) {
-            savePersonalInfo();
-        }
+        if (validatePersonalForm()) savePersonalInfo();
     });
 
-    // Change password button
     $('#changePasswordBtn').on('click', function(e) {
         e.preventDefault();
         showPasswordChangeModal();
     });
 
-    // Photo input change
     $('#photoInput').on('change', function(e) {
         handlePhotoUpload(e);
     });
 
-    // Form field changes
     $('#fullName, #emailAddress, #phoneNumber, #dateOfBirth, #address').on('change input', function() {
         updateCurrentData();
         detectChanges();
@@ -91,208 +71,124 @@ function setupEventListeners() {
 
 function setupCollapsibleCards() {
     $('.collapsible-header').on('click', function() {
-        const card = $(this).parent('.collapsible-card');
-        card.toggleClass('active');
-        
-        // Optional: Close other cards
-        // $('.collapsible-card').not(card).removeClass('active');
+        $(this).parent('.collapsible-card').toggleClass('active');
     });
 }
 
+/* ─── Avatar initials ─────────────────────────────────────────────────── */
+
 function displayAvatarInitials() {
-    // Only update initials if they exist (when no profile picture)
-    const initialsElement = document.getElementById('avatarInitials');
-    if (initialsElement) {
-        const fullName = $.trim($('#fullName').val());
-        const initials = getInitials(fullName);
-        initialsElement.textContent = initials;
+    const el = document.getElementById('avatarInitials');
+    if (el) {
+        el.textContent = getInitials($.trim($('#fullName').val()));
     }
 }
 
 function getInitials(fullName) {
     if (!fullName) return 'U';
-    
     const parts = fullName.trim().split(/\s+/);
-    if (parts.length === 0) return 'U';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
+/* ─── Photo state ─────────────────────────────────────────────────────── */
+
 function checkForExistingPhoto() {
-    // Check if an image tag already exists in the avatar circle
-    const $img = $('#avatarCircle').find('img.avatar-image');
+    const $img      = $('#avatarCircle').find('img.avatar-image');
     const $initials = $('#avatarInitials');
 
     if ($img.length > 0 && $img.attr('src')) {
         profileState.hasExistingPhoto = true;
         $('#avatarCircle').addClass('has-photo');
-        // Hide initials if image exists
-        if ($initials.length > 0) {
-            $initials.hide();
-        }
+        $initials.hide();
+        showPhotoMenu();
     } else {
         profileState.hasExistingPhoto = false;
         $('#avatarCircle').removeClass('has-photo');
-        // Show initials if no image
-        if ($initials.length > 0) {
-            $initials.show();
-        }
+        $initials.show();
+        hidePhotoMenu();
     }
 }
 
-function enterEditMode() {
-    profileState.isEditing = true;
-    setFieldsDisabled(false);
-    updateButtonDisplay();
-    $('#fullName').focus();
-}
+/* ─── Photo menu (change / remove) ───────────────────────────────────── */
 
-function cancelEdit() {
-    if (profileState.hasChanges) {
-        if (!confirm('You have unsaved changes. Are you sure you want to discard them?')) {
-            return;
-        }
-    }
+function setupPhotoMenu() {
+    /* Clicking the avatar circle when a photo exists opens the menu */
+    $('#avatarCircle').on('click', function(e) {
+        if (!profileState.hasExistingPhoto) return;
+        e.stopPropagation();
+        $('#photoMenu').toggleClass('photo-menu--open');
+    });
 
-    profileState.isEditing = false;
-    profileState.hasChanges = false;
-    
-    $('#fullName').val(profileState.originalData.fullName);
-    $('#emailAddress').val(profileState.originalData.email);
-    $('#phoneNumber').val(profileState.originalData.phone);
-    $('#dateOfBirth').val(profileState.originalData.dob);
-    $('#address').val(profileState.originalData.address);
+    /* "Change photo" option */
+    $(document).on('click', '#photoMenuChange', function(e) {
+        e.stopPropagation();
+        closePhotoMenu();
+        $('#photoInput').val('').trigger('click');
+    });
 
-    profileState.currentData = JSON.parse(JSON.stringify(profileState.originalData));
-    
-    setFieldsDisabled(true);
-    updateButtonDisplay();
-}
+    /* "Remove photo" option */
+    $(document).on('click', '#photoMenuRemove', function(e) {
+        e.stopPropagation();
+        closePhotoMenu();
+        removePhoto();
+    });
 
-function setFieldsDisabled(disabled) {
-    const fields = ['#fullName', '#emailAddress', '#phoneNumber', '#dateOfBirth', '#address'];
-    fields.forEach(selector => {
-        $(selector).prop('readonly', disabled);
+    /* Close menu when clicking elsewhere */
+    $(document).on('click', function() {
+        closePhotoMenu();
     });
 }
 
-function updateCurrentData() {
-    profileState.currentData = {
-        fullName: $.trim($('#fullName').val()),
-        email: $.trim($('#emailAddress').val()),
-        phone: $.trim($('#phoneNumber').val()),
-        dob: $.trim($('#dateOfBirth').val()),
-        address: $.trim($('#address').val())
-    };
+function showPhotoMenu() {
+    $('#photoMenuBtn').show();
 }
 
-function detectChanges() {
-    profileState.hasChanges = !isDataEqual(profileState.currentData, profileState.originalData);
+function hidePhotoMenu() {
+    $('#photoMenuBtn').hide();
+    closePhotoMenu();
 }
 
-function isDataEqual(data1, data2) {
-    return JSON.stringify(data1) === JSON.stringify(data2);
+function closePhotoMenu() {
+    $('#photoMenu').removeClass('photo-menu--open');
 }
 
-function updateButtonDisplay() {
-    const $editBtn = $('#editPersonalBtn');
-    const $formActions = $('#personalActions');
+function removePhoto() {
+    const confirmed = confirm('Remove your profile photo?');
+    if (!confirmed) return;
 
-    if (profileState.isEditing) {
-        $editBtn.hide();
-        $formActions.show();
-    } else {
-        $editBtn.show();
-        $formActions.hide();
-    }
-}
+    showLoading();
 
-function updateButtonState() {
-    const $saveBtn = $('#savePersonalBtn');
-    
-    if (profileState.isEditing && profileState.hasChanges) {
-        $saveBtn.prop('disabled', false).css('opacity', '1').css('cursor', 'pointer');
-    } else if (profileState.isEditing && !profileState.hasChanges) {
-        $saveBtn.prop('disabled', true).css('opacity', '0.5').css('cursor', 'not-allowed');
-    }
-}
-
-function validatePersonalForm() {
-    const fullName = $.trim($('#fullName').val());
-    const email = $.trim($('#emailAddress').val());
-    const phone = $.trim($('#phoneNumber').val());
-    const dob = $.trim($('#dateOfBirth').val());
-
-    if (!fullName) {
-        showError('Full name is required.');
-        return false;
-    }
-
-    if (fullName.length < 3) {
-        showError('Full name must be at least 3 characters long.');
-        return false;
-    }
-
-    if (!email) {
-        showError('Email address is required.');
-        return false;
-    }
-
-    if (!isValidEmail(email)) {
-        showError('Please enter a valid email address.');
-        return false;
-    }
-
-    if (phone && !isValidPhone(phone)) {
-        showError('Please enter a valid phone number (10-15 digits).');
-        return false;
-    }
-
-    if (dob) {
-        if (!isValidDate(dob)) {
-            showError('Invalid date of birth.');
-            return false;
+    $.ajax({
+        url: '/remove-profile-photo/',
+        type: 'POST',
+        timeout: 30000,
+        success: function() {
+            hideLoading();
+            $('#avatarCircle').find('img.avatar-image').remove();
+            $('#avatarCircle').removeClass('has-photo');
+            profileState.hasExistingPhoto = false;
+            profileState.photoPreview     = null;
+            $('#photoInput').val('');
+            $('#avatarInitials').show();
+            hidePhotoMenu();
+            displayAvatarInitials();
+            showSuccess('Profile photo removed.');
+        },
+        error: function(xhr) {
+            hideLoading();
+            let msg = 'Failed to remove photo. Please try again.';
+            if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+            showError(msg);
         }
-
-        const dobDate = new Date(dob);
-        const today = new Date();
-        if (dobDate > today) {
-            showError('Date of birth cannot be in the future.');
-            return false;
-        }
-
-        const age = today.getFullYear() - dobDate.getFullYear();
-        if (age < 13) {
-            showError('You must be at least 13 years old.');
-            return false;
-        }
-    }
-
-    return true;
+    });
 }
 
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-function isValidPhone(phone) {
-    const phoneRegex = /^\d{10,15}$/;
-    return phoneRegex.test(phone.replace(/\D/g, ''));
-}
-
-function isValidDate(dateString) {
-    const date = new Date(dateString);
-    return date instanceof Date && !isNaN(date);
-}
+/* ─── Photo upload ────────────────────────────────────────────────────── */
 
 function handlePhotoUpload(e) {
     const file = e.target.files[0];
-
-    if (!file) {
-        return;
-    }
+    if (!file) return;
 
     if (!file.type.startsWith('image/')) {
         showError('Please select a valid image file.');
@@ -305,188 +201,262 @@ function handlePhotoUpload(e) {
     }
 
     const reader = new FileReader();
+
     reader.onload = function(event) {
         profileState.photoPreview = event.target.result;
-        
-        // Update avatar to show the preview
+
+        /* Show preview immediately */
         const $avatarCircle = $('#avatarCircle');
-        let $img = $avatarCircle.find('img.avatar-image');
-        const $initials = $('#avatarInitials');
+        const $initials     = $('#avatarInitials');
+        let   $img          = $avatarCircle.find('img.avatar-image');
 
         if ($img.length > 0) {
-            // Update existing image
             $img.attr('src', profileState.photoPreview);
         } else {
-            // Create new image and hide initials
-            $avatarCircle.prepend(`<img src="${profileState.photoPreview}" alt="Profile Picture" class="avatar-image" style="width:100%;height:100%;object-fit:cover;">`);
+            $avatarCircle.prepend(
+                $('<img>', {
+                    src:   profileState.photoPreview,
+                    alt:   'Profile Picture',
+                    class: 'avatar-image',
+                    css:   { width: '100%', height: '100%', objectFit: 'cover' }
+                })
+            );
         }
 
         $avatarCircle.addClass('has-photo');
-        // Hide initials when showing image
-        if ($initials.length > 0) {
-            $initials.hide();
-        }
+        $initials.hide();
 
-        },
-        error: function(xhr, status, error) {
-            hideLoading();
-            let errorMsg = 'Failed to upload photo. Please try again.';
-            
-            if (xhr.status === 404) {
-                errorMsg = 'Upload endpoint not found. Please contact support.';
-            } else if (xhr.status === 403) {
-                errorMsg = 'Permission denied. Please log in again.';
-            } else if (xhr.status === 400) {
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                } else {
-                    errorMsg = 'Invalid file format or size. Please try again.';
+        /* Upload to server */
+        showLoading();
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+        $.ajax({
+            url:         '/upload-profile-photo/',
+            type:        'POST',
+            data:        formData,
+            processData: false,
+            contentType: false,
+            timeout:     30000,
+            success: function(response) {
+                hideLoading();
+                profileState.hasExistingPhoto = true;
+                showPhotoMenu();
+                showSuccess('Profile photo updated successfully!');
+            },
+            error: function(xhr) {
+                hideLoading();
+                let msg = 'Failed to upload photo. Please try again.';
+                if      (xhr.status === 404)                             msg = 'Upload endpoint not found.';
+                else if (xhr.status === 403)                             msg = 'Permission denied. Please log in again.';
+                else if (xhr.status === 400 && xhr.responseJSON?.message) msg = xhr.responseJSON.message;
+                else if (xhr.responseJSON?.message)                       msg = xhr.responseJSON.message;
+
+                showError(msg);
+
+                /* Revert preview on failure */
+                if (!profileState.hasExistingPhoto) {
+                    $('#avatarCircle').find('img.avatar-image').remove();
+                    $('#avatarCircle').removeClass('has-photo');
+                    $('#avatarInitials').show();
+                    hidePhotoMenu();
                 }
-            } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                errorMsg = xhr.responseJSON.message;
+                profileState.photoPreview = null;
+                $('#photoInput').val('');
             }
-            
-            showError(errorMsg);
-            
-            // Revert avatar on error
-            const $avatarCircle = $('#avatarCircle');
-            if (!profileState.hasExistingPhoto) {
-                $avatarCircle.find('img.avatar-image').remove();
-                $avatarCircle.removeClass('has-photo');
-            }
-            profileState.photoPreview = null;
-            $('#photoInput').val('');
-            $avatarCircle.find('img').remove();
-            $avatarCircle.removeClass('has-photo');
-            profileState.photoPreview = null;
-            $('#photoInput').val('');
-        }
+        });
+    };
+
+    reader.readAsDataURL(file);
+}
+
+/* ─── Edit mode ───────────────────────────────────────────────────────── */
+
+function enterEditMode() {
+    profileState.isEditing = true;
+    setFieldsDisabled(false);
+    updateButtonDisplay();
+    $('#fullName').focus();
+}
+
+function cancelEdit() {
+    if (profileState.hasChanges) {
+        if (!confirm('You have unsaved changes. Are you sure you want to discard them?')) return;
+    }
+
+    profileState.isEditing  = false;
+    profileState.hasChanges = false;
+
+    $('#fullName').val(profileState.originalData.fullName);
+    $('#emailAddress').val(profileState.originalData.email);
+    $('#phoneNumber').val(profileState.originalData.phone);
+    $('#dateOfBirth').val(profileState.originalData.dob);
+    $('#address').val(profileState.originalData.address);
+
+    profileState.currentData = JSON.parse(JSON.stringify(profileState.originalData));
+    setFieldsDisabled(true);
+    updateButtonDisplay();
+}
+
+function setFieldsDisabled(disabled) {
+    ['#fullName', '#emailAddress', '#phoneNumber', '#dateOfBirth', '#address'].forEach(sel => {
+        $(sel).prop('readonly', disabled);
     });
 }
 
-function savePersonalInfo() {
-    if (!validatePersonalForm()) {
-        return;
+function updateCurrentData() {
+    profileState.currentData = {
+        fullName: $.trim($('#fullName').val()),
+        email:    $.trim($('#emailAddress').val()),
+        phone:    $.trim($('#phoneNumber').val()),
+        dob:      $.trim($('#dateOfBirth').val()),
+        address:  $.trim($('#address').val())
+    };
+}
+
+function detectChanges() {
+    profileState.hasChanges = !isDataEqual(profileState.currentData, profileState.originalData);
+}
+
+function isDataEqual(a, b) {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function updateButtonDisplay() {
+    if (profileState.isEditing) {
+        $('#editPersonalBtn').hide();
+        $('#personalActions').show();
+    } else {
+        $('#editPersonalBtn').show();
+        $('#personalActions').hide();
     }
+}
+
+function updateButtonState() {
+    const $btn = $('#savePersonalBtn');
+    const ok   = profileState.isEditing && profileState.hasChanges;
+    $btn.prop('disabled', !ok).css({ opacity: ok ? '1' : '0.5', cursor: ok ? 'pointer' : 'not-allowed' });
+}
+
+/* ─── Validation ──────────────────────────────────────────────────────── */
+
+function validatePersonalForm() {
+    const fullName = $.trim($('#fullName').val());
+    const email    = $.trim($('#emailAddress').val());
+    const phone    = $.trim($('#phoneNumber').val());
+    const dob      = $.trim($('#dateOfBirth').val());
+
+    if (!fullName)              { showError('Full name is required.');                           return false; }
+    if (fullName.length < 3)   { showError('Full name must be at least 3 characters long.');    return false; }
+    if (!email)                 { showError('Email address is required.');                       return false; }
+    if (!isValidEmail(email))   { showError('Please enter a valid email address.');              return false; }
+    if (phone && !isValidPhone(phone)) { showError('Please enter a valid phone number (10-15 digits).'); return false; }
+
+    if (dob) {
+        if (!isValidDate(dob))             { showError('Invalid date of birth.');                       return false; }
+        const dobDate = new Date(dob);
+        const today   = new Date();
+        if (dobDate > today)               { showError('Date of birth cannot be in the future.');        return false; }
+        if (today.getFullYear() - dobDate.getFullYear() < 13) { showError('You must be at least 13 years old.'); return false; }
+    }
+
+    return true;
+}
+
+function isValidEmail(email)      { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+function isValidPhone(phone)      { return /^\d{10,15}$/.test(phone.replace(/\D/g, '')); }
+function isValidDate(dateString)  { const d = new Date(dateString); return d instanceof Date && !isNaN(d); }
+
+/* ─── Save profile ────────────────────────────────────────────────────── */
+
+function savePersonalInfo() {
+    if (!validatePersonalForm()) return;
 
     showLoading();
 
-    const fullNameParts = $.trim($('#fullName').val()).split(' ');
-    const firstName = fullNameParts[0] || '';
-    const lastName = fullNameParts.slice(1).join(' ') || '';
+    const parts     = $.trim($('#fullName').val()).split(' ');
+    const firstName = parts[0] || '';
+    const lastName  = parts.slice(1).join(' ') || '';
 
     const data = {
-        first_name: firstName,
-        last_name: lastName,
-        email: $.trim($('#emailAddress').val()),
-        phone: $.trim($('#phoneNumber').val()),
+        first_name:    firstName,
+        last_name:     lastName,
+        email:         $.trim($('#emailAddress').val()),
+        phone:         $.trim($('#phoneNumber').val()),
         date_of_birth: $.trim($('#dateOfBirth').val()),
-        address: $.trim($('#address').val())
+        address:       $.trim($('#address').val())
     };
 
     $.ajax({
-        url: '/update-profile/',
-        type: 'POST',
-        data: data,
+        url:     '/update-profile/',
+        type:    'POST',
+        data:    data,
         timeout: 30000,
-        success: function(response) {
+        success: function() {
             hideLoading();
 
             profileState.originalData = {
                 fullName: $('#fullName').val(),
-                email: data.email,
-                phone: data.phone,
-                dob: data.date_of_birth,
-                address: data.address
+                email:    data.email,
+                phone:    data.phone,
+                dob:      data.date_of_birth,
+                address:  data.address
             };
-
-            profileState.currentData = JSON.parse(JSON.stringify(profileState.originalData));
-            profileState.isEditing = false;
-            profileState.hasChanges = false;
+            profileState.currentData  = JSON.parse(JSON.stringify(profileState.originalData));
+            profileState.isEditing    = false;
+            profileState.hasChanges   = false;
 
             setFieldsDisabled(true);
             updateButtonDisplay();
             updateButtonState();
             displayAvatarInitials();
-
             showSuccess('Profile information updated successfully!');
         },
-        error: function(xhr, status, error) {
+        error: function(xhr) {
             hideLoading();
-            let errorMsg = 'Failed to update profile. Please try again.';
-            
-            if (xhr.status === 404) {
-                errorMsg = 'Update endpoint not found. Please contact support.';
-            } else if (xhr.status === 403) {
-                errorMsg = 'Permission denied. Please log in again.';
-            } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                errorMsg = xhr.responseJSON.message;
-            }
-            
-            showError(errorMsg);
+            let msg = 'Failed to update profile. Please try again.';
+            if      (xhr.status === 404)             msg = 'Update endpoint not found. Please contact support.';
+            else if (xhr.status === 403)             msg = 'Permission denied. Please log in again.';
+            else if (xhr.responseJSON?.message)      msg = xhr.responseJSON.message;
+            showError(msg);
         }
     });
 }
 
-function showPasswordChangeModal() {
-    alert('Password change feature coming soon!');
-}
+/* ─── UI helpers ──────────────────────────────────────────────────────── */
+
+function showPasswordChangeModal() { alert('Password change feature coming soon!'); }
 
 function showSuccess(message) {
-    const $alert = $('#successAlert');
     $('#successMessage').text(message);
-    
-    $alert.stop(true, true).show().addClass('show');
-    
-    setTimeout(function() {
-        $alert.fadeOut(function() {
-            $alert.removeClass('show');
-        });
-    }, 5000);
+    $('#successAlert').stop(true, true).show().addClass('show');
+    setTimeout(() => $('#successAlert').fadeOut(() => $('#successAlert').removeClass('show')), 5000);
 }
 
 function showError(message) {
-    const $alert = $('#errorAlert');
     $('#errorMessage').text(message);
-    
-    $alert.stop(true, true).show().addClass('show');
-    
-    setTimeout(function() {
-        $alert.fadeOut(function() {
-            $alert.removeClass('show');
-        });
-    }, 5000);
-
+    $('#errorAlert').stop(true, true).show().addClass('show');
+    setTimeout(() => $('#errorAlert').fadeOut(() => $('#errorAlert').removeClass('show')), 5000);
     $('html, body').animate({ scrollTop: 0 }, 'smooth');
 }
 
-function showLoading() {
-    $('#loadingSpinner').show();
-}
-
-function hideLoading() {
-    $('#loadingSpinner').fadeOut();
-}
+function showLoading() { $('#loadingSpinner').show(); }
+function hideLoading() { $('#loadingSpinner').fadeOut(); }
 
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue || '';
+    if (!document.cookie) return '';
+    const match = document.cookie.split(';')
+        .map(c => c.trim())
+        .find(c => c.startsWith(name + '='));
+    return match ? decodeURIComponent(match.substring(name.length + 1)) : '';
 }
 
+/* ─── Global keyboard / unload ────────────────────────────────────────── */
+
 $(document).on('keydown', function(e) {
-    if (e.key === 'Escape' && profileState.isEditing) {
-        cancelEdit();
-    }
+    if (e.key === 'Escape' && profileState.isEditing) cancelEdit();
+    if (e.key === 'Escape') closePhotoMenu();
 });
 
 $(window).on('beforeunload', function() {
