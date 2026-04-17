@@ -152,17 +152,15 @@ const d = {
   issued: {{ issued }}, overdue: {{ overdue }},
   categoryDistribution: {{ category_distribution|safe }}
 };
-new Chart(document.getElementById('statusChart'), {
-  type: 'doughnut',
-  data: { labels: ['Available','Issued','Overdue'], datasets: [{ data: [d.available,d.issued,d.overdue], backgroundColor: ['#3b82f6','#16a34a','#ef4444'], borderWidth: 0 }] },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-});
 new Chart(document.getElementById('trendChart'), {
   type: 'line',
-  data: { labels: d.months, datasets: [
-    { label: 'Issued', data: d.issuedTrend, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true },
-    { label: 'Returned', data: d.returnedTrend, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', tension: 0.4, fill: true }
-  ]},
+  data: { 
+    labels: d.months, 
+    datasets: [
+      { label: 'Issued', data: d.issuedTrend, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true },
+      { label: 'Returned', data: d.returnedTrend, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', tension: 0.4, fill: true }
+    ] 
+  },
   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
 });
 </script>

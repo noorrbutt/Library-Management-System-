@@ -62,7 +62,6 @@
     <a href="/" class="brand"><i class="fas fa-book-open" style="color:#3b82f6;"></i>LibraryMS</a>
     <div class="nav-links">
       <a href="/" class="nav-btn">Home</a>
-      <a href="{% url 'adminclick' %}" class="nav-btn primary">Admin Panel</a>
     </div>
   </nav>
 
@@ -73,8 +72,8 @@
       <h1>Manage Your Library<br><span>Efficiently & Smartly</span></h1>
       <p class="hero-sub">A powerful platform for librarians to manage books, students, borrowing records, and track library activity in one place.</p>
       <div class="hero-cta">
-        <a href="{% url 'adminclick' %}" class="btn-hero solid"><i class="fas fa-shield-alt"></i>Admin Panel</a>
-        <a href="#features" class="btn-hero outline"><i class="fas fa-info-circle"></i>Learn More</a>
+        <a href="{% url 'adminsignup' %}" class="btn-hero solid"><i class="fas fa-plus-circle"></i>Create Your Library</a>
+        <a href="{% url 'adminlogin' %}" class="btn-hero outline"><i class="fas fa-sign-in-alt"></i>Log in to Existing Library</a>
       </div>
     </div>
   </section>

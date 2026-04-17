@@ -31,6 +31,7 @@ urlpatterns = [
     # User Profile Management
     path("userprofile/", views.userprofile_view, name="userprofile"),
     path("update-profile/", views.update_profile_view, name="update_profile"),
+    path("update-library/", views.update_library_view, name="update_library"),
     path("change-password/", views.change_password_view, name="change_password"),
     path(
         "upload-profile-photo/",

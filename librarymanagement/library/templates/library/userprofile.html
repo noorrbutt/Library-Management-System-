@@ -184,8 +184,46 @@
       </div>
     </div>
 
-    <!-- Personal Information -->
+    <!-- Library Information -->
     <div class="lms-card" style="margin-bottom:16px;">
+      <div class="lms-card-header">
+        <span style="font-size:0.875rem;font-weight:600;">
+          <i class="fas fa-book" style="color:#3b82f6;margin-right:6px;"></i>Library Information
+        </span>
+        <button class="btn-secondary-lms" id="editLibraryBtn" type="button" style="padding:5px 12px;font-size:0.78rem;">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+      </div>
+      <div class="lms-card-body">
+        <form id="libraryForm" class="profile-form">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label class="lms-label">Library Name *</label>
+              <input type="text" class="lms-input" id="libraryName"
+                     value="{% if admin_profile.library %}{{ admin_profile.library.name }}{% endif %}"
+                     placeholder="Enter library name">
+            </div>
+            <div>
+              <label class="lms-label">Library Code</label>
+              <input type="text" class="lms-input" id="libraryCode"
+                     value="{% if admin_profile.library %}{{ admin_profile.library.code }}{% endif %}"
+                     readonly style="background:#f9fafb;">
+            </div>
+          </div>
+          <div id="libraryActions" style="display:none;gap:10px;">
+            <button type="button" class="btn-primary-lms" id="saveLibraryBtn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+            <button type="button" class="btn-secondary-lms" id="cancelLibraryBtn">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Personal Information -->
       <div class="lms-card-header">
         <span style="font-size:0.875rem;font-weight:600;">
           <i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information

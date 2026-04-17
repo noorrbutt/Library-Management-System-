@@ -221,7 +221,15 @@
               style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;color:#6b7280;">
         <i class="fas fa-bars"></i>
       </button>
-      <span style="font-size:0.95rem;font-weight:600;color:#111827;">{% block page_title %}Dashboard{% endblock %}</span>
+      <span style="font-size:0.95rem;font-weight:600;color:#111827;">
+        {% if request.user.is_authenticated %}
+          {% with lib=request.user.admin_profile.library %}
+            {% if lib %}{{ lib.name }}{% else %}{% block page_title %}Dashboard{% endblock %}{% endif %}
+          {% endwith %}
+        {% else %}
+         
+        {% endif %}
+      </span>
     </div>
     <a href="{% url 'userprofile' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;border-radius:8px;padding:6px 8px;transition:background 0.15s;cursor:pointer;">
       <span style="font-size:0.8rem;color:#6b7280;">{{ request.user.username }}</span>
@@ -253,12 +261,13 @@
 <script src="{% static 'metronic/assets/js/core.bundle.js' %}"></script>
 <script>
   // Show mobile toggle on small screens
-  if (window.innerWidth <= 768) {
-    document.getElementById('sidebar_toggle').style.display = 'block';
+  const _toggleBtn = document.getElementById('sidebar_toggle');
+  if (_toggleBtn) {
+    if (window.innerWidth <= 768) _toggleBtn.style.display = 'block';
+    window.addEventListener('resize', function() {
+      _toggleBtn.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+    });
   }
-  window.addEventListener('resize', function() {
-    document.getElementById('sidebar_toggle').style.display = window.innerWidth <= 768 ? 'block' : 'none';
-  });
 </script>
 {% block extra_js %}{% endblock %}
 </body>
