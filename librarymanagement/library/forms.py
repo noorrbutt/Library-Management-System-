@@ -51,6 +51,19 @@ class CreateLibraryForm(forms.Form):
         return cleaned_data
 
 
+# -------------------- ADMIN LOGIN FORM --------------------
+class AdminLoginForm(forms.Form):
+    """Simple login form for use with AdminLoginView (library + username + password)"""
+
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={"placeholder": "Your username"}),
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Your password"}),
+    )
+
+
 # -------------------- BOOK FORMS --------------------
 class BookForm(forms.ModelForm):
     class Meta:

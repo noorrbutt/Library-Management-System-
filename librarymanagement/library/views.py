@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import authenticate, login as auth_login
 from django.core.mail import send_mail
 from datetime import date, datetime, timedelta
 from . import forms, models
@@ -15,8 +16,13 @@ import json
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
+from django.views import View
+from django.views.generic import FormView
 from allauth.socialaccount.signals import social_account_added
 from django.dispatch import receiver
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(social_account_added)
@@ -33,6 +39,63 @@ def is_admin(user):
     return user.groups.filter(name="ADMIN").exists()
 
 
+# -------------------- LIBRARY CONTEXT HELPERS --------------------
+
+
+def get_user_library(user):
+    """
+    Get the library owned by the user (admin).
+    Returns None if user is not an admin or has no library.
+    """
+    if not user.is_authenticated:
+        return None
+    try:
+        return models.Library.objects.get(owner=user)
+    except models.Library.DoesNotExist:
+        return None
+    except models.Library.MultipleObjectsReturned:
+        # Should never happen, but return the first one
+        return models.Library.objects.filter(owner=user).first()
+
+
+def library_required(view_func):
+    """
+    Decorator to ensure the logged-in user has a library.
+    Redirects to library creation page if not.
+    """
+
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect("adminlogin")
+        if not is_admin(request.user):
+            return redirect("adminlogin")
+
+        library = None
+        library_id = request.session.get("library_id")
+        if library_id:
+            try:
+                library = models.Library.objects.get(id=library_id, owner=request.user)
+            except models.Library.DoesNotExist:
+                logger.warning(
+                    "library_required: session library_id %s invalid for user %s",
+                    library_id,
+                    request.user.username,
+                )
+                library = None
+
+        if not library:
+            library = get_user_library(request.user)
+
+        if not library:
+            # Admin exists but has no library - redirect to create library
+            return redirect("adminsignup")
+        # Attach library to request for convenience
+        request.library = library
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
 # -------------------- BASIC VIEWS --------------------
 
 
@@ -42,52 +105,72 @@ def home_view(request):
     return render(request, "library/index.html")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def dashboard_view(request):
     """
     Comprehensive dashboard displaying library statistics and metrics.
+    Scoped to the current user's library only.
     """
+    library_id = request.session.get("library_id")
+    library = request.library
+    if library_id:
+        try:
+            library = models.Library.objects.get(id=library_id, owner=request.user)
+        except models.Library.DoesNotExist:
+            logger.warning(
+                "dashboard_view: session library_id %s invalid for user %s",
+                library_id,
+                request.user.username,
+            )
+            library = request.library
+
     today = date.today()
     month_start = today.replace(day=1)
 
-    # ========== BASIC STATISTICS ==========
-    total_books = Book.objects.count()
-    total_members = StudentExtra.objects.count()
+    # ========== BASIC STATISTICS (LIBRARY-SCOPED) ==========
+    total_books = Book.objects.filter(library=library).count()
+    total_members = StudentExtra.objects.filter(library=library).count()
 
-    # Issued books (currently not returned)
-    issued_books_count = IssuedBook.objects.filter(returned=False).count()
+    # Issued books (currently not returned) in this library
+    issued_books_count = IssuedBook.objects.filter(
+        returned=False, book__library=library
+    ).count()
 
-    # Available books
-    available_books_count = Book.objects.filter(quantity__gt=0).count()
+    # Available books in this library
+    available_books_count = Book.objects.filter(library=library, quantity__gt=0).count()
 
-    # Overdue books (past return date and not returned)
+    # Overdue books in this library (past return date and not returned)
     overdue_books_count = IssuedBook.objects.filter(
-        return_date__lt=today, returned=False
+        return_date__lt=today, returned=False, book__library=library
     ).count()
 
-    # Books added this month (new books created this month)
+    # Books added this month in this library
     books_this_month = Book.objects.filter(
+        library=library,
         id__gte=Book.objects.filter(
-            id__in=IssuedBook.objects.filter(issuedate__gte=month_start).values_list(
-                "book_id", flat=True
-            )
-        ).count()
+            library=library,
+            id__in=IssuedBook.objects.filter(
+                issuedate__gte=month_start, book__library=library
+            ).values_list("book_id", flat=True),
+        ).count(),
     ).count()
 
-    # ========== RECENT ACTIVITIES ==========
-    recent_activities = IssuedBook.objects.select_related("student", "book").order_by(
-        "-issuedate"
-    )[:15]
+    # ========== RECENT ACTIVITIES (LIBRARY-SCOPED) ==========
+    recent_activities = (
+        IssuedBook.objects.filter(book__library=library)
+        .select_related("student", "book")
+        .order_by("-issuedate")[:15]
+    )
 
-    # ========== TOP 5 MOST ISSUED BOOKS ==========
+    # ========== TOP 5 MOST ISSUED BOOKS (LIBRARY-SCOPED) ==========
     top_books = (
-        Book.objects.annotate(issue_count=Count("issuedbook"))
-        .filter(issue_count__gt=0)  # Only books that have been issued
+        Book.objects.filter(library=library)
+        .annotate(issue_count=Count("issuedbook"))
+        .filter(issue_count__gt=0)
         .order_by("-issue_count")[:5]
     )
 
-    # ========== MONTHLY TRENDS (Last 6 Months) ==========
+    # ========== MONTHLY TRENDS (Last 6 Months, LIBRARY-SCOPED) ==========
     months_data = []
     issued_trend = []
     returned_trend = []
@@ -105,29 +188,34 @@ def dashboard_view(request):
             )
             month_end_calc = next_month - timedelta(days=1)
 
-        # Count issued books in this month
+        # Count issued books in this month for this library
         issued_count = IssuedBook.objects.filter(
-            issuedate__gte=month_start_calc, issuedate__lte=month_end_calc
+            issuedate__gte=month_start_calc,
+            issuedate__lte=month_end_calc,
+            book__library=library,
         ).count()
 
-        # Count returned books in this month
+        # Count returned books in this month for this library
         returned_count = IssuedBook.objects.filter(
             return_date__gte=month_start_calc,
             return_date__lte=month_end_calc,
             returned=True,
+            book__library=library,
         ).count()
 
         months_data.append(month_start_calc.strftime("%b"))
         issued_trend.append(issued_count)
         returned_trend.append(returned_count)
 
-    # ========== LOW STOCK BOOKS ==========
-    low_stock_books = Book.objects.filter(quantity__lt=3).order_by("quantity")[:10]
+    # ========== LOW STOCK BOOKS (LIBRARY-SCOPED) ==========
+    low_stock_books = Book.objects.filter(library=library, quantity__lt=3).order_by(
+        "quantity"
+    )[:10]
 
-    # ========== CATEGORY DISTRIBUTION ==========
-    # Get category counts
+    # ========== CATEGORY DISTRIBUTION (LIBRARY-SCOPED) ==========
     category_queryset = (
-        Book.objects.values("category")
+        Book.objects.filter(library=library)
+        .values("category")
         .annotate(count=Count("id"))
         .order_by("-count")[:7]
     )
@@ -145,6 +233,7 @@ def dashboard_view(request):
     # ========== CONTEXT DATA ==========
     context = {
         # Basic stats
+        "library": library,
         "total_books": total_books,
         "available_books": available_books_count,
         "issued_books": issued_books_count,
@@ -159,7 +248,7 @@ def dashboard_view(request):
         "months_data": json.dumps(months_data),
         "issued_trend": json.dumps(issued_trend),
         "returned_trend": json.dumps(returned_trend),
-        # Status breakdown for pie chart (use same variables)
+        # Status breakdown for pie chart
         "available": available_books_count,
         "issued": issued_books_count,
         "overdue": overdue_books_count,
@@ -176,15 +265,216 @@ def adminclick_view(request):
     return render(request, "library/adminclick.html")
 
 
+class AdminLoginView(View):
+    """
+    Multi-tenant admin login view that shows library selection first,
+    then login form. Admin can only access their own library.
+    """
+
+    template_name = "library/adminlogin.html"
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+
+        # Show all libraries for selection
+        libraries = models.Library.objects.all().order_by("-created_at")
+        context = {
+            "libraries": libraries,
+            "form": forms.AdminLoginForm(),  # Standard Django login form
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        # Admin selects library and enters credentials
+        library_id = request.POST.get("selected_library")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        print(f"adminlogin post: selected_library={library_id}, username={username}")
+        logger.debug(
+            "adminlogin post: selected_library=%s username=%s",
+            library_id,
+            username,
+        )
+
+        if not library_id or not username or not password:
+            messages.error(
+                request, "Please select a library and enter your credentials."
+            )
+            libraries = models.Library.objects.all().order_by("-created_at")
+            return render(
+                request,
+                self.template_name,
+                {
+                    "libraries": libraries,
+                    "form": forms.AdminLoginForm(),
+                },
+            )
+
+        try:
+            library = models.Library.objects.get(id=library_id)
+
+            # Authenticate user (username/password)
+            user = authenticate(request, username=username, password=password)
+
+            if user is None:
+                messages.error(request, "Invalid username or password.")
+                libraries = models.Library.objects.all().order_by("-created_at")
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "libraries": libraries,
+                        "form": forms.AdminLoginForm(),
+                    },
+                )
+
+            # Verify user owns this library
+            if user != library.owner:
+                messages.error(request, "You do not have access to this library.")
+                libraries = models.Library.objects.all().order_by("-created_at")
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "libraries": libraries,
+                        "form": forms.AdminLoginForm(),
+                    },
+                )
+
+            # Verify user is admin
+            if not is_admin(user):
+                messages.error(request, "You do not have admin privileges.")
+                libraries = models.Library.objects.all().order_by("-created_at")
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "libraries": libraries,
+                        "form": forms.AdminLoginForm(),
+                    },
+                )
+
+            # Ensure admin profile exists and is linked to the selected library
+            admin_profile, created = models.AdminProfile.objects.get_or_create(
+                user=user
+            )
+            if admin_profile.library is None or admin_profile.library != library:
+                admin_profile.library = library
+                admin_profile.save()
+                print(
+                    f"adminlogin: linked admin profile {admin_profile.id} to library {library.id}"
+                )
+                logger.debug(
+                    "adminlogin: linked admin profile %s to library %s",
+                    admin_profile.id,
+                    library.id,
+                )
+
+            request.session["library_id"] = library.id
+            auth_login(request, user)
+            print(f"adminlogin: authenticated and logged in user {user.username}")
+            messages.success(request, f"Welcome back! Logged into {library.name}.")
+            return redirect("dashboard")
+
+        except models.Library.DoesNotExist:
+            messages.error(request, "Library not found.")
+            libraries = models.Library.objects.all().order_by("-created_at")
+            return render(
+                request,
+                self.template_name,
+                {
+                    "libraries": libraries,
+                    "form": forms.AdminLoginForm(),
+                },
+            )
+        except Exception as e:
+            print(f"adminlogin error: {e}")
+            logger.exception("adminlogin failed")
+            messages.error(request, f"An error occurred: {str(e)}")
+            libraries = models.Library.objects.all().order_by("-created_at")
+            return render(
+                request,
+                self.template_name,
+                {
+                    "libraries": libraries,
+                    "form": forms.AdminLoginForm(),
+                },
+            )
+
+
 def adminsignup_view(request):
-    form = forms.AdminSigupForm()
+    """
+    Create a new library. This atomically:
+    1. Creates a new User (admin)
+    2. Creates an AdminProfile for the user
+    3. Creates a Library owned by the user
+    Then logs them in and redirects to dashboard.
+    """
+    logger.debug("adminsignup_view entered %s", request.method)
+    form = forms.CreateLibraryForm()
     if request.method == "POST":
-        form = forms.AdminSigupForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            admin_group, _ = Group.objects.get_or_create(name="ADMIN")
-            admin_group.user_set.add(user)
-            return redirect("adminlogin")
+        form = forms.CreateLibraryForm(request.POST)
+        form_valid = form.is_valid()
+        logger.debug(
+            "adminsignup_view form.is_valid=%s errors=%s", form_valid, form.errors
+        )
+        if form_valid:
+            try:
+                # Create User
+                user = User.objects.create_user(
+                    username=form.cleaned_data["username"],
+                    email=form.cleaned_data["email"],
+                    password=form.cleaned_data["password1"],
+                )
+
+                # Add to ADMIN group
+                admin_group, _ = Group.objects.get_or_create(name="ADMIN")
+                admin_group.user_set.add(user)
+
+                # Create AdminProfile
+                admin_profile = models.AdminProfile.objects.create(user=user)
+
+                # Create Library owned by this user
+                library = models.Library.objects.create(
+                    name=form.cleaned_data["library_name"],
+                    owner=user,
+                )
+
+                # Link library to admin profile
+                admin_profile.library = library
+                admin_profile.save()
+
+                # Auto-login the new user and persist selected library in session
+                auth_login(
+                    request,
+                    user,
+                    backend="django.contrib.auth.backends.ModelBackend",
+                )
+                request.session["library_id"] = library.id
+
+                logger.debug(
+                    "adminsignup: created user %s, admin_profile=%s, library=%s",
+                    user.username,
+                    admin_profile.id,
+                    library.id,
+                )
+
+                messages.success(
+                    request,
+                    f"Congratulations! Your library '{library.name}' has been created successfully.",
+                )
+                logger.debug("adminsignup about to redirect to dashboard")
+                return redirect("dashboard")
+
+            except Exception as e:
+                print("adminsignup exception", e)
+                logger.exception("adminsignup exception")
+                messages.error(
+                    request, f"An error occurred while creating your library: {str(e)}"
+                )
+
     return render(request, "library/adminsignup.html", {"form": form})
 
 
@@ -192,34 +482,56 @@ def adminsignup_view(request):
 
 
 def afterlogin_view(request):
-    if is_admin(request.user):
+    """
+    Redirect after successful social login (Google OAuth, etc).
+    If user has a library, go to dashboard.
+    If not, go to create library.
+    """
+    if not request.user.is_authenticated:
+        return redirect("adminlogin")
+
+    if not is_admin(request.user):
+        # Add non-admin social users to ADMIN group
+        admin_group, _ = Group.objects.get_or_create(name="ADMIN")
+        admin_group.user_set.add(request.user)
+
+    # Check if user has a library
+    library = get_user_library(request.user)
+
+    if library:
+        # User has a library, go to dashboard
+        messages.success(request, f"Welcome back to {library.name}!")
         return redirect("dashboard")
-    # Add Google-authenticated users to ADMIN group automatically
-    admin_group, _ = Group.objects.get_or_create(name="ADMIN")
-    admin_group.user_set.add(request.user)
-    return redirect("dashboard")
+    else:
+        # User doesn't have a library, go to create one
+        messages.info(request, "Let's create your library!")
+        return redirect("adminsignup")
 
 
 # -------------------- ADMIN VIEWS --------------------
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def addbook_view(request):
+    """Add a new book to the current library."""
+    library = request.library
     form = forms.BookForm()
     if request.method == "POST":
         form = forms.BookForm(request.POST)
         if form.is_valid():
-            form.save()
-            return render(request, "library/bookadded.html")
-    return render(request, "library/addbook.html", {"form": form})
+            book = form.save(commit=False)
+            book.library = library
+            book.save()
+            return render(request, "library/bookadded.html", {"library": library})
+    return render(request, "library/addbook.html", {"form": form, "library": library})
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def viewbook_view(request):
-    # Get all books sorted by name A-Z by default
-    books = Book.objects.all().order_by("name")
+    """View all books in the current library."""
+    library = request.library
+    # Get books from current library only, sorted by name A-Z
+    books = Book.objects.filter(library=library).order_by("name")
 
     # Search query
     query = request.GET.get("q", "")
@@ -254,65 +566,79 @@ def viewbook_view(request):
             "query": query,
             "category_choices": category_choices,
             "language_choices": language_choices,
+            "library": library,
         },
     )
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def delete_books_view(request):
+    """Delete books from current library."""
+    library = request.library
     if request.method == "POST":
-        selected_books = request.POST.getlist(
-            "selected_books"
-        )  # get list of selected book IDs
+        selected_books = request.POST.getlist("selected_books")
         if selected_books:
-            models.Book.objects.filter(id__in=selected_books).delete()
-            messages.success(
-                request, f"{len(selected_books)} book(s) deleted successfully!"
-            )
+            # Only delete books from current library
+            deleted_count, _ = models.Book.objects.filter(
+                id__in=selected_books, library=library
+            ).delete()
+            messages.success(request, f"{deleted_count} book(s) deleted successfully!")
         else:
             messages.warning(request, "No books selected for deletion.")
         return redirect("viewbook")
     return redirect("viewbook")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def update_books_view(request):
+    """Update books in current library."""
+    library = request.library
     if request.method == "POST":
-        import json
-
         books_data = json.loads(request.POST.get("books_data", "[]"))
 
         for book_data in books_data:
-            book = models.Book.objects.get(id=book_data["id"])
-            book.name = book_data["name"]
-            book.quantity = book_data["quantity"]
-            book.author = book_data["author"]
-            book.category = book_data["category"]
-            book.language = book_data["language"]
-            book.save()
+            try:
+                # Only update books from current library
+                book = models.Book.objects.get(id=book_data["id"], library=library)
+                book.name = book_data["name"]
+                book.quantity = book_data["quantity"]
+                book.author = book_data["author"]
+                book.category = book_data["category"]
+                book.language = book_data["language"]
+                book.save()
+            except models.Book.DoesNotExist:
+                continue
 
         messages.success(request, "Books updated successfully!")
         return redirect("viewbook")
     return redirect("viewbook")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def issuebook_view(request):
-    form = forms.IssuedBookForm()
+    """Issue a book to a student in the current library."""
+    library = request.library
+    form = forms.IssuedBookForm(library)
     if request.method == "POST":
-        form = forms.IssuedBookForm(request.POST)
+        form = forms.IssuedBookForm(library, request.POST)
         if form.is_valid():
             student = form.cleaned_data["student"]
             book = form.cleaned_data["book"]
             return_date = form.cleaned_data["return_date"]
 
-            # Create IssuedBook object with improved structure
+            # Verify both student and book belong to current library
+            if student.library != library or book.library != library:
+                messages.error(request, "Invalid student or book selection.")
+                return render(
+                    request,
+                    "library/issuebook.html",
+                    {"form": form, "library": library},
+                )
+
+            # Create IssuedBook object
             obj = models.IssuedBook()
-            obj.student = student  # ForeignKey relationship
-            obj.book = book  # ForeignKey relationship
+            obj.student = student
+            obj.book = book
             obj.enrollment = student.enrollment
             obj.book_name = book.name
             obj.issuedate = date.today()
@@ -325,23 +651,23 @@ def issuebook_view(request):
                 book.save()
 
                 obj.save()
-                # message
                 messages.success(
                     request, f"Book {book.name} issued successfully to {student.name}!"
                 )
-                return render(request, "library/bookissued.html")
+                return render(request, "library/bookissued.html", {"library": library})
             else:
                 messages.error(request, "This book is out of stock!")
 
-    return render(request, "library/issuebook.html", {"form": form})
+    return render(request, "library/issuebook.html", {"form": form, "library": library})
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def viewissuedbook_view(request):
-    # Only show non-returned books
+    """View issued books in the current library."""
+    library = request.library
+    # Only show non-returned books from current library
     issuedbooks = (
-        models.IssuedBook.objects.filter(returned=False)
+        models.IssuedBook.objects.filter(returned=False, book__library=library)
         .select_related("student", "book")
         .order_by("book_name")
     )
@@ -416,38 +742,47 @@ def viewissuedbook_view(request):
         {
             "li": li_page,
             "show_overdue_only": show_overdue_only,
-            "total_count": len(li),  # Total count for header
+            "total_count": len(li),
+            "library": library,
         },
     )
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def update_issued_books_view(request):
+    """Update issued books in the current library."""
+    library = request.library
     if request.method == "POST":
-        import json
-
         books_data = json.loads(request.POST.get("books_data", "[]"))
 
         for book_data in books_data:
-            issued_book = models.IssuedBook.objects.get(id=book_data["id"])
-            issued_book.issue_date = book_data["issue_date"]
-            issued_book.return_date = book_data["return_date"]
-            issued_book.save()
+            try:
+                # Only update issued books from current library
+                issued_book = models.IssuedBook.objects.get(
+                    id=book_data["id"], book__library=library
+                )
+                issued_book.issue_date = book_data["issue_date"]
+                issued_book.return_date = book_data["return_date"]
+                issued_book.save()
+            except models.IssuedBook.DoesNotExist:
+                continue
 
         messages.success(request, "Issued books updated successfully!")
         return redirect("viewissuedbook")
     return redirect("viewissuedbook")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def return_issued_book_view(request):
+    """Return a book to the current library."""
+    library = request.library
     if request.method == "POST":
         issuedbook_id = request.GET.get("issuedbook_id")
         try:
-            # Get the issued book record
-            issued_book = models.IssuedBook.objects.get(id=issuedbook_id)
+            # Get the issued book record - verify it belongs to current library
+            issued_book = models.IssuedBook.objects.get(
+                id=issuedbook_id, book__library=library
+            )
 
             # Get the book to increase quantity
             if issued_book.book:
@@ -455,7 +790,7 @@ def return_issued_book_view(request):
                 book.quantity += 1
                 book.save()
 
-            # CHANGE: Mark as returned instead of deleting
+            # Mark as returned
             issued_book.returned = True
             issued_book.save()
 
@@ -472,27 +807,33 @@ def return_issued_book_view(request):
 # -------------------- STUDENT VIEWS --------------------
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def addstudent_view(request):
-    form = forms.StudentExtraForm()
+    """Add a new student to the current library."""
+    library = request.library
+    form = forms.StudentExtraForm(library)
     if request.method == "POST":
-        form = forms.StudentExtraForm(request.POST)
+        form = forms.StudentExtraForm(library, request.POST)
         if form.is_valid():
-            form.save()
+            student = form.save(commit=False)
+            student.library = library
+            student.save()
             return redirect("studentadded")
-    return render(request, "student/addstudent.html", {"form": form})
+    return render(
+        request, "student/addstudent.html", {"form": form, "library": library}
+    )
 
 
 def studentadded_view(request):
     return render(request, "student/studentadded.html")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def viewstudent_view(request):
-    # Get all students sorted by name A-Z by default
-    students = models.StudentExtra.objects.all().order_by("name")
+    """View all students in the current library."""
+    library = request.library
+    # Get students from current library only, sorted by name A-Z
+    students = models.StudentExtra.objects.filter(library=library).order_by("name")
 
     # Search functionality
     query = request.GET.get("q", "").strip()
@@ -522,21 +863,26 @@ def viewstudent_view(request):
         {
             "students": students,
             "filter": student_filter,
-            "query": query if query != "None" else "",  # Convert "None" to empty string
+            "query": query if query != "None" else "",
             "gender_choices": models.StudentExtra.genchoice,
+            "library": library,
         },
     )
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def delete_students_view(request):
+    """Delete students from current library."""
+    library = request.library
     if request.method == "POST":
         selected_students = request.POST.getlist("selected_students")
         if selected_students:
-            models.StudentExtra.objects.filter(id__in=selected_students).delete()
+            # Only delete students from current library
+            deleted_count, _ = models.StudentExtra.objects.filter(
+                id__in=selected_students, library=library
+            ).delete()
             messages.success(
-                request, f"{len(selected_students)} Student(s) deleted successfully!"
+                request, f"{deleted_count} Student(s) deleted successfully!"
             )
         else:
             messages.warning(request, "No student selected for deletion.")
@@ -544,19 +890,26 @@ def delete_students_view(request):
     return redirect("viewstudent")
 
 
-@login_required(login_url="adminlogin")
-@user_passes_test(is_admin)
+@library_required
 def update_students_view(request):
+    """Update students in current library."""
+    library = request.library
     if request.method == "POST":
         students_data = json.loads(request.POST.get("students_data", "[]"))
         for student_data in students_data:
-            student = models.StudentExtra.objects.get(id=student_data["id"])
-            student.name = student_data["name"]
-            student.enrollment = student_data["enrollment"]
-            student.address = student_data["address"]
-            student.phone = student_data["phone"]
-            student.gender = student_data["gender"]
-            student.save()
+            try:
+                # Only update students from current library
+                student = models.StudentExtra.objects.get(
+                    id=student_data["id"], library=library
+                )
+                student.name = student_data["name"]
+                student.enrollment = student_data["enrollment"]
+                student.address = student_data["address"]
+                student.phone = student_data["phone"]
+                student.gender = student_data["gender"]
+                student.save()
+            except models.StudentExtra.DoesNotExist:
+                continue
 
         messages.success(request, "Student(s) updated successfully!")
         return redirect("viewstudent")
@@ -566,20 +919,25 @@ def update_students_view(request):
 # -------------------- USER PROFILE VIEWS --------------------
 
 
-@login_required(login_url="adminlogin")
+@library_required
 def userprofile_view(request):
+    """Show admin's profile and library information."""
+    library = request.library
     user = request.user
     admin_profile, _ = models.AdminProfile.objects.get_or_create(user=user)
 
     context = {
         "current_user": user,
         "admin_profile": admin_profile,
+        "library": library,
     }
     return render(request, "library/userprofile.html", context)
 
 
-@login_required(login_url="adminlogin")
+@library_required
 def update_profile_view(request):
+    """Update admin's profile information."""
+    library = request.library
     if request.method != "POST":
         return HttpResponse(
             json.dumps({"message": "Invalid request method."}),
@@ -651,11 +1009,10 @@ def update_profile_view(request):
         )
 
 
-@login_required(login_url="adminlogin")
-def change_password_view(request):
-    """
-    Handle AJAX request to change user password.
-    """
+@library_required
+def update_library_view(request):
+    """Update library information (name, etc)."""
+    library = request.library
     if request.method != "POST":
         return HttpResponse(
             json.dumps({"message": "Invalid request method."}),
@@ -663,7 +1020,50 @@ def change_password_view(request):
             status=405,
         )
 
-    from django.contrib.auth import authenticate
+    try:
+        library_name = request.POST.get("library_name", "").strip()
+
+        if not library_name:
+            return HttpResponse(
+                json.dumps({"message": "Library name is required."}),
+                content_type="application/json",
+                status=400,
+            )
+
+        library.name = library_name
+        library.save()
+
+        return HttpResponse(
+            json.dumps(
+                {
+                    "message": "Library updated successfully.",
+                    "library_name": library.name,
+                }
+            ),
+            content_type="application/json",
+            status=200,
+        )
+
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({"message": f"An error occurred: {str(e)}"}),
+            content_type="application/json",
+            status=500,
+        )
+
+
+@library_required
+def change_password_view(request):
+    """
+    Handle AJAX request to change user password.
+    """
+    library = request.library
+    if request.method != "POST":
+        return HttpResponse(
+            json.dumps({"message": "Invalid request method."}),
+            content_type="application/json",
+            status=405,
+        )
 
     user = request.user
 
@@ -727,8 +1127,10 @@ def change_password_view(request):
         )
 
 
-@login_required(login_url="adminlogin")
+@library_required
 def upload_profile_photo_view(request):
+    """Upload admin's profile photo."""
+    library = request.library
     if request.method != "POST":
         return HttpResponse(
             json.dumps({"message": "Invalid request method."}),
@@ -784,8 +1186,10 @@ def upload_profile_photo_view(request):
         )
 
 
-@login_required(login_url="adminlogin")
+@library_required
 def remove_profile_photo(request):
+    """Remove admin's profile photo."""
+    library = request.library
     if request.method != "POST":
         return HttpResponse(
             json.dumps({"message": "Invalid request method."}),

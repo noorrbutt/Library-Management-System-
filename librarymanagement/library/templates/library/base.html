@@ -223,12 +223,14 @@
       </button>
       <span style="font-size:0.95rem;font-weight:600;color:#111827;">
         {% if request.user.is_authenticated %}
-          {% with lib=request.user.admin_profile.library %}
-            {% if lib %}{{ lib.name }}{% else %}{% block page_title %}Dashboard{% endblock %}{% endif %}
-          {% endwith %}
-        {% else %}
-         
-        {% endif %}
+          {% if library %}
+            {{ library.name }} [{{ library.code }}]
+          {% elif request.user.admin_profile.library %}
+            {{ request.user.admin_profile.library.name }} [{{ request.user.admin_profile.library.code }}]
+          {% else %}
+            {% block page_title %}Dashboard{% endblock %}
+          {% endif %}
+        {% else %}        {% endif %}
       </span>
     </div>
     <a href="{% url 'userprofile' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;border-radius:8px;padding:6px 8px;transition:background 0.15s;cursor:pointer;">
