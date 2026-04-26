@@ -8,47 +8,8 @@
   <link rel="icon" href="{% static 'metronic/assets/media/app/favicon.ico' %}"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{% static 'metronic/assets/css/styles.css' %}"/>
+  <link rel="stylesheet" href="{% static 'library/css/custom.css' %}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: #f4f6fa; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .auth-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 40px; width: 100%; max-width: 420px; }
-    .auth-logo { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 32px; }
-    .auth-logo .icon { width: 44px; height: 44px; border-radius: 10px; background: #3b82f6; display: flex; align-items: center; justify-content: center; }
-    .auth-logo span { font-size: 1.2rem; font-weight: 700; color: #111827; }
-    h2 { font-size: 1.3rem; font-weight: 700; color: #111827; text-align: center; margin: 0 0 6px; }
-    .sub { font-size: 0.85rem; color: #6b7280; text-align: center; margin: 0 0 28px; }
-    label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
-    .input-wrap { position: relative; margin-bottom: 16px; }
-    .input-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.85rem; }
-    input[type=text], input[type=password] {
-      width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #d1d5db;
-      border-radius: 8px; font-size: 0.875rem; color: #1f2937; font-family: inherit;
-      outline: none; transition: border 0.15s, box-shadow 0.15s;
-    }
-    input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
-    .btn-login { width: 100%; padding: 11px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; margin-top: 8px; }
-    .btn-login:hover { background: #2563eb; }
-    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px; }
-    .alert-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-    .page-wrap { display: flex; flex-direction: column; align-items: center; padding: 80px 24px 40px; min-height: 100vh; }
-    .library-section { width: 100%; max-width: 560px; margin-bottom: 24px; }
-    .library-section h3 { font-size: 0.85rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; }
-    .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-    .lib-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; text-align: center; }
-    .lib-card:hover { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
-    .lib-card.selected { border-color: #3b82f6; background: #eff6ff; }
-    .lib-card .lib-icon { width: 36px; height: 36px; border-radius: 8px; background: #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
-    .lib-card .lib-name { font-size: 0.82rem; font-weight: 600; color: #111827; display: block; }
-    .lib-card .lib-code { font-size: 0.72rem; color: #9ca3af; display: block; margin-top: 2px; }
-    .no-libs { background: #f9fafb; border: 1px dashed #d1d5db; border-radius: 10px; padding: 20px; text-align: center; font-size: 0.85rem; color: #6b7280; }
-    .no-libs a { color: #3b82f6; font-weight: 500; text-decoration: none; }
-    /* Override the old body flex centering */
-    body { display: block !important; align-items: unset !important; justify-content: unset !important; }
-    
-    .auth-card { width: 100%; max-width: 420px; }
-  </style>
 </head>
 <body>
   <nav class="top-nav">
