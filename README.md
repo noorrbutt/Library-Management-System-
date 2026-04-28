@@ -171,13 +171,13 @@ Open your browser at `http://127.0.0.1:8000/`
 
 | Variable | Description |
 |---|---|
-| `SECRET_KEY` | Django secret key — never commit this |
+| `SECRET_KEY` | Django secret key |
 | `DATABASE_URL` | PostgreSQL connection string (falls back to SQLite if unset) |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `DEBUG` | `True` for dev, `False` for production |
 | `EMAIL_HOST_USER` | Gmail address for system emails |
-| `EMAIL_HOST_PASSWORD` | Gmail App Password (not your account password) |
+| `EMAIL_HOST_PASSWORD` | Gmail App Password  |
 
 ---
 
