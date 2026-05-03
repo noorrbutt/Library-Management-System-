@@ -18,10 +18,10 @@
     <div><a href="{% url 'home' %}" class="nav-btn">Home</a></div>
   </nav>
 
-  <div class="auth-card">
+  <div class="page-wrap">
+    <div class="auth-card">
     <div class="auth-logo">
       <div class="icon"><i class="fas fa-book-open" style="color:#fff;"></i></div>
-      <span>LibraryMS</span>
     </div>
     <h2>Create Your Library</h2>
     <p class="sub">Set up a brand new library from scratch</p>
@@ -55,24 +55,18 @@
       </div>
 
       <label>Password</label>
-      <div class="input-wrap">
-        <i class="fas fa-lock"></i>
-        {{ form.password1 }}
-        <button type="button" class="toggle-pw" onclick="togglePw('id_password1','icon1')">
-          <i class="fas fa-eye" id="icon1"></i>
-        </button>
-        {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
-      </div>
+<div class="input-wrap">
+  <span class="fas fa-lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:0.95rem;pointer-events:none;"></span>
+  {{ form.password1 }}
+  {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
+</div>
 
-      <label>Confirm Password</label>
-      <div class="input-wrap">
-        <i class="fas fa-lock"></i>
-        {{ form.password2 }}
-        <button type="button" class="toggle-pw" onclick="togglePw('id_password2','icon2')">
-          <i class="fas fa-eye" id="icon2"></i>
-        </button>
-        {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
-      </div>
+<label>Confirm Password</label>
+<div class="input-wrap">
+  <span class="fas fa-lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:0.95rem;pointer-events:none;"></span>
+  {{ form.password2 }}
+  {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+</div>
 
       <button type="submit" class="btn-login">Create Library</button>
     </form>
@@ -90,15 +84,6 @@
 
     <div class="link-row">Already have a library? <a href="{% url 'adminlogin' %}">Log in here</a></div>
   </div>
-
-  <script>
-    function togglePw(fieldId, iconId) {
-      const f = document.getElementById(fieldId);
-      const i = document.getElementById(iconId);
-      if (!f) return;
-      f.type = f.type === 'password' ? 'text' : 'password';
-      i.className = f.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-    }
-  </script>
+  </div>
 </body>
 </html>

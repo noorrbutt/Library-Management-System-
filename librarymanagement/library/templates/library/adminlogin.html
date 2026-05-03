@@ -47,7 +47,6 @@
     <div class="auth-card">
     <div class="auth-logo">
       <div class="icon"><i class="fas fa-book-open" style="color:#fff;"></i></div>
-      <span>LibraryMS</span>
     </div>
     <h2>Admin Login</h2>
     <p class="sub">Select a library above, then sign in</p>
@@ -67,13 +66,12 @@
         <i class="fas fa-user"></i>
         <input type="text" name="{{ form.username.name }}" value="{{ form.username.value|default:'' }}" placeholder="Enter username" required>
       </div>
-      <label>Password</label>
-      <div class="input-wrap">
-        <i class="fas fa-lock"></i>
-        <input type="password" name="{{ form.password.name }}" id="passwordField" placeholder="Enter password" required>
-        <button type="button" class="toggle-pw" onclick="togglePw()"><i class="fas fa-eye" id="pwIcon"></i></button>
-      </div>
-      <button type="submit" class="btn-login">Sign In</button>
+     <label>Password</label>
+<div class="input-wrap">
+  <span class="fas fa-lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:0.95rem;pointer-events:none;"></span>
+  <input type="password" name="{{ form.password.name }}" id="passwordField" placeholder="Enter password" required>
+</div>
+      <button type="submit" class="btn-login">Log In</button>
     </form>
     <div class="link-row">New library? <a href="{% url 'adminsignup' %}">Create one here</a></div>
   </div>
@@ -81,14 +79,6 @@
   </div>  <!-- /page-wrap -->
 
   <script>
-    // existing togglePw() unchanged
-
-    function togglePw() {
-      const f = document.getElementById('passwordField');
-      const i = document.getElementById('pwIcon');
-      f.type = f.type === 'password' ? 'text' : 'password';
-      i.className = f.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-    }
 
     function selectLib(el, name) {
       document.querySelectorAll('.lib-card').forEach(c => c.classList.remove('selected'));

@@ -119,12 +119,6 @@ textarea {
     justify-content: center;
 }
 
-.auth-logo span {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #111827;
-}
-
 .auth-card h2 {
     font-size: 1.35rem;
     font-weight: 700;
@@ -152,6 +146,18 @@ textarea {
     transform: translateY(-50%);
     color: #9ca3af;
     font-size: 0.95rem;
+}
+
+.input-wrap input[type=text],
+.input-wrap input[type=password],
+.input-wrap input[type=email] {
+    padding: 10px 44px 10px 36px;
+    z-index: 1;
+}
+
+.input-wrap>i,
+.toggle-pw {
+    z-index: 2;
 }
 
 .lms-input,
@@ -211,6 +217,12 @@ textarea:focus {
     text-decoration: none;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.15s ease;
+}
+
+
+.auth-card form button {
+    width: 100%;
+    margin: 0 auto;
 }
 
 .btn-login:hover,
@@ -498,6 +510,38 @@ textarea:focus {
 .logout-btn:hover {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+}
+
+@media (max-width: 768px) {
+    .top-nav {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 12px 16px;
+    }
+
+    .top-nav .nav-links {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .page-wrap {
+        padding: 100px 16px 32px;
+    }
+
+    .auth-card {
+        margin: 0 auto;
+        padding: 28px 18px;
+        max-width: 100%;
+    }
+
+    .auth-logo {
+        gap: 8px;
+    }
+
+    .hero .hero-cta {
+        flex-direction: column;
+        gap: 16px;
+    }
 }
 
 /* Card system */

@@ -22,7 +22,7 @@
     <span>LibraryMS</span>
   </div>
 
-  <nav id="sidebar_menu" id="sidebar_scrollable">
+  <nav id="sidebar_menu" data-sidebar-scrollable="true">
     <p class="menu-section-title">Home</p>
     <div class="menu-item">
       <a href="{% url 'dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
