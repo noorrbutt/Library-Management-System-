@@ -382,6 +382,7 @@ textarea:focus {
     flex-direction: column;
     z-index: 100;
     overflow-y: auto;
+    transition: transform 0.25s ease;
 }
 
 #sidebar.open {
@@ -564,6 +565,8 @@ textarea:focus {
 
 .lms-card-body {
     padding: 22px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Forms / labels */
@@ -737,6 +740,64 @@ label {
     border-color: #3b82f6;
     transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
+}
+
+.qa-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 0;
+}
+
+.qa-actions .qa-btn {
+    flex: 1 1 160px;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.profile-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+}
+
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.chart-card .lms-card-body {
+    padding: 18px;
+}
+
+.chart-container {
+    width: 100%;
+    min-height: 220px;
+    position: relative;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#sidebar_toggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #sidebar_toggle {
+        display: inline-flex;
+    }
 }
 
 /* Hero components */
@@ -1194,5 +1255,26 @@ footer span {
     .hero,
     .page-wrap {
         padding-top: 90px;
+    }
+
+    .lms-table th,
+    .lms-table td {
+        padding: 10px 12px;
+    }
+
+    .lms-table thead th {
+        white-space: nowrap;
+    }
+
+    .menu-item {
+        margin: 0 8px 4px;
+    }
+
+    #header {
+        padding: 0 16px;
+    }
+
+    #content {
+        padding: 16px;
     }
 }

@@ -46,19 +46,19 @@
 </div>
 
 <!-- Charts -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-  <div class="lms-card">
+<div class="responsive-grid">
+  <div class="lms-card chart-card">
     <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-chart-pie" style="color:#3b82f6;margin-right:6px;"></i>Books Status</span></div>
-    <div class="lms-card-body"><div style="height:200px;"><canvas id="statusChart"></canvas></div></div>
+    <div class="lms-card-body"><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
   </div>
-  <div class="lms-card">
+  <div class="lms-card chart-card">
     <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-chart-line" style="color:#16a34a;margin-right:6px;"></i>Monthly Trend</span></div>
-    <div class="lms-card-body"><div style="height:200px;"><canvas id="trendChart"></canvas></div></div>
+    <div class="lms-card-body"><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
   </div>
 </div>
 
 <!-- Activity + Low Stock -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+<div class="responsive-grid">
   <div class="lms-card">
     <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-clock" style="color:#3b82f6;margin-right:6px;"></i>Recent Activity</span></div>
     <div class="lms-card-body">
@@ -108,7 +108,7 @@
 <div class="lms-card">
   <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-fire" style="color:#ea580c;margin-right:6px;"></i>Most Borrowed Books</span></div>
   {% if top_books %}
-  <div style="overflow-x:auto;">
+  <div class="table-responsive">
     <table class="lms-table">
       <thead><tr><th>Book Title</th><th>Author</th><th>Times Issued</th><th>Status</th></tr></thead>
       <tbody>

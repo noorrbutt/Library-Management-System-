@@ -26,7 +26,7 @@
 
     <!-- Profile Header -->
     <div class="lms-card" style="margin-bottom:16px;">
-      <div class="lms-card-body" style="display:flex;align-items:center;gap:20px;">
+      <div class="lms-card-body profile-header">
 
         <!-- Avatar + menu wrapper -->
         <div id="avatarWrapper">
@@ -99,7 +99,7 @@
       <div class="lms-card-body">
         <form id="libraryForm" class="profile-form">
           {% csrf_token %}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="responsive-grid" style="margin-bottom:16px;">
             <div>
               <label class="lms-label">Library Name *</label>
               <input type="text" class="lms-input" id="libraryName"
@@ -126,6 +126,7 @@
     </div>
 
     <!-- Personal Information -->
+    <div class="lms-card" style="margin-bottom:16px;">
       <div class="lms-card-header">
         <span style="font-size:0.875rem;font-weight:600;">
           <i class="fas fa-id-card" style="color:#3b82f6;margin-right:6px;"></i>Personal Information
@@ -137,7 +138,7 @@
       <div class="lms-card-body">
         <form id="personalForm" class="profile-form">
           {% csrf_token %}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="responsive-grid" style="margin-bottom:16px;">
             <div>
               <label class="lms-label">Full Name *</label>
               <input type="text" class="lms-input" id="fullName"
@@ -187,7 +188,7 @@
         </span>
       </div>
       <div class="lms-card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
+        <div class="responsive-grid" style="gap:24px;">
           <div>
             <div style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Account Created</div>
             <div style="font-size:0.875rem;font-weight:500;color:#111827;">{{ current_user.date_joined|date:"M d, Y" }}</div>
