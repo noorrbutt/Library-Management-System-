@@ -1,15 +1,13 @@
-from urllib import request
-
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login
-from django.core.mail import send_mail
+from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse
 from datetime import date, datetime, timedelta
 from . import forms, models
-from librarymanagement.settings import EMAIL_HOST_USER
-from .models import Book, StudentExtra, IssuedBook
+from .models import Book, StudentExtra, IssuedBook, LibraryMembership
 from .filters import BookFilter, StudentFilter
 from django.contrib import messages
 import json
@@ -67,14 +65,25 @@ def library_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect("adminlogin")
-        if not is_admin(request.user):
-            return redirect("adminlogin")
 
         library = None
-        library_id = request.session.get("library_id")
+        library_id = request.session.get("current_library_id") or request.session.get(
+            "library_id"
+        )
         if library_id:
             try:
-                library = models.Library.objects.get(id=library_id, owner=request.user)
+                library = models.Library.objects.get(id=library_id)
+                if request.user != library.owner:
+                    membership_exists = LibraryMembership.objects.filter(
+                        library=library, user=request.user
+                    ).exists()
+                    if not membership_exists:
+                        logger.warning(
+                            "library_required: user %s has no membership for library %s",
+                            request.user.username,
+                            library_id,
+                        )
+                        library = None
             except models.Library.DoesNotExist:
                 logger.warning(
                     "library_required: session library_id %s invalid for user %s",
@@ -111,18 +120,32 @@ def dashboard_view(request):
     Comprehensive dashboard displaying library statistics and metrics.
     Scoped to the current user's library only.
     """
-    library_id = request.session.get("library_id")
     library = request.library
+    library_id = request.session.get("current_library_id") or request.session.get(
+        "library_id"
+    )
     if library_id:
         try:
-            library = models.Library.objects.get(id=library_id, owner=request.user)
+            fallback_library = models.Library.objects.get(id=library_id)
+            if (
+                request.user == fallback_library.owner
+                or LibraryMembership.objects.filter(
+                    library=fallback_library, user=request.user
+                ).exists()
+            ):
+                library = fallback_library
+            else:
+                logger.warning(
+                    "dashboard_view: session library_id %s invalid for user %s",
+                    library_id,
+                    request.user.username,
+                )
         except models.Library.DoesNotExist:
             logger.warning(
                 "dashboard_view: session library_id %s invalid for user %s",
                 library_id,
                 request.user.username,
             )
-            library = request.library
 
     today = date.today()
     month_start = today.replace(day=1)
@@ -330,8 +353,14 @@ class AdminLoginView(View):
                     },
                 )
 
-            # Verify user owns this library
-            if user != library.owner:
+            is_owner = user == library.owner
+            is_member = False
+            if not is_owner:
+                is_member = LibraryMembership.objects.filter(
+                    library=library, user=user
+                ).exists()
+
+            if not is_owner and not is_member:
                 messages.error(request, "You do not have access to this library.")
                 libraries = models.Library.objects.all().order_by("-created_at")
                 return render(
@@ -343,8 +372,7 @@ class AdminLoginView(View):
                     },
                 )
 
-            # Verify user is admin
-            if not is_admin(user):
+            if is_owner and not is_admin(user):
                 messages.error(request, "You do not have admin privileges.")
                 libraries = models.Library.objects.all().order_by("-created_at")
                 return render(
@@ -356,25 +384,43 @@ class AdminLoginView(View):
                     },
                 )
 
-            # Ensure admin profile exists and is linked to the selected library
-            admin_profile, created = models.AdminProfile.objects.get_or_create(
-                user=user
-            )
-            if admin_profile.library is None or admin_profile.library != library:
-                admin_profile.library = library
-                admin_profile.save()
-                print(
-                    f"adminlogin: linked admin profile {admin_profile.id} to library {library.id}"
+            if is_owner:
+                admin_profile, created = models.AdminProfile.objects.get_or_create(
+                    user=user
                 )
-                logger.debug(
-                    "adminlogin: linked admin profile %s to library %s",
-                    admin_profile.id,
-                    library.id,
+                if admin_profile.library is None or admin_profile.library != library:
+                    admin_profile.library = library
+                    admin_profile.save()
+                    logger.debug(
+                        "adminlogin: linked admin profile %s to library %s",
+                        admin_profile.id,
+                        library.id,
+                    )
+            else:
+                try:
+                    user.admin_profile
+                except models.AdminProfile.DoesNotExist:
+                    models.AdminProfile.objects.create(user=user)
+
+            if is_owner:
+                LibraryMembership.objects.get_or_create(
+                    library=library,
+                    user=user,
+                    defaults={
+                        "role": "owner",
+                        "added_by": user,
+                        "must_change_password": False,
+                    },
                 )
 
+            request.session["current_library_id"] = library.id
             request.session["library_id"] = library.id
+            request.session["current_library_name"] = library.name
+            request.session["is_library_owner"] = is_owner
             auth_login(request, user)
-            print(f"adminlogin: authenticated and logged in user {user.username}")
+            logger.debug(
+                "adminlogin: authenticated and logged in user %s", user.username
+            )
             messages.success(request, f"Welcome back! Logged into {library.name}.")
             return redirect("dashboard")
 
@@ -446,6 +492,15 @@ def adminsignup_view(request):
                 admin_profile.library = library
                 admin_profile.save()
 
+                # Create owner membership for the library
+                LibraryMembership.objects.create(
+                    library=library,
+                    user=user,
+                    role="owner",
+                    added_by=user,
+                    must_change_password=False,
+                )
+
                 # Auto-login the new user and persist selected library in session
                 auth_login(
                     request,
@@ -453,6 +508,9 @@ def adminsignup_view(request):
                     backend="django.contrib.auth.backends.ModelBackend",
                 )
                 request.session["library_id"] = library.id
+                request.session["current_library_id"] = library.id
+                request.session["current_library_name"] = library.name
+                request.session["is_library_owner"] = True
 
                 logger.debug(
                     "adminsignup: created user %s, admin_profile=%s, library=%s",
@@ -478,6 +536,167 @@ def adminsignup_view(request):
     return render(request, "library/adminsignup.html", {"form": form})
 
 
+@login_required
+def manage_members(request):
+    library_id = request.session.get("current_library_id") or request.session.get(
+        "library_id"
+    )
+    library = get_object_or_404(models.Library, id=library_id)
+    if request.user != library.owner:
+        messages.error(request, "Only the library owner can manage members.")
+        return redirect("dashboard")
+
+    memberships = (
+        LibraryMembership.objects.filter(library=library)
+        .select_related("user", "added_by")
+        .order_by("-joined_at")
+    )
+
+    if request.method == "POST" and request.POST.get("add_member"):
+        email = request.POST.get("email", "").strip().lower()
+        username = request.POST.get("username", "").strip()
+
+        # ── Validate inputs ──────────────────────────────────────────
+        if not email or "@" not in email:
+            messages.error(request, "Please enter a valid email address.")
+            return redirect("manage_members")
+
+        if not username:
+            messages.error(request, "Please enter a username for the new member.")
+            return redirect("manage_members")
+
+        # Username validation: alphanumeric + underscores only
+        import re
+
+        if not re.match(r"^[a-zA-Z0-9_]+$", username):
+            messages.error(
+                request, "Username may only contain letters, numbers and underscores."
+            )
+            return redirect("manage_members")
+
+        # ── Check if username already taken ─────────────────────────
+        if User.objects.filter(username=username).exists():
+            messages.error(
+                request,
+                f"The username '{username}' is already taken. Please choose a different one.",
+            )
+            return redirect("manage_members")
+
+        # ── Try to find existing user by email ──────────────────────
+        existing_user = User.objects.filter(email=email).first()
+
+        if existing_user:
+            # User exists — check if already a member of THIS library
+            if LibraryMembership.objects.filter(
+                library=library, user=existing_user
+            ).exists():
+                messages.error(
+                    request,
+                    f"'{existing_user.username}' ({email}) is already a member of this library.",
+                )
+                return redirect("manage_members")
+
+            # Add them as a member (they keep their existing credentials)
+            models.AdminProfile.objects.get_or_create(user=existing_user)
+            LibraryMembership.objects.create(
+                library=library,
+                user=existing_user,
+                added_by=request.user,
+                role="member",
+                must_change_password=False,  # They already know their password
+            )
+            messages.success(
+                request,
+                f"'{existing_user.username}' ({email}) has been added to this library. "
+                f"They can log in using their existing credentials.",
+            )
+
+        else:
+            # ── Create brand-new user with the exact username entered ──
+            temp_password = User.objects.make_random_password(length=10)
+
+            new_user = User.objects.create(
+                email=email,
+                username=username,  # Exactly what the owner typed — no auto-generation
+                password=make_password(temp_password),
+            )
+
+            models.AdminProfile.objects.get_or_create(user=new_user)
+            LibraryMembership.objects.create(
+                library=library,
+                user=new_user,
+                added_by=request.user,
+                role="member",
+                must_change_password=True,
+            )
+
+            messages.success(
+                request,
+                f"Member added. Username: {username}  |  Temporary password: {temp_password}"
+                f" — Share these credentials with {email} securely.",
+            )
+
+        return redirect("manage_members")
+
+    return render(
+        request,
+        "library/manage_members.html",
+        {
+            "memberships": memberships,
+            "library": library,
+        },
+    )
+
+
+@login_required
+def force_password_change(request):
+    library_id = request.session.get("current_library_id") or request.session.get(
+        "library_id"
+    )
+    membership = LibraryMembership.objects.filter(
+        user=request.user, library_id=library_id
+    ).first()
+    if not membership or not membership.must_change_password:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        new_password = request.POST.get("new_password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
+        if new_password == confirm_password and len(new_password) >= 6:
+            request.user.set_password(new_password)
+            request.user.save()
+            membership.must_change_password = False
+            membership.save()
+            auth_login(request, request.user)
+            messages.success(request, "Password changed successfully.")
+            return redirect("dashboard")
+        messages.error(request, "Passwords must match and be at least 6 characters.")
+
+    return render(
+        request, "library/force_password_change.html", {"membership": membership}
+    )
+
+
+@login_required
+def remove_member(request):
+    library_id = request.session.get("current_library_id") or request.session.get(
+        "library_id"
+    )
+    library = get_object_or_404(models.Library, id=library_id)
+    if request.user != library.owner:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    membership_id = request.POST.get("membership_id")
+    membership = get_object_or_404(LibraryMembership, id=membership_id, library=library)
+    if membership.user == library.owner:
+        messages.error(request, "Cannot remove the library owner.")
+        return redirect("manage_members")
+
+    membership.delete()
+    messages.success(request, f"Removed {membership.user.email} from library.")
+    return redirect("manage_members")
+
+
 # -------------------- AFTER LOGIN --------------------
 
 
@@ -499,6 +718,15 @@ def afterlogin_view(request):
     library = get_user_library(request.user)
 
     if library:
+        admin_profile, _ = models.AdminProfile.objects.get_or_create(user=request.user)
+        if admin_profile.library is None:
+            admin_profile.library = library
+            admin_profile.save()
+
+        request.session["current_library_id"] = library.id
+        request.session["library_id"] = library.id
+        request.session["current_library_name"] = library.name
+        request.session["is_library_owner"] = request.user == library.owner
         # User has a library, go to dashboard
         messages.success(request, f"Welcome back to {library.name}!")
         return redirect("dashboard")
