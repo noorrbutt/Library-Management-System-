@@ -639,6 +639,10 @@ label {
     cursor: default;
 }
 
+.editable input {
+    display: none;
+}
+
 .editable input.form-control-sm,
 .editable input,
 .editable-field {
