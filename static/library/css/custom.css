@@ -639,7 +639,8 @@ label {
     cursor: default;
 }
 
-.editable input {
+.editable span~input,
+.editable input:not(.form-control-sm) {
     display: none;
 }
 
