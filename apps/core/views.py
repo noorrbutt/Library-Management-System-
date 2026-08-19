@@ -130,7 +130,7 @@ def dashboard_view(request):
     recent_activities = (
         IssuedBook.objects.filter(book__library=library)
         .select_related("student", "book")
-        .order_by("-issuedate")[:15]
+        .order_by("-issuedate")[:5]
     )
 
     # ========== TOP 5 MOST ISSUED BOOKS (LIBRARY-SCOPED) ==========

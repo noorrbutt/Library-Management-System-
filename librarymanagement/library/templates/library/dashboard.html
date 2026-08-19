@@ -62,7 +62,10 @@
 <!-- Activity + Low Stock -->
 <div class="responsive-grid">
   <div class="lms-card">
-    <div class="lms-card-header"><span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-clock" style="color:#3b82f6;margin-right:6px;"></i>Recent Activity</span></div>
+    <div class="lms-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:0.875rem;font-weight:600;"><i class="fas fa-clock" style="color:#3b82f6;margin-right:6px;"></i>Recent Activity</span>
+      <a href="{% url 'viewissuedbook' %}" style="font-size:0.75rem;color:#3b82f6;text-decoration:none;font-weight:500;">View all</a>
+    </div>
     <div class="lms-card-body">
       {% if recent_activities %}
         {% for activity in recent_activities %}
